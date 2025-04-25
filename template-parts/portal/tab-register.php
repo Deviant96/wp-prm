@@ -1,0 +1,1 @@
+<?php echo do_shortcode('[partner_registration_form]'); ?>
