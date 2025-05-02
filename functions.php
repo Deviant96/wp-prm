@@ -19,13 +19,13 @@ function wp_prm_theme_setup()
 add_action('after_setup_theme', 'wp_prm_theme_setup');
 
 // Include files
+require_once get_template_directory() . '/inc/font-styles.php';
 require get_template_directory() . '/inc/roles.php';
 require get_template_directory() . '/inc/custom-post-types.php';
 require get_template_directory() . '/inc/shortcodes.php';
 // require get_template_directory() . '/inc/form-handler.php';
 require_once get_template_directory() . '/inc/form-handler.php';
 require_once get_template_directory() . '/inc/custom-features-functions.php';
-require_once get_template_directory() . '/inc/font-styles.php';
 require get_template_directory() . '/inc/admin/assets-functions.php';
 require get_template_directory() . '/inc/dashboard-functions.php';
 require get_template_directory() . '/inc/assets-functions.php';
@@ -103,6 +103,7 @@ function prm_redirect_logged_in_from_portal()
 }
 // add_action('template_redirect', 'prm_redirect_logged_in_from_portal');
 
+// FIXME Double redirect, it's erasing warning/error messages on the page
 // Redirect Users Trying to Manually Access /wp-login.php
 function prm_redirect_wp_login()
 {
@@ -159,6 +160,7 @@ function prm_redirect_on_failed_login($username)
 
     if (!empty($referrer) && strpos($referrer, 'partner-portal') !== false) {
         wp_redirect(add_query_arg('login', 'failed', $referrer));
+        // var_dump($referrer);
         exit;
     }
 }

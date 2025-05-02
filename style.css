@@ -1,3 +1,16 @@
+/*
+Theme Name: WP PRM Custom Theme
+Theme URI: http://terrabytegroup.com/
+Author: Terrabyte Group
+Author URI: http://terrabytegroup.com/
+Description: A custom theme developed for PRM in Terrabyte Group.
+Version: 0.0.2
+*/
+
+* {
+    box-sizing: border-box;
+}
+
 body {
     font-family: 'Urbanist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 }
