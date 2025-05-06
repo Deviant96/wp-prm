@@ -136,7 +136,7 @@ if (!in_array('partner_manager', $current_user->roles) && !in_array('administrat
         const form = e.target;
         const formData = new FormData(form);
 
-        fetch('/prm-wp/wp-admin/admin-ajax.php?action=save_asset', {
+        fetch('/wp-admin/admin-ajax.php?action=save_asset', {
                 method: 'POST',
                 body: formData
             })
@@ -173,7 +173,7 @@ if (!in_array('partner_manager', $current_user->roles) && !in_array('administrat
 <script>
     function deleteAsset(id) {
         if (confirm('Are you sure you want to delete this asset?')) {
-            fetch(`/prm-wp/wp-admin/admin-ajax.php?action=delete_asset&id=${id}`, {
+            fetch(`/wp-admin/admin-ajax.php?action=delete_asset&id=${id}`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

@@ -24,7 +24,7 @@
     <!-- Upcoming Featured Event -->
     <div class="relative w-full rounded-2xl overflow-hidden bg-gray-100 dark:bg-gray-800 mb-4 shadow-lg">
         <div class="absolute inset-0 bg-gradient-to-br from-blue-500 to-blue-700 opacity-50"></div>
-        <img src="http://localhost/prm-wp/wp-content/uploads/2025/04/10.The-Critical-Role-of-SSL-in-Preventing-Security-Failures_-Lesson-from-Case-Studies-300x169.png" alt="Upcoming Event Banner" class="w-full h-64 object-cover opacity-80" />
+        <img src="<?php get_template_directory_uri() . '/assets/images/events-bg.'; ?>'" alt="" class="w-full h-64 object-cover opacity-80" />
         <div class="absolute inset-0 bg-gradient-to-br from-black/60 to-transparent flex flex-col justify-end p-6 text-white">
             <h2 class="text-2xl font-semibold">Upcoming Event: Partner Growth Summit</h2>
             <p class="text-sm">April 30, 2025 – Singapore</p>
@@ -80,7 +80,7 @@ document.addEventListener('DOMContentLoaded', () => {
             value: cb.value
         }));
 
-        fetch(`/prm-wp/wp-json/prm/v1/events`, {
+        fetch(`/wp-json/prm/v1/events`, {
             method: "POST",
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ search, range, filters })

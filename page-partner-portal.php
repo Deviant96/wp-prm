@@ -104,7 +104,7 @@
                 spinner.classList.remove('hidden');
                 isLoading = true;
 
-                fetch(`/prm-wp/wp-json/prm/v1/tab?tab=${tab}`)
+                fetch(`/wp-json/prm/v1/tab?tab=${tab}`)
                     .then(res => res.text())
                     .then(html => {
                         cache.set(tab, html);
