@@ -165,6 +165,10 @@ set_query_var('current_user', $current_user);
                 case 'events':
                     get_template_part('template-parts/dashboard/dashboard', 'events');
                     break;
+                
+                case 'events-manage':
+                    get_template_part('template-parts/dashboard/events/manage');
+                    break;
 
                 case 'assets':
                     echo '<h2>My Assets</h2>';
