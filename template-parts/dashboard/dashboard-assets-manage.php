@@ -6,82 +6,369 @@ if (!in_array('partner_manager', $current_user->roles) && !in_array('administrat
     echo '<p class="text-red-500">Access Denied.</p>';
     return;
 }
-
-// Handle Add/Edit/Delete logic here or via separate AJAX endpoints
-// For now, focus on UI
 ?>
 
 <div class="space-y-6">
     <!-- Header & Add Button -->
     <div class="flex justify-between items-center">
-        <h2 class="text-2xl font-bold">Manage Assets</h2>
-        <button onclick="toggleAssetForm()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
+        <h2 class="text-2xl font-bold text-gray-800 dark:text-white">Manage Assets</h2>
+        <button id="show-asset-form" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
             Add New Asset
         </button>
     </div>
 
     <!-- Add/Edit Form -->
-    <div id="assetFormContainer" class="hidden bg-gray-50 dark:bg-gray-800 p-4 rounded shadow">
-        <form id="assetForm" class="space-y-4">
+    <div id="assetFormContainer" class="hidden bg-gray-50 dark:bg-gray-800 p-6 rounded-lg shadow">
+        <h3 class="text-xl font-semibold mb-4 text-gray-800 dark:text-white">Add New Asset</h3>
+        <form id="assetForm" class="space-y-4" enctype="multipart/form-data">
             <input type="hidden" name="asset_id" id="asset_id" value="">
-            <div>
-                <label class="block font-medium">Asset Name</label>
-                <input type="text" name="asset_name" id="asset_name" class="w-full p-2 rounded border">
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Asset Name -->
+                <div>
+                    <label for="asset_name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Asset Name*</label>
+                    <input type="text" name="asset_name" id="asset_name" required
+                           class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                </div>
+                
+                <!-- Document Type -->
+                <div>
+                    <label for="asset_doc_type" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Document Type*</label>
+                    <select name="asset_doc_type" id="asset_doc_type" required
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                        <option value="">Select Document Type</option>
+                        <?php
+                        $doc_types = get_terms(array(
+                            'taxonomy' => 'doc_type',
+                            'hide_empty' => false,
+                        ));
+                        
+                        foreach ($doc_types as $type) {
+                            echo '<option value="' . $type->term_id . '" data-field-type="' . get_term_meta($type->term_id, 'doc_type_field_type', true) . '">' . $type->name . '</option>';
+                        }
+                        ?>
+                    </select>
+                </div>
+                
+                <!-- Language -->
+                <div>
+                    <label for="asset_language" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Language*</label>
+                    <select name="asset_language" id="asset_language" required
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                        <option value="">Select Language</option>
+                        <?php
+                        $languages = get_terms([
+                            'taxonomy' => 'language',
+                            'hide_empty' => false,
+                        ]);
+                        
+                        foreach ($languages as $language) {
+                            $language_code = get_post_meta($language->ID, 'language_code', true);
+                            echo '<option value="' . esc_attr($language_code ?: $language->name) . '">' . esc_html($language->name) . '</option>';
+                        }
+                        ?>
+                    </select>
+                </div>
+                
+                <!-- Tags -->
+                <div>
+                    <label for="asset_tags" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Tags</label>
+                    <input type="text" name="asset_tags" id="asset_tags" 
+                           class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                           placeholder="Comma separated tags">
+                </div>
             </div>
-            <div>
-                <label class="block font-medium">Tags (comma separated)</label>
-                <input type="text" name="asset_tags" id="asset_tags" class="w-full p-2 rounded border">
+            
+            <!-- Dynamic Content Field (changes based on document type) -->
+            <div id="asset-content-field">
+                <div class="bg-gray-100 dark:bg-gray-700 p-4 rounded text-center text-gray-500 dark:text-gray-300">
+                    Please select a document type to see specific requirements
+                </div>
             </div>
-            <div>
-                <label class="block font-medium">Asset File</label>
-                <input type="file" name="asset_file" id="asset_file" class="w-full">
+            
+            <!-- Additional Fields -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Status -->
+                <div>
+                    <label for="asset_status" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Status</label>
+                    <select name="asset_status" id="asset_status"
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                        <option value="draft">Draft</option>
+                        <option value="published" selected>Published</option>
+                        <option value="archived">Archived</option>
+                    </select>
+                </div>
+                
+                <!-- Publish Date -->
+                <div>
+                    <label for="asset_publish_date" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Publish Date</label>
+                    <input type="date" name="asset_publish_date" id="asset_publish_date"
+                           class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                </div>
             </div>
+            
+            <!-- Description -->
+            <div>
+                <label for="asset_description" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Description</label>
+                <textarea name="asset_description" id="asset_description" rows="3"
+                          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"></textarea>
+            </div>
+            
+            <input type="hidden" name="action" value="save_asset">
+            <?php wp_nonce_field('save_asset_nonce', 'security'); ?>
+            
             <div class="flex justify-end gap-2">
-                <button type="button" id="cancelAssetBtn" class="text-gray-600 hover:underline">Cancel</button>
-                <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Save</button>
+                <button type="button" id="cancelAssetBtn" class="px-4 py-2 text-gray-600 hover:text-gray-800 dark:text-gray-300 dark:hover:text-white">
+                    Cancel
+                </button>
+                <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition">
+                    Save Asset
+                </button>
             </div>
         </form>
     </div>
 
-    <form id="asset-form" class="hidden bg-white dark:bg-gray-800 p-4 rounded shadow" onsubmit="submitAssetForm(event)">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <input type="text" name="asset_name" placeholder="Asset Name" class="input" required />
-            <input type="url" name="asset_url" placeholder="Asset URL" class="input" required />
-            <input type="text" name="asset_tags" placeholder="Tags (comma-separated)" class="input" />
-            <input type="file" name="asset_image" class="input" />
-        </div>
-        <button type="submit" class="mt-4 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Save</button>
-    </form>
-
     <!-- Assets Table -->
-    <div class="overflow-auto rounded shadow">
-        <table class="w-full table-auto text-left text-sm">
+    <div class="overflow-auto rounded-lg shadow">
+        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
             <thead class="bg-gray-100 dark:bg-gray-700">
                 <tr>
-                    <th class="p-2">ID</th>
-                    <th class="p-2">Name</th>
-                    <th class="p-2">Type</th>
-                    <th class="p-2">Language</th>
-                    <th class="p-2">Date</th>
-                    <th class="p-2 text-right">Actions</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">ID</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Name</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Type</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Language</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Date</th>
+                    <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Actions</th>
                 </tr>
             </thead>
-            <tbody id="assets-table-body2" class="bg-white dark:bg-gray-900 divide-y">
-                <!-- Assets list -->
+            <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                <?php
+                $assets = get_posts(array(
+                    'post_type' => 'tbyte_prm_assets',
+                    'posts_per_page' => 10,
+                    'orderby' => 'date',
+                    'order' => 'DESC'
+                ));
+                
+                foreach ($assets as $asset) {
+                    $doc_type = wp_get_post_terms($asset->ID, 'doc_type');
+                    $doc_type_name = !empty($doc_type) ? $doc_type[0]->name : 'N/A';
+                    $language = get_post_meta($asset->ID, 'language', true);
+                    ?>
+                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white"><?php echo $asset->ID; ?></td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                            <a href="<?php echo get_permalink($asset->ID); ?>" class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300">
+                                <?php echo get_the_title($asset->ID); ?>
+                            </a>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300"><?php echo $doc_type_name; ?></td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300"><?php echo strtoupper($language); ?></td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300"><?php echo get_the_date('Y-m-d', $asset->ID); ?></td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <button class="edit-asset text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 mr-3" 
+                                    data-asset-id="<?php echo $asset->ID; ?>">Edit</button>
+                            <button class="delete-asset text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300" 
+                                    data-asset-id="<?php echo $asset->ID; ?>">Delete</button>
+                        </td>
+                    </tr>
+                    <?php
+                }
+                ?>
             </tbody>
-            <tfoot class="bg-gray-100 dark:bg-gray-700">
-                <tr>
-                    <td colspan="6" class="p-2 text-center text-gray-500">
-                        <div id="asset-pagination" class="flex justify-center mt-4">
-                        </div>
-                    </td>
-                </tr>
-            </tfoot>
         </table>
     </div>
-
-
 </div>
+
+<script>
+jQuery(document).ready(function($) {
+    // Toggle asset form
+    jQuery('#show-asset-form').on('click', function() {
+        $('#assetFormContainer').removeClass('hidden');
+        $(this).addClass('hidden');
+    });
+    
+    jQuery('#cancelAssetBtn').on('click', function() {
+        $('#assetFormContainer').addClass('hidden');
+        $('#show-asset-form').removeClass('hidden');
+        $('#assetForm')[0].reset();
+        $('#asset-content-field').html('<div class="bg-gray-100 dark:bg-gray-700 p-4 rounded text-center text-gray-500 dark:text-gray-300">Please select a document type to see specific requirements</div>');
+    });
+    
+    // Dynamic field based on document type
+    jQuery('#asset_doc_type').on('change', function() {
+        var fieldType = $(this).find('option:selected').data('field-type');
+        var fieldHtml = '';
+        
+        switch(fieldType) {
+            case 'text':
+                fieldHtml = `
+                    <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Content*</label>
+                        <textarea name="asset_content" required rows="5" 
+                                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"></textarea>
+                        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Enter the text content for this asset.</p>
+                    </div>
+                `;
+                break;
+                
+            case 'url':
+                fieldHtml = `
+                    <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">URL*</label>
+                        <input type="url" name="asset_content" required 
+                               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                               placeholder="https://example.com">
+                        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Enter the URL for this asset.</p>
+                    </div>
+                `;
+                break;
+                
+            case 'image':
+                fieldHtml = `
+                    <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Image File* (.jpg, .png, .gif)</label>
+                        <input type="file" name="asset_content" accept=".jpg,.jpeg,.png,.gif" required 
+                               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 dark:file:bg-gray-600 dark:file:text-gray-100">
+                        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Upload an image file (JPG, PNG, or GIF).</p>
+                    </div>
+                `;
+                break;
+                
+            case 'pdf':
+                fieldHtml = `
+                    <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">PDF File* (.pdf)</label>
+                        <input type="file" name="asset_content" accept=".pdf" required 
+                               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 dark:file:bg-gray-600 dark:file:text-gray-100">
+                        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Upload a PDF document.</p>
+                    </div>
+                `;
+                break;
+                
+            case 'document':
+                fieldHtml = `
+                    <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Document File* (.doc, .docx, .pdf)</label>
+                        <input type="file" name="asset_content" accept=".doc,.docx,.pdf" required 
+                               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 dark:file:bg-gray-600 dark:file:text-gray-100">
+                        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Upload a document (DOC, DOCX, or PDF).</p>
+                    </div>
+                `;
+                break;
+                
+            default:
+                fieldHtml = '<div class="bg-gray-100 dark:bg-gray-700 p-4 rounded text-center text-gray-500 dark:text-gray-300">Please select a document type to see specific requirements</div>';
+        }
+        
+        jQuery('#asset-content-field').html(fieldHtml);
+    });
+    
+    // Handle form submission
+    jQuery('#assetForm').on('submit', function(e) {
+        console.error('Form submitting...');
+        e.preventDefault();
+        
+        var formData = new FormData(this);
+        
+        console.error('Form data:', formData);
+        
+        $.ajax({
+            url: ajaxurl,
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(response) {
+                if (response.success) {
+                    alert('Asset saved successfully!');
+                    location.reload();
+                } else {
+                    alert('Error: ' + response.data);
+                }
+            }
+        });
+    });
+    
+    // Delete asset
+    jQuery('.delete-asset').on('click', function() {
+        if (!confirm('Are you sure you want to delete this asset?')) {
+            return;
+        }
+        
+        var assetId = $(this).data('asset-id');
+        
+        $.ajax({
+            url: ajaxurl,
+            type: 'POST',
+            data: {
+                action: 'delete_asset',
+                asset_id: assetId,
+                security: $('#asset_nonce').val()
+            },
+            success: function(response) {
+                if (response.success) {
+                    alert('Asset deleted successfully!');
+                    location.reload();
+                } else {
+                    alert('Error: ' + response.data);
+                }
+            }
+        });
+    });
+});
+</script>
+
+<script>
+    // Load asset data for editing
+    jQuery('.edit-asset').on('click', function() {
+        var assetId = $(this).data('asset-id');
+        
+        $.ajax({
+            url: ajaxurl,
+            type: 'POST',
+            data: {
+                action: 'get_asset_data',
+                asset_id: assetId,
+                security: $('#asset_nonce').val()
+            },
+            success: function(response) {
+                if (response.success) {
+                    var asset = response.data;
+                    
+                    // Populate form fields
+                    $('#asset_id').val(asset.asset_id);
+                    $('#asset_name').val(asset.asset_name);
+                    $('#asset_doc_type').val(asset.asset_doc_type).trigger('change');
+                    $('#asset_language').val(asset.asset_language);
+                    $('#asset_tags').val(asset.asset_tags);
+                    $('#asset_status').val(asset.asset_status);
+                    $('#asset_publish_date').val(asset.asset_publish_date);
+                    $('#asset_description').val(asset.asset_description);
+                    
+                    // Set content field based on type (after a small delay to ensure field is created)
+                    setTimeout(function() {
+                        if (asset.field_type === 'text' || asset.field_type === 'url') {
+                            $('[name="asset_content"]').val(asset.asset_content);
+                        }
+                        // For file types, we can't pre-populate the file input due to browser security
+                    }, 100);
+                    
+                    // Show form
+                    $('#assetFormContainer').removeClass('hidden');
+                    $('#show-asset-form').addClass('hidden');
+                } else {
+                    alert('Error: ' + response.data);
+                }
+            }
+        });
+    });
+
+    // Initialize date picker to today if empty
+    if (!jQuery('#asset_publish_date').val()) {
+        jQuery('#asset_publish_date').val(new Date().toISOString().substr(0, 10));
+    }
+</script>
 
 <script>
     document.addEventListener('DOMContentLoaded', () => {
@@ -136,7 +423,7 @@ if (!in_array('partner_manager', $current_user->roles) && !in_array('administrat
         const form = e.target;
         const formData = new FormData(form);
 
-        fetch('/wp-admin/admin-ajax.php?action=save_asset', {
+        fetch(ajax_object.ajax_url + `?action=save_asset`, {
                 method: 'POST',
                 body: formData
             })
@@ -173,7 +460,7 @@ if (!in_array('partner_manager', $current_user->roles) && !in_array('administrat
 <script>
     function deleteAsset(id) {
         if (confirm('Are you sure you want to delete this asset?')) {
-            fetch(`/wp-admin/admin-ajax.php?action=delete_asset&id=${id}`, {
+            fetch(ajax_object.ajax_url + `?action=delete_asset&id=${id}`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -228,7 +515,7 @@ if (!in_array('partner_manager', $current_user->roles) && !in_array('administrat
             showLoading('assets-table-body2', 5, 6); // Show loading state
 
             try {
-                const response = await fetch(ajax_object.ajax_url + `/wp-admin/admin-ajax.php?action=get_assets&paged=${page}&posts_per_page=${perPage}`);
+                const response = await fetch(ajax_object.ajax_url + `?action=get_assets&paged=${page}&posts_per_page=${perPage}`);
                 const data = await response.json();
 
                 if (!data.success) {

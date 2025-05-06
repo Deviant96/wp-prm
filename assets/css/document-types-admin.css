@@ -1,0 +1,48 @@
+.document-types-dashboard {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 20px;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.document-types-dashboard .form-group {
+    margin-bottom: 15px;
+}
+
+.document-types-dashboard label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.document-types-dashboard input[type="text"],
+.document-types-dashboard textarea,
+.document-types-dashboard select {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.document-types-dashboard textarea {
+    min-height: 100px;
+}
+
+.document-types-dashboard .description {
+    font-size: 0.9em;
+    color: #666;
+    margin-top: 5px;
+}
+
+.button-danger {
+    background: #dc3232;
+    border-color: #dc3232;
+    color: white;
+}
+
+.button-danger:hover {
+    background: #a00;
+    border-color: #a00;
+    color: white;
+}

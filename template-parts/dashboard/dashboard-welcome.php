@@ -21,7 +21,7 @@
         <div class="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             <?php
             $assets = new WP_Query([
-                'post_type' => 'assets',
+                'post_type' => 'tbyte_prm_assets',
                 'posts_per_page' => 4,
             ]);
             if ($assets->have_posts()):
@@ -57,7 +57,7 @@
         <div class="col-span-2 space-y-4">
             <?php
             $args = [
-                'post_type' => 'events',
+                'post_type' => 'tbyte_prm_events',
                 'posts_per_page' => 4,
                 'meta_key' => '_event_date',
                 'orderby' => 'meta_value',

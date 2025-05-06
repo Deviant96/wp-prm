@@ -1,64 +1,4 @@
 <?php
-// Register 'doc_type' taxonomy for 'asset' CPT
-function register_doc_type_taxonomy() {
-    $labels = array(
-        'name'              => 'Document Types',
-        'singular_name'     => 'Document Type',
-        'search_items'      => 'Search Document Types',
-        'all_items'         => 'All Document Types',
-        'parent_item'       => 'Parent Document Type',
-        'parent_item_colon' => 'Parent Document Type:',
-        'edit_item'         => 'Edit Document Type',
-        'update_item'       => 'Update Document Type',
-        'add_new_item'      => 'Add New Document Type',
-        'new_item_name'     => 'New Document Type Name',
-        'menu_name'         => 'Document Type',
-    );
-
-    $args = array(
-        'hierarchical'      => true, // Makes it behave like categories
-        'labels'            => $labels,
-        'show_ui'           => true,
-        'show_admin_column' => true,
-        'query_var'         => true,
-        'rewrite'           => array('slug' => 'doc-type'),
-    );
-
-    register_taxonomy('doc_type', array('assets'), $args);
-}
-add_action('init', 'register_doc_type_taxonomy');
-
-// Register 'language' taxonomy for 'asset' CPT
-function register_language_taxonomy() {
-    $labels = array(
-        'name'              => 'Languages',
-        'singular_name'     => 'Language',
-        'search_items'      => 'Search Languages',
-        'all_items'         => 'All Languages',
-        'parent_item'       => 'Parent Language',
-        'parent_item_colon' => 'Parent Language:',
-        'edit_item'         => 'Edit Language',
-        'update_item'       => 'Update Language',
-        'add_new_item'      => 'Add New Language',
-        'new_item_name'     => 'New Language Name',
-        'menu_name'         => 'Language',
-    );
-
-    $args = array(
-        'hierarchical'      => true, // Makes it behave like categories
-        'labels'            => $labels,
-        'show_ui'           => true,
-        'show_admin_column' => true,
-        'query_var'         => true,
-        'rewrite'           => array('slug' => 'language'),
-    );
-
-    register_taxonomy('language', array('assets'), $args);
-}
-add_action('init', 'register_language_taxonomy');
-
-
-
 function prm_ajax_load_assets() {
     check_ajax_referer('prm_ajax_nonce', 'nonce');
 
@@ -71,7 +11,7 @@ function prm_ajax_load_assets() {
 
     $tax_query = [];
     $args = [
-        'post_type' => 'assets',
+        'post_type' => 'tbyte_prm_assets',
         's' => $search,
         'posts_per_page' => $posts_per_page,
         'paged' => $paged
@@ -128,3 +68,619 @@ function prm_ajax_load_assets() {
 }
 add_action('wp_ajax_prm_load_assets', 'prm_ajax_load_assets');
 add_action('wp_ajax_nopriv_prm_load_assets', 'prm_ajax_load_assets');
+
+// Handle AJAX requests for document types
+add_action('wp_ajax_get_document_type_data', 'handle_get_document_type_data');
+add_action('wp_ajax_create_document_type', 'handle_create_document_type');
+add_action('wp_ajax_update_document_type', 'handle_update_document_type');
+add_action('wp_ajax_delete_document_type', 'handle_delete_document_type');
+
+
+// Unused?
+function handle_get_document_type_data() {
+    check_ajax_referer('update_document_type_nonce', 'security');
+    
+    if (!current_user_can('manage_options') && !current_user_can('manage_document_types')) {
+        wp_send_json_error('You do not have permission to perform this action.');
+    }
+    
+    $term_id = isset($_POST['term_id']) ? intval($_POST['term_id']) : 0;
+    
+    if (!$term_id) {
+        wp_send_json_error('Invalid term ID.');
+    }
+    
+    $term = get_term($term_id, 'doc_type');
+    $field_type = get_term_meta($term_id, 'doc_type_field_type', true);
+    
+    if (is_wp_error($term)) {
+        wp_send_json_error($term->get_error_message());
+    }
+    
+    wp_send_json_success(array(
+        'term_id' => $term->term_id,
+        'name' => $term->name,
+        'slug' => $term->slug,
+        'parent' => $term->parent,
+        'description' => $term->description,
+        'field_type' => $field_type ? $field_type : 'text'
+    ));
+}
+
+function handle_create_document_type() {
+    check_ajax_referer('create_document_type_nonce', 'document_type_nonce');
+    
+    if (!current_user_can('manage_options') && !current_user_can('manage_document_types')) {
+        wp_send_json_error('You do not have permission to perform this action.');
+    }
+    
+    $name = isset($_POST['name']) ? sanitize_text_field($_POST['name']) : '';
+    $slug = isset($_POST['slug']) ? sanitize_title($_POST['slug']) : '';
+    $parent = isset($_POST['parent']) ? intval($_POST['parent']) : 0;
+    $description = isset($_POST['description']) ? sanitize_textarea_field($_POST['description']) : '';
+    $field_type = isset($_POST['field_type']) ? sanitize_text_field($_POST['field_type']) : 'text';
+    
+    if (empty($name)) {
+        wp_send_json_error('Name is required.');
+    }
+    
+    $result = wp_insert_term($name, 'doc_type', array(
+        'slug' => $slug,
+        'parent' => $parent,
+        'description' => $description
+    ));
+    
+    if (is_wp_error($result)) {
+        wp_send_json_error($result->get_error_message());
+    }
+    
+    // Save the field type
+    update_term_meta($result['term_id'], 'doc_type_field_type', $field_type);
+    
+    wp_send_json_success('Document type created successfully.');
+}
+
+function handle_update_document_type() {
+    check_ajax_referer('update_document_type_nonce', 'document_type_nonce');
+    
+    if (!current_user_can('manage_options')) {
+        wp_send_json_error('You do not have permission to perform this action.');
+    }
+    
+    $term_id = isset($_POST['term_id']) ? intval($_POST['term_id']) : 0;
+    $name = isset($_POST['name']) ? sanitize_text_field($_POST['name']) : '';
+    $slug = isset($_POST['slug']) ? sanitize_title($_POST['slug']) : '';
+    $parent = isset($_POST['parent']) ? intval($_POST['parent']) : 0;
+    $description = isset($_POST['description']) ? sanitize_textarea_field($_POST['description']) : '';
+    
+    if (empty($name)) {
+        wp_send_json_error('Name is required.');
+    }
+    
+    if (!$term_id) {
+        wp_send_json_error('Invalid term ID.');
+    }
+    
+    $result = wp_update_term($term_id, 'doc_type', array(
+        'name' => $name,
+        'slug' => $slug,
+        'parent' => $parent,
+        'description' => $description
+    ));
+    
+    if (is_wp_error($result)) {
+        wp_send_json_error($result->get_error_message());
+    }
+    
+    wp_send_json_success('Document type updated successfully.');
+}
+
+function handle_delete_document_type() {
+    check_ajax_referer('update_document_type_nonce', 'security');
+    
+    if (!current_user_can('manage_options')) {
+        wp_send_json_error('You do not have permission to perform this action.');
+    }
+    
+    $term_id = isset($_POST['term_id']) ? intval($_POST['term_id']) : 0;
+    
+    if (!$term_id) {
+        wp_send_json_error('Invalid term ID.');
+    }
+    
+    $result = wp_delete_term($term_id, 'doc_type');
+    
+    if (is_wp_error($result)) {
+        wp_send_json_error($result->get_error_message());
+    }
+    
+    if (!$result) {
+        wp_send_json_error('Failed to delete document type.');
+    }
+    
+    wp_send_json_success('Document type deleted successfully.');
+}
+
+// Add custom field to taxonomy term
+function add_doc_type_field_type() {
+    ?>
+    <div class="form-field">
+        <label for="doc-type-field-type">Field Type</label>
+        <select name="doc_type_field_type" id="doc-type-field-type">
+            <option value="text">Text</option>
+            <option value="url">URL</option>
+            <option value="image">Image (.jpg, .png, .gif)</option>
+            <option value="pdf">PDF (.pdf)</option>
+            <option value="document">Document (.doc, .docx, .pdf)</option>
+        </select>
+        <p>The type of field required for this document type.</p>
+    </div>
+    <?php
+}
+add_action('doc_type_add_form_fields', 'add_doc_type_field_type');
+
+// Edit custom field in taxonomy term
+function edit_doc_type_field_type($term) {
+    $field_type = get_term_meta($term->term_id, 'doc_type_field_type', true);
+    ?>
+    <tr class="form-field">
+        <th scope="row"><label for="doc-type-field-type">Field Type</label></th>
+        <td>
+            <select name="doc_type_field_type" id="doc-type-field-type">
+                <option value="text" <?php selected($field_type, 'text'); ?>>Text</option>
+                <option value="url" <?php selected($field_type, 'url'); ?>>URL</option>
+                <option value="image" <?php selected($field_type, 'image'); ?>>Image (.jpg, .png, .gif)</option>
+                <option value="pdf" <?php selected($field_type, 'pdf'); ?>>PDF (.pdf)</option>
+                <option value="document" <?php selected($field_type, 'document'); ?>>Document (.doc, .docx, .pdf)</option>
+            </select>
+            <p class="description">The type of field required for this document type.</p>
+        </td>
+    </tr>
+    <?php
+}
+add_action('doc_type_edit_form_fields', 'edit_doc_type_field_type');
+
+// Save custom field data
+function save_doc_type_field_type($term_id) {
+    if (isset($_POST['doc_type_field_type'])) {
+        update_term_meta($term_id, 'doc_type_field_type', sanitize_text_field($_POST['doc_type_field_type']));
+    }
+}
+add_action('created_doc_type', 'save_doc_type_field_type');
+add_action('edited_doc_type', 'save_doc_type_field_type');
+
+function document_upload_form() {
+    ob_start();
+    
+    // Get all document types
+    $doc_types = get_terms(array(
+        'taxonomy' => 'doc_type',
+        'hide_empty' => false,
+    ));
+    
+    ?>
+    <div class="space-y-6">
+        <h2 class="text-2xl font-bold text-gray-800 dark:text-white">Add New Document</h2>
+        
+        <form id="document-upload-form" class="space-y-4" enctype="multipart/form-data">
+            <div>
+                <label for="document-title" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Title*</label>
+                <input type="text" id="document-title" name="title" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+            </div>
+            
+            <div>
+                <label for="document-type" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Document Type*</label>
+                <select id="document-type" name="document_type" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                    <option value="">Select a document type</option>
+                    <?php foreach ($doc_types as $type) : 
+                        $field_type = get_term_meta($type->term_id, 'doc_type_field_type', true);
+                    ?>
+                        <option value="<?php echo $type->term_id; ?>" data-field-type="<?php echo $field_type; ?>">
+                            <?php echo $type->name; ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+            
+            <!-- Dynamic field based on document type -->
+            <div id="document-content-field">
+                <!-- Field will be dynamically inserted here based on selection -->
+            </div>
+            
+            <?php wp_nonce_field('upload_document_nonce', 'document_nonce'); ?>
+            <input type="hidden" name="action" value="upload_document">
+            
+            <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition">
+                Save Document
+            </button>
+        </form>
+    </div>
+    
+    <script>
+    jQuery(document).ready(function($) {
+        $('#document-type').on('change', function() {
+            var fieldType = $(this).find('option:selected').data('field-type');
+            var fieldHtml = '';
+            
+            switch(fieldType) {
+                case 'text':
+                    fieldHtml = `
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Content*</label>
+                        <textarea name="content" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"></textarea>
+                    `;
+                    break;
+                    
+                case 'url':
+                    fieldHtml = `
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">URL*</label>
+                        <input type="url" name="content" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                    `;
+                    break;
+                    
+                case 'image':
+                    fieldHtml = `
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Image File* (JPG, PNG, GIF)</label>
+                        <input type="file" name="content" accept=".jpg,.jpeg,.png,.gif" required class="mt-1 block w-full">
+                    `;
+                    break;
+                    
+                case 'pdf':
+                    fieldHtml = `
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">PDF File* (.pdf)</label>
+                        <input type="file" name="content" accept=".pdf" required class="mt-1 block w-full">
+                    `;
+                    break;
+                    
+                case 'document':
+                    fieldHtml = `
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Document File* (.doc, .docx, .pdf)</label>
+                        <input type="file" name="content" accept=".doc,.docx,.pdf" required class="mt-1 block w-full">
+                    `;
+                    break;
+                    
+                default:
+                    fieldHtml = '<p>Please select a document type</p>';
+            }
+            
+            $('#document-content-field').html(fieldHtml);
+        });
+    });
+    </script>
+    <?php
+    
+    return ob_get_clean();
+}
+add_shortcode('document_upload_form', 'document_upload_form');
+
+
+add_action('wp_ajax_upload_document', 'handle_upload_document');
+add_action('wp_ajax_nopriv_upload_document', 'handle_upload_document');
+
+function handle_upload_document() {
+    check_ajax_referer('upload_document_nonce', 'document_nonce');
+    
+    if (!is_user_logged_in() || !current_user_can('edit_posts')) {
+        wp_send_json_error('You do not have permission to perform this action.');
+    }
+    
+    $title = isset($_POST['title']) ? sanitize_text_field($_POST['title']) : '';
+    $doc_type_id = isset($_POST['document_type']) ? intval($_POST['document_type']) : 0;
+    
+    if (empty($title) || !$doc_type_id) {
+        wp_send_json_error('Title and document type are required.');
+    }
+
+    $doc_type = get_term($doc_type_id, 'doc_type');
+    if (is_wp_error($doc_type)) {
+        wp_send_json_error('Invalid document type.');
+    }
+    
+    $field_type = get_term_meta($doc_type_id, 'doc_type_field_type', true);
+    $content = '';
+    
+    // Handle different field types
+    switch ($field_type) {
+        case 'text':
+            $content = isset($_POST['content']) ? sanitize_textarea_field($_POST['content']) : '';
+            if (empty($content)) {
+                wp_send_json_error('Content is required.');
+            }
+            break;
+            
+        case 'url':
+            $content = isset($_POST['content']) ? esc_url_raw($_POST['content']) : '';
+            if (empty($content) || !filter_var($content, FILTER_VALIDATE_URL)) {
+                wp_send_json_error('Please enter a valid URL.');
+            }
+            break;
+            
+        case 'image':
+        case 'pdf':
+        case 'document':
+            if (empty($_FILES['content'])) {
+                wp_send_json_error('Please upload a file.');
+            }
+            
+            $file = $_FILES['content'];
+            $allowed_types = [];
+            
+            switch ($field_type) {
+                case 'image':
+                    $allowed_types = ['image/jpeg', 'image/png', 'image/gif'];
+                    break;
+                case 'pdf':
+                    $allowed_types = ['application/pdf'];
+                    break;
+                case 'document':
+                    $allowed_types = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+                    break;
+            }
+            
+            // Check file type
+            $filetype = wp_check_filetype($file['name']);
+            if (!in_array($filetype['type'], $allowed_types)) {
+                wp_send_json_error('Invalid file type. Please upload the correct file format.');
+            }
+            
+            // Upload file
+            $upload = wp_upload_bits($file['name'], null, file_get_contents($file['tmp_name']));
+            if ($upload['error']) {
+                wp_send_json_error('Error uploading file: ' . $upload['error']);
+            }
+            
+            $content = $upload['url'];
+            break;
+    }
+    
+    // Create the post
+    $post_id = wp_insert_post(array(
+        'post_title' => $title,
+        'post_type' => 'tbyte_prm_assets',
+        'post_status' => 'publish',
+        'post_content' => $content,
+    ));
+    
+    if (is_wp_error($post_id)) {
+        wp_send_json_error('Error creating document: ' . $post_id->get_error_message());
+    }
+    
+    // Assign the document type
+    wp_set_object_terms($post_id, $doc_type_id, 'doc_type');
+    
+    wp_send_json_success(array(
+        'message' => 'Document created successfully!',
+        'redirect' => get_permalink($post_id)
+    ));
+}
+
+
+add_action('wp_ajax_save_asset', 'handle_save_asset');
+function handle_save_asset() {
+    check_ajax_referer('save_asset_nonce', 'security');
+
+    if (!current_user_can('edit_posts')) {
+        wp_send_json_error('You do not have permission to perform this action.');
+    }
+
+    $asset_id = isset($_POST['asset_id']) ? intval($_POST['asset_id']) : 0;
+    $title = isset($_POST['asset_name']) ? sanitize_text_field($_POST['asset_name']) : '';
+    $doc_type_id = isset($_POST['asset_doc_type']) ? intval($_POST['asset_doc_type']) : 0;
+    $language = isset($_POST['asset_language']) ? sanitize_text_field($_POST['asset_language']) : '';
+    $tags = isset($_POST['asset_tags']) ? sanitize_text_field($_POST['asset_tags']) : '';
+    $status = isset($_POST['asset_status']) ? sanitize_text_field($_POST['asset_status']) : 'published';
+    $publish_date = isset($_POST['asset_publish_date']) ? sanitize_text_field($_POST['asset_publish_date']) : '';
+    $description = isset($_POST['asset_description']) ? sanitize_textarea_field($_POST['asset_description']) : '';
+
+    // Basic validation
+    if (empty($title) || empty($doc_type_id)) {
+        wp_send_json_error('Title and document type are required.');
+    }
+
+    // Get document type details
+    $doc_type = get_term($doc_type_id, 'doc_type');
+    if (is_wp_error($doc_type) || !$doc_type) {
+        wp_send_json_error('Invalid document type.');
+    }
+
+    $field_type = get_term_meta($doc_type_id, 'doc_type_field_type', true);
+    $content = '';
+
+    // Handle content based on field type
+    switch ($field_type) {
+        case 'text':
+            $content = isset($_POST['asset_content']) ? sanitize_textarea_field($_POST['asset_content']) : '';
+            if (empty($content)) {
+                wp_send_json_error('Content is required for this document type.');
+            }
+            break;
+
+        case 'url':
+            $content = isset($_POST['asset_content']) ? esc_url_raw($_POST['asset_content']) : '';
+            if (empty($content) || !filter_var($content, FILTER_VALIDATE_URL)) {
+                wp_send_json_error('Please enter a valid URL.');
+            }
+            break;
+
+        case 'image':
+        case 'pdf':
+        case 'document':
+            if (empty($_FILES['asset_content'])) {
+                wp_send_json_error('Please upload a file.');
+            }
+
+            $file = $_FILES['asset_content'];
+            $allowed_types = [];
+            $max_size = 5 * 1024 * 1024; // 5MB
+
+            switch ($field_type) {
+                case 'image':
+                    $allowed_types = ['image/jpeg', 'image/png', 'image/gif'];
+                    break;
+                case 'pdf':
+                    $allowed_types = ['application/pdf'];
+                    break;
+                case 'document':
+                    $allowed_types = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+                    break;
+            }
+
+            // Check file type and size
+            $filetype = wp_check_filetype($file['name']);
+            if (!in_array($filetype['type'], $allowed_types)) {
+                wp_send_json_error('Invalid file type. Please upload the correct file format.');
+            }
+
+            if ($file['size'] > $max_size) {
+                wp_send_json_error('File size exceeds maximum limit of 5MB.');
+            }
+
+            // Upload file
+            $upload = wp_upload_bits($file['name'], null, file_get_contents($file['tmp_name']));
+            if ($upload['error']) {
+                wp_send_json_error('Error uploading file: ' . $upload['error']);
+            }
+
+            $content = $upload['url'];
+            break;
+
+        default:
+            wp_send_json_error('Invalid document type configuration.');
+    }
+
+    // Prepare post data
+    $post_data = [
+        'post_title' => $title,
+        'post_content' => $content,
+        'post_status' => $status,
+        'post_type' => 'tbyte_prm_assets',
+    ];
+
+    // Set publish date if provided
+    if (!empty($publish_date)) {
+        $post_data['post_date'] = $publish_date . ' 00:00:00';
+    }
+
+    // Update or create post
+    if ($asset_id > 0) {
+        $post_data['ID'] = $asset_id;
+        $post_id = wp_update_post($post_data, true);
+    } else {
+        $post_id = wp_insert_post($post_data, true);
+    }
+
+    if (is_wp_error($post_id)) {
+        wp_send_json_error('Error saving asset: ' . $post_id->get_error_message());
+    }
+
+    // Set document type taxonomy
+    wp_set_object_terms($post_id, $doc_type_id, 'doc_type');
+
+    // Save meta fields
+    update_post_meta($post_id, 'language', $language);
+    update_post_meta($post_id, 'description', $description);
+
+    // Handle tags
+    if (!empty($tags)) {
+        $tags_array = array_map('trim', explode(',', $tags));
+        wp_set_post_tags($post_id, $tags_array, false);
+    }
+
+    wp_send_json_success([
+        'message' => 'Asset saved successfully!',
+        'post_id' => $post_id
+    ]);
+}
+
+// Unused?
+add_action('wp_ajax_get_asset_data', 'handle_get_asset_data');
+function handle_get_asset_data() {
+    check_ajax_referer('save_asset_nonce', 'security');
+
+    if (!current_user_can('edit_posts')) {
+        wp_send_json_error('You do not have permission to perform this action.');
+    }
+
+    $asset_id = isset($_POST['asset_id']) ? intval($_POST['asset_id']) : 0;
+    
+    if ($asset_id <= 0) {
+        wp_send_json_error('Invalid asset ID.');
+    }
+
+    $asset = get_post($asset_id);
+    if (!$asset || $asset->post_type !== 'tbyte_prm_assets') {
+        wp_send_json_error('Asset not found.');
+    }
+
+    // Get document type
+    $doc_types = wp_get_post_terms($asset_id, 'doc_type');
+    $doc_type_id = !empty($doc_types) ? $doc_types[0]->term_id : 0;
+    $field_type = $doc_type_id ? get_term_meta($doc_type_id, 'doc_type_field_type', true) : '';
+
+    // Get meta fields
+    $language = get_post_meta($asset_id, 'language', true);
+    $description = get_post_meta($asset_id, 'description', true);
+    $tags = wp_get_post_tags($asset_id, ['fields' => 'names']);
+    $tags_str = implode(', ', $tags);
+
+    wp_send_json_success([
+        'asset_id' => $asset_id,
+        'asset_name' => $asset->post_title,
+        'asset_doc_type' => $doc_type_id,
+        'asset_language' => $language,
+        'asset_tags' => $tags_str,
+        'asset_status' => $asset->post_status,
+        'asset_publish_date' => substr($asset->post_date, 0, 10),
+        'asset_description' => $description,
+        'asset_content' => $asset->post_content,
+        'field_type' => $field_type
+    ]);
+}
+
+add_action('wp_ajax_delete_asset', 'handle_delete_asset');
+function handle_delete_asset() {
+    check_ajax_referer('save_asset_nonce', 'security');
+
+    if (!current_user_can('delete_posts')) {
+        wp_send_json_error('You do not have permission to perform this action.');
+    }
+
+    $asset_id = isset($_POST['asset_id']) ? intval($_POST['asset_id']) : 0;
+    
+    if ($asset_id <= 0) {
+        wp_send_json_error('Invalid asset ID.');
+    }
+
+    // Check if asset exists
+    $asset = get_post($asset_id);
+    if (!$asset || $asset->post_type !== 'tbyte_prm_assets') {
+        wp_send_json_error('Asset not found.');
+    }
+
+    // Delete associated file if it's a file-based asset
+    $doc_types = wp_get_post_terms($asset_id, 'doc_type');
+    if (!empty($doc_types)) {
+        $doc_type_id = $doc_types[0]->term_id;
+        $field_type = get_term_meta($doc_type_id, 'doc_type_field_type', true);
+        
+        // If content is a file URL, delete the file
+        if (in_array($field_type, ['image', 'pdf', 'document'])) {
+            $content = $asset->post_content;
+            if (filter_var($content, FILTER_VALIDATE_URL)) {
+                $upload_dir = wp_upload_dir();
+                $file_path = str_replace($upload_dir['baseurl'], $upload_dir['basedir'], $content);
+                if (file_exists($file_path)) {
+                    unlink($file_path);
+                }
+            }
+        }
+    }
+
+    // Delete the post
+    $result = wp_delete_post($asset_id, true);
+    
+    if (!$result) {
+        wp_send_json_error('Failed to delete asset.');
+    }
+
+    wp_send_json_success('Asset deleted successfully.');
+}

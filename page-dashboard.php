@@ -167,6 +167,10 @@ set_query_var('current_user', $current_user);
                 case 'events':
                     get_template_part('template-parts/dashboard/dashboard', 'events');
                     break;
+                
+                case 'events-manage':
+                    get_template_part('template-parts/dashboard/events/manage');
+                    break;
 
                 case 'assets':
                     echo '<h2>My Assets</h2>';
@@ -175,14 +179,18 @@ set_query_var('current_user', $current_user);
                     // List downloadable assets
                     break;
 
+                case 'assets-manage':
+                    get_template_part('template-parts/dashboard/dashboard', 'assets-manage');
+                    break;
+
+                case 'assets-doc-types':
+                    get_template_part('template-parts/dashboard/assets/document', 'type');
+                    break;
+
                 case 'support':
                     echo '<h2>Support</h2>';
                     echo '<p>Support info or form here.</p>';
                     get_template_part('template-parts/dashboard/dashboard', 'support');
-                    break;
-
-                case 'assets-manage':
-                    get_template_part('template-parts/dashboard/dashboard', 'assets-manage');
                     break;
 
                 default:

@@ -30,15 +30,28 @@ $has_submenu = in_array('administrator', $current_user->roles) ? 'has-submenu' :
                     <li><a href="#"
                             class="block px-3 py-1 rounded transition-all duration-200 hover:bg-blue-100 dark:hover:bg-blue-800 text-white hover:text-[#2376bb] dark:hover:text-blue-400">Categories</a>
                     </li>
+                    <li><a href="<?php echo home_url('/?tab=assets-doc-types'); ?>"
+                            class="block px-3 py-1 rounded transition-all duration-200 hover:bg-blue-100 dark:hover:bg-blue-800 text-white hover:text-[#2376bb] dark:hover:text-blue-400">Document Types</a>
+                    </li>
                 </ul>
             <?php endif; ?>
         </li>
-        <li class="menu-item">
+        <li class="menu-item has-submenu">
             <a href="<?php echo home_url('/?tab=events'); ?>"
                 class="flex items-center gap-3 px-4 py-2 rounded transition-all duration-200 hover:bg-blue-100 dark:hover:bg-blue-800 hover:pl-5 text-white hover:text-[#2376bb] dark:hover:text-blue-400">
                 <ion-icon name="calendar-outline" class="text-xl"></ion-icon>
                 <span class="menu-text">Events</span>
             </a>
+            <?php if(in_array('administrator', $current_user->roles) || in_array('partner_manager', $current_user->roles)): ?>
+                <ul class="submenu ml-8 mt-2 space-y-1 text-sm">
+                    <li><a href="<?php echo home_url('/?tab=events-manage'); ?>"
+                            class="block px-3 py-1 rounded transition-all duration-200 hover:bg-blue-100 dark:hover:bg-blue-800 text-white hover:text-[#2376bb] dark:hover:text-blue-400">All
+                            Posts</a></li>
+                    <li><a href="#"
+                            class="block px-3 py-1 rounded transition-all duration-200 hover:bg-blue-100 dark:hover:bg-blue-800 text-white hover:text-[#2376bb] dark:hover:text-blue-400">Add
+                            New</a></li>
+                </ul>
+            <?php endif; ?>
         </li>
     </ul>
 </div>

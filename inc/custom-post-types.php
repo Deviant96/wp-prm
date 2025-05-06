@@ -1,5 +1,5 @@
 <?php
-function prm_register_cpt()
+function tbyte_prm_register_cpt()
 {
     register_post_type('partner_application', [
         'label' => 'Partner Applications',
@@ -9,10 +9,10 @@ function prm_register_cpt()
     ]);
     // Repeat for other CPTs
 }
-add_action('init', 'prm_register_cpt');
-function prm_register_cpt_events()
+add_action('init', 'tbyte_prm_register_cpt');
+function tbyte_prm_register_cpt_events()
 {
-    register_post_type('events', [
+    register_post_type('tbyte_prm_events', [
         'label' => 'Events',
         'public' => true,
         'has_archive' => true,
@@ -20,10 +20,10 @@ function prm_register_cpt_events()
         'rewrite' => ['slug' => 'events'],
     ]);
 }
-add_action('init', 'prm_register_cpt_events');
-function prm_register_cpt_assets()
+add_action('init', 'tbyte_prm_register_cpt_events');
+function tbyte_prm_register_cpt_assets()
 {
-    register_post_type('assets', [
+    register_post_type('tbyte_prm_assets', [
         'label' => 'Assets',
         'public' => true,
         'has_archive' => true,
@@ -32,9 +32,65 @@ function prm_register_cpt_assets()
         'capability_type' => 'post',
     ]);
 }
-add_action('init', 'prm_register_cpt_assets');
+add_action('init', 'tbyte_prm_register_cpt_assets');
 
-function prm_register_custom_post_types()
+function register_doc_type_taxonomy() {
+    $labels = array(
+        'name'              => 'Document Types',
+        'singular_name'     => 'Document Type',
+        'search_items'      => 'Search Document Types',
+        'all_items'         => 'All Document Types',
+        'parent_item'       => 'Parent Document Type',
+        'parent_item_colon' => 'Parent Document Type:',
+        'edit_item'         => 'Edit Document Type',
+        'update_item'       => 'Update Document Type',
+        'add_new_item'      => 'Add New Document Type',
+        'new_item_name'     => 'New Document Type Name',
+        'menu_name'         => 'Document Type',
+    );
+
+    $args = array(
+        'hierarchical'      => true, // Makes it behave like categories
+        'labels'            => $labels,
+        'show_ui'           => true,
+        'show_admin_column' => true,
+        'query_var'         => true,
+        'rewrite'           => array('slug' => 'doc-type'),
+    );
+
+    register_taxonomy('doc_type', array('assets'), $args);
+}
+add_action('init', 'register_doc_type_taxonomy');
+
+function register_language_taxonomy() {
+    $labels = array(
+        'name'              => 'Languages',
+        'singular_name'     => 'Language',
+        'search_items'      => 'Search Languages',
+        'all_items'         => 'All Languages',
+        'parent_item'       => 'Parent Language',
+        'parent_item_colon' => 'Parent Language:',
+        'edit_item'         => 'Edit Language',
+        'update_item'       => 'Update Language',
+        'add_new_item'      => 'Add New Language',
+        'new_item_name'     => 'New Language Name',
+        'menu_name'         => 'Language',
+    );
+
+    $args = array(
+        'hierarchical'      => true, // Makes it behave like categories
+        'labels'            => $labels,
+        'show_ui'           => true,
+        'show_admin_column' => true,
+        'query_var'         => true,
+        'rewrite'           => array('slug' => 'language'),
+    );
+
+    register_taxonomy('language', array('assets'), $args);
+}
+add_action('init', 'register_language_taxonomy');
+
+function tbyte_prm_register_custom_post_types()
 {
     register_post_type('prm_event', [
         'label' => 'Events',
@@ -58,25 +114,25 @@ function prm_register_custom_post_types()
         ],
     ]);
 }
-add_action('init', 'prm_register_custom_post_types');
+add_action('init', 'tbyte_prm_register_custom_post_types');
 
-function prm_register_event_fields()
+function tbyte_prm_register_event_fields()
 {
-    register_post_meta('events', 'event_date', [
+    register_post_meta('tbyte_prm_events', 'event_date', [
         'type' => 'string',
         'show_in_rest' => true,
         'single' => true,
         'sanitize_callback' => 'sanitize_text_field',
     ]);
 
-    register_post_meta('events', 'venue', [
+    register_post_meta('tbyte_prm_events', 'venue', [
         'type' => 'string',
         'show_in_rest' => true,
         'single' => true,
         'sanitize_callback' => 'sanitize_text_field',
     ]);
 }
-add_action('init', 'prm_register_event_fields');
+add_action('init', 'tbyte_prm_register_event_fields');
 
 function prm_register_support_cpt()
 {
@@ -134,22 +190,23 @@ add_action('init', 'prm_register_event_fieldss');
 
 
 
-function prm_add_event_metabox()
+function tbyte_prm_add_event_metabox()
 {
     add_meta_box(
-        'prm_event_details',
+        'tbyte_prm_event_details',
         'Event Details',
-        'prm_render_event_metabox',
-        'events', // your CPT slug
+        'tbyte_prm_render_event_metabox',
+        'tbyte_prm_events', // your CPT slug
         'normal',
         'high'
     );
 }
-add_action('add_meta_boxes', 'prm_add_event_metabox');
-function prm_render_event_metabox($post)
+add_action('add_meta_boxes', 'tbyte_prm_add_event_metabox');
+
+function tbyte_prm_render_event_metabox($post)
 {
     // Nonce for security
-    wp_nonce_field('prm_save_event_meta', 'prm_event_meta_nonce');
+    wp_nonce_field('tbyte_prm_save_event_meta', 'tbyte_prm_event_meta_nonce');
 
     // Get existing values
     $event_date = get_post_meta($post->ID, '_event_date', true);
@@ -178,10 +235,10 @@ function prm_render_event_metabox($post)
     </p>
 <?php
 }
-function prm_save_event_meta($post_id)
+function tbyte_prm_save_event_meta($post_id)
 {
     // Check nonce
-    if (!isset($_POST['prm_event_meta_nonce']) || !wp_verify_nonce($_POST['prm_event_meta_nonce'], 'prm_save_event_meta')) {
+    if (!isset($_POST['tbyte_prm_event_meta_nonce']) || !wp_verify_nonce($_POST['tbyte_prm_event_meta_nonce'], 'tbyte_prm_save_event_meta')) {
         return;
     }
 
@@ -220,4 +277,4 @@ function prm_save_event_meta($post_id)
         update_post_meta($post_id, '_event_venue', sanitize_text_field($_POST['event_venue']));
     }
 }
-add_action('save_post', 'prm_save_event_meta');
+add_action('save_post', 'tbyte_prm_save_event_meta');

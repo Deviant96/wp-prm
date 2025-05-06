@@ -34,7 +34,7 @@
 
     <?php
     $events = new WP_Query([
-        'post_type' => 'events',
+        'post_type' => 'tbyte_prm_events',
         // filters here
     ]);
 
@@ -80,7 +80,7 @@ document.addEventListener('DOMContentLoaded', () => {
             value: cb.value
         }));
 
-        fetch(`/wp-json/prm/v1/events`, {
+        fetch(`/wp-json/prm/v1/tbyte_prm_events`, {
             method: "POST",
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ search, range, filters })

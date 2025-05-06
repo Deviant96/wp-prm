@@ -20,6 +20,7 @@ add_action('after_setup_theme', 'wp_prm_theme_setup');
 
 // Include files
 require_once get_template_directory() . '/inc/font-styles.php';
+require_once get_template_directory() . '/inc/styles.php';
 require get_template_directory() . '/inc/roles.php';
 require get_template_directory() . '/inc/custom-post-types.php';
 require get_template_directory() . '/inc/shortcodes.php';
@@ -173,7 +174,7 @@ function prm_enqueue_flatpickr_assets($hook)
 {
     global $post;
     if ($hook === 'post-new.php' || $hook === 'post.php') {
-        if ($post->post_type === 'events') {
+        if ($post->post_type === 'tbyte_prm_events') {
             wp_enqueue_style('flatpickr-css', 'https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css');
             wp_enqueue_script('flatpickr-js', 'https://cdn.jsdelivr.net/npm/flatpickr', [], null, true);
             wp_enqueue_script('flatpickr-custom', get_template_directory_uri() . '/assets/js/flatpickr-events.js', ['flatpickr-js'], null, true);
