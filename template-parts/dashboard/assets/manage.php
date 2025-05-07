@@ -6,18 +6,15 @@ if (!in_array('partner_manager', $current_user->roles) && !in_array('administrat
     echo '<p class="text-red-500">Access Denied.</p>';
     return;
 }
-
-// Handle Add/Edit/Delete logic here or via separate AJAX endpoints
-// For now, focus on UI
 ?>
 
 <div class="space-y-6">
     <!-- Header & Add Button -->
     <div class="flex justify-between items-center">
-        <h2 class="text-2xl font-bold">Manage Events</h2>
-        <button onclick="toggleAssetForm()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
-            Add New Event
-        </button>
+        <h2 class="text-2xl font-bold">Manage Assets</h2>
+        <a href="<?php echo home_url('/?tab=assets-create'); ?>" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
+            Add New Asset
+        </a>
     </div>
 
     <!-- Add/Edit Form -->
@@ -25,7 +22,7 @@ if (!in_array('partner_manager', $current_user->roles) && !in_array('administrat
         <form id="assetForm" class="space-y-4">
             <input type="hidden" name="asset_id" id="asset_id" value="">
             <div>
-                <label class="block font-medium">Event Name</label>
+                <label class="block font-medium">Asset Name</label>
                 <input type="text" name="asset_name" id="asset_name" class="w-full p-2 rounded border">
             </div>
             <div>
@@ -43,7 +40,7 @@ if (!in_array('partner_manager', $current_user->roles) && !in_array('administrat
         </form>
     </div>
 
-    <form id="asset-form" class="hidden bg-white dark:bg-gray-800 p-4 rounded shadow" onsubmit="submitAssetForm(event)">
+    <form id="asset-form" class="hidden bg-white dark:bg-gray-800 p-4 rounded shadow" onsubmit="submitAssetForm(asset)">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <input type="text" name="asset_name" placeholder="Asset Name" class="input" required />
             <input type="url" name="asset_url" placeholder="Asset URL" class="input" required />
@@ -53,21 +50,21 @@ if (!in_array('partner_manager', $current_user->roles) && !in_array('administrat
         <button type="submit" class="mt-4 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Save</button>
     </form>
 
-    <!-- Events Table -->
-    <div id="events-list" class="overflow-auto rounded shadow">
+    <!-- Assets Table -->
+    <div id="assets-list" class="overflow-auto rounded shadow">
         <table class="w-full table-auto text-left text-sm">
             <thead class="bg-gray-100 dark:bg-gray-700">
                 <tr>
                     <th class="p-2">ID</th>
                     <th class="p-2">Name</th>
-                    <th class="p-2">Type</th>
-                    <th class="p-2">Venue</th>
+                    <th class="p-2">Doc Type</th>
+                    <th class="p-2">Language</th>
                     <th class="p-2">Date</th>
                     <th class="p-2 text-right">Actions</th>
                 </tr>
             </thead>
-            <tbody id="events-table-body2" class="bg-white dark:bg-gray-900 divide-y">
-                <!-- Events list -->
+            <tbody id="assets-table-body2" class="bg-white dark:bg-gray-900 divide-y">
+                <!-- Assets list -->
             </tbody>
             <tfoot class="bg-gray-100 dark:bg-gray-700">
                 <tr>
@@ -127,10 +124,6 @@ if (!in_array('partner_manager', $current_user->roles) && !in_array('administrat
 </script>
 
 <script>
-    function toggleAssetForm() {
-        document.getElementById('asset-form').classList.toggle('hidden');
-    }
-
     function submitAssetForm(e) {
         e.preventDefault();
         const form = e.target;
@@ -144,7 +137,6 @@ if (!in_array('partner_manager', $current_user->roles) && !in_array('administrat
             .then(data => {
                 alert(data.message);
                 form.reset();
-                toggleAssetForm();
             });
     }
 
@@ -197,15 +189,15 @@ if (!in_array('partner_manager', $current_user->roles) && !in_array('administrat
     const itemsPerPage = 5;
 
     document.addEventListener('DOMContentLoaded', () => {
-        async function fetchAndRenderEvents(page = 1, perPage = 5, searchParams = {}) {
-            let events;
-            console.log('Fetching events for page:', page, 'with params:', searchParams);
+        async function fetchAndRenderAssets(page = 1, perPage = 5, searchParams = {}) {
+            let assets = [];
+            console.log('Fetching assets for page:', page, 'with params:', searchParams);
             // Validate page number
             pageNumber = Math.max(1, Math.min(page, totalPages));
             currentPage = pageNumber;
 
-            const tbody = document.getElementById('events-table-body2');
-            const eventList = document.getElementById('events-list');
+            const tbody = document.getElementById('assets-table-body2');
+            const assetList = document.getElementById('assets-list');
             // Add fade-out animation
             tbody.style.opacity = '0.5';
             tbody.style.transition = 'opacity 300ms ease-in-out';
@@ -225,10 +217,10 @@ if (!in_array('partner_manager', $current_user->roles) && !in_array('administrat
                 ...searchParams // Include any filters/search terms
             }).toString();
 
-            showLoading('events-table-body2', 5, 6); // Show loading state
+            showLoading('assets-table-body2', 5, 6); // Show loading state
 
             try {
-                const url = `wp-json/prm/v1/tbyte_prm_events?${query}`;
+                const url = `wp-json/prm/v1/tbyte_prm_assets?${query}`;
                 console.error('Fetching URL:', url);
 
                 const response = await fetch(url);
@@ -240,7 +232,7 @@ if (!in_array('partner_manager', $current_user->roles) && !in_array('administrat
                 const data = await response.json();
 
                 // Assuming the API returns an object with a 'data' property
-                events = data.items;
+                assets = data.items;
                 // const pagination = data.data.pagination;
 
                 // Render the events
@@ -252,18 +244,18 @@ if (!in_array('partner_manager', $current_user->roles) && !in_array('administrat
                 // Clear existing rows
                 tbody.innerHTML = '';
 
-                // Render each event
-                events.forEach(event => {
+                // Render each asset
+                assets.forEach(asset => {
                     const row = document.createElement('tr');
-                    row.appendChild(createTableCell(event.id));
-                    row.appendChild(createTableCell(event.title));
-                    row.appendChild(createTableCell(event.type));
-                    row.appendChild(createTableCell(event.venue));
-                    row.appendChild(createTableCell(event.date));
+                    row.appendChild(createTableCell(asset.id));
+                    row.appendChild(createTableCell(asset.title));
+                    row.appendChild(createTableCell(asset.doc_type));
+                    row.appendChild(createTableCell(asset.language));
+                    row.appendChild(createTableCell(asset.date));
                     const actionsCell = createTableCell('', 'text-right');
                     actionsCell.innerHTML = `
-                        <button class="text-blue-600 hover:underline editAssetBtn" data-id="${event.id}"><ion-icon name="create-outline"></ion-icon></button>
-                        <button class="text-red-600 hover:underline ml-2 deleteAssetBtn" data-id="${event.id}" onclick="deleteAsset(${event.id})"><ion-icon name="trash-outline"></ion-icon></button>
+                        <button class="text-blue-600 hover:underline editAssetBtn" data-id="${asset.id}"><ion-icon name="create-outline"></ion-icon></button>
+                        <button class="text-red-600 hover:underline ml-2 deleteAssetBtn" data-id="${asset.id}" onclick="deleteAsset(${asset.id})"><ion-icon name="trash-outline"></ion-icon></button>
                     `;
                     row.appendChild(actionsCell);
                     tbody.appendChild(row);
@@ -276,7 +268,7 @@ if (!in_array('partner_manager', $current_user->roles) && !in_array('administrat
 
                 updateQueryParam('page', page);
                 // return data;
-                return events;
+                return assets;
             } catch (error) {
                 console.error('Fetch error:', error);
                 tbody.style.opacity = '1'; // Reset opacity on error
@@ -287,7 +279,7 @@ if (!in_array('partner_manager', $current_user->roles) && !in_array('administrat
         }
 
         // Call the function to load the first page
-        // fetchAndRenderEvents();
+        // fetchAndRenderAssets();
 
         // Handle browser back/forward buttons
         window.addEventListener('popstate', () => {
@@ -442,15 +434,15 @@ if (!in_array('partner_manager', $current_user->roles) && !in_array('administrat
         }
         console.error('currentPage', currentPage);
         // Call the function to load the first page
-        fetchAndRenderEvents(1, 5)
-            .then(events => {
-                console.error('Initial data:', events);
-                if (events && events.events) {
+        fetchAndRenderAssets(1, 5)
+            .then(assets => {
+                console.error('Initial data:', assets);
+                if (assets && assets.assets) {
                     // renderPagination3(data.pagination);
                 }
             })
             .catch(error => {
-                console.error('Error loading events:', error);
+                console.error('Error loading assets:', error);
             });
     })
 </script>

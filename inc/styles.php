@@ -8,5 +8,7 @@ function enqueue_document_types_admin_assets() {
             'ajaxurl' => admin_url('admin-ajax.php'),
         ));
     }
+
+    wp_enqueue_style('tbyte_prm_toast', get_stylesheet_directory_uri() . '/assets/css/toast.css', array(), null, 'all');
 }
 add_action('wp_enqueue_scripts', 'enqueue_document_types_admin_assets');

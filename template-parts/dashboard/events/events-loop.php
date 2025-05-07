@@ -20,6 +20,8 @@
         <?php $start_time = get_post_meta(get_the_ID(), '_event_start_time', true); ?>
         <?php $end_time   = get_post_meta(get_the_ID(), '_event_end_time', true); ?>
         <?php $venue      = get_post_meta(get_the_ID(), '_event_venue', true); ?>
+        <?php $event_type = wp_get_post_terms(get_the_ID(), 'event_type', ['fields' => 'names']); ?>
+        <?php $event_type = !empty($event_type) ? implode(', ', $event_type) : ''; ?>
         <?php $event_link = get_permalink(); ?>
         <?php $event_title = get_the_title(); ?>
         <?php $event_image = get_the_post_thumbnail_url(get_the_ID(), 'medium'); ?>
@@ -33,9 +35,10 @@
         set_query_var('event_link', $event_link);
         set_query_var('event_title', $event_title);
         set_query_var('event_image', $event_image);
+        set_query_var('event_type', $event_type);
         set_query_var('event_description', $event_description); ?>
 
-        <?php get_template_part('template-parts/dashboard/event', 'card'); ?>
+        <?php get_template_part('template-parts/dashboard/events/event', 'card'); ?>
         
     <?php endwhile; ?>
     <?php wp_reset_postdata(); ?>

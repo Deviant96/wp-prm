@@ -1,122 +1,213 @@
 jQuery(document).ready(function($) {
     // Show create form
-    $('#show-create-form').on('click', function() {
-        $('#create-document-type-form').show();
-        $(this).hide();
+    document.getElementById('show-create-form').addEventListener('click', function() {
+        document.getElementById('create-document-type-form').style.display = 'block';
+        this.style.display = 'none';
     });
-    
+
     // Hide create form
-    $('#cancel-create').on('click', function() {
-        $('#create-document-type-form').hide();
-        $('#show-create-form').show();
-        $('#new-document-type-form')[0].reset();
+    document.getElementById('cancel-create').addEventListener('click', function() {
+        const createForm = document.getElementById('create-document-type-form');
+        const showButton = document.getElementById('show-create-form');
+        const newForm = document.getElementById('new-document-type-form');
+        
+        createForm.style.display = 'none';
+        showButton.style.display = 'block';
+        newForm.reset();
     });
     
     // Show edit form
-    $('.edit-document-type').on('click', function() {
-        var termId = $(this).data('term-id');
-        
-        // Get term data via AJAX
-        $.ajax({
-            url: ajaxurl,
-            type: 'POST',
-            data: {
-                action: 'get_document_type_data',
-                term_id: termId,
-                security: $('#document_type_nonce').val()
-            },
-            success: function(response) {
-                if (response.success) {
-                    var term = response.data;
+    document.querySelectorAll('.edit-document-type').forEach(button => {
+        button.addEventListener('click', async function() {
+            const termId = this.dataset.termId;
+            
+            try {
+                const response = await fetch(`${wpApiSettings.root}prm/v1/document_type/${termId}`, {
+                    method: 'GET',
+                    headers: {
+                        'X-WP-Nonce': wpApiSettings.nonce,
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include'
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Populate form fields
+                    document.getElementById('edit-document-type-name').value = data.name || '';
+                    document.getElementById('edit-document-type-slug').value = data.slug || '';
+                    document.getElementById('edit-document-type-parent').value = data.parent || '';
+                    document.getElementById('edit-document-type-description').value = data.description || '';
+                    document.getElementById('edit-document-type-id').value = data.term_id || '';
                     
-                    $('#edit-document-type-name').val(term.name);
-                    $('#edit-document-type-slug').val(term.slug);
-                    $('#edit-document-type-parent').val(term.parent);
-                    $('#edit-document-type-description').val(term.description);
-                    $('#edit-document-type-id').val(term.term_id);
-                    
-                    $('#document-types-list').hide();
-                    $('#edit-document-type-form').show();
+                    // Show/hide sections
+                    document.getElementById('document-types-list').style.display = 'none';
+                    document.getElementById('edit-document-type-form').style.display = 'block';
                 } else {
-                    alert('Error: ' + response.data);
+                    throw new Error(data.message || 'Failed to fetch document type');
                 }
+            } catch (error) {
+                alert('Error: ' + error.message);
             }
         });
     });
     
     // Hide edit form
-    $('#cancel-edit').on('click', function() {
-        $('#edit-document-type-form').hide();
-        $('#document-types-list').show();
-        $('#update-document-type-form')[0].reset();
+    document.getElementById('cancel-edit').addEventListener('click', function() {
+        document.getElementById('edit-document-type-form').style.display = 'none';
+        document.getElementById('document-types-list').style.display = 'block';
+        document.getElementById('update-document-type-form').reset();
     });
     
-    // Handle create form submission
-    $('#new-document-type-form').on('submit', function(e) {
+    // CREATE
+    document.getElementById('new-document-type-form').addEventListener('submit', async function(e) {
         e.preventDefault();
         
-        var formData = $(this).serialize();
-        
-        $.ajax({
-            url: ajaxurl,
-            type: 'POST',
-            data: formData,
-            success: function(response) {
-                if (response.success) {
-                    alert('Document type created successfully!');
-                    location.reload();
-                } else {
-                    alert('Error: ' + response.data);
-                }
-            }
-        });
-    });
-    
-    // Handle update form submission
-    $('#update-document-type-form').on('submit', function(e) {
-        e.preventDefault();
-        
-        var formData = $(this).serialize();
-        
-        $.ajax({
-            url: ajaxurl,
-            type: 'POST',
-            data: formData,
-            success: function(response) {
-                if (response.success) {
-                    alert('Document type updated successfully!');
-                    location.reload();
-                } else {
-                    alert('Error: ' + response.data);
-                }
-            }
-        });
-    });
-    
-    // Handle delete action
-    $('.delete-document-type').on('click', function() {
-        if (!confirm('Are you sure you want to delete this document type?')) {
+        const form = this;
+        const formData = new FormData(form);
+        const name = formData.get('name').trim();
+
+        if (!name) {
+            showError('Document type name is required', form);
             return;
         }
+
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const originalText = submitBtn.textContent;
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="spinner"></span> Creating...';
         
-        var termId = $(this).data('term-id');
+        try {
+            const response = await fetch(`${wpApiSettings.root}prm/v1/document_type`, {
+                method: 'POST',
+                headers: {
+                    'X-WP-Nonce': wpApiSettings.nonce,
+                },
+                body: formData,
+                credentials: 'include'
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.message || 'Failed to create document type');
+            }
+
+            showSuccess('Document type created successfully!');
+            form.reset();
+
+            // Optional: Hide form after creation
+            document.getElementById('create-document-type-form').style.display = 'none';
+            document.getElementById('show-create-form').style.display = 'block';
+            
+            // Refresh list after 1 second
+            setTimeout(() => location.reload(), 1000);
+        } catch (error) {
+            showError(error.message);
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalText;
+        }
+    });
+    
+    // UPDATE
+    document.getElementById('update-document-type-form').addEventListener('submit', async function(e) {
+        e.preventDefault();
         
-        $.ajax({
-            url: ajaxurl,
-            type: 'POST',
-            data: {
-                action: 'delete_document_type',
-                term_id: termId,
-                security: $('#update_document_type_nonce').val()
-            },
-            success: function(response) {
-                if (response.success) {
+        const formData = new FormData(this);
+        const termId = formData.get('term_id'); // Get the term ID from form
+        
+        try {
+            const response = await fetch(`${wpApiSettings.root}prm/v1/document_type/${termId}`, {
+                method: 'POST', // or 'PUT' if you prefer
+                headers: {
+                    'X-WP-Nonce': wpApiSettings.nonce,
+                },
+                body: formData,
+                credentials: 'include'
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                alert('Document type updated successfully!');
+                location.reload();
+            } else {
+                throw new Error(data.message || 'Update failed');
+            }
+        } catch (error) {
+            alert('Error: ' + error.message);
+        }
+    });
+    
+    // DELETE
+    document.querySelectorAll('.delete-document-type').forEach(button => {
+        button.addEventListener('click', async function() {
+            if (!confirm('Are you sure you want to delete this document type?')) {
+                return;
+            }
+            
+            const termId = this.dataset.termId;
+            
+            try {
+                const response = await fetch('wp-json/prm/v1/document_type/' + termId, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-WP-Nonce': wpApiSettings.nonce,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
                     alert('Document type deleted successfully!');
                     location.reload();
                 } else {
-                    alert('Error: ' + response.data);
+                    alert('Error: ' + data.data);
                 }
+            } catch (error) {
+                alert('Error: ' + error);
             }
         });
     });
+
+
+
+
+
+
+
+    // Add duplicate name checking (debounced)
+    let debounceTimer;
+    document.getElementById('document-type-name')?.addEventListener('input', function(e) {
+        clearTimeout(debounceTimer);
+        const name = e.target.value.trim();
+        
+        if (name.length < 2) return;
+        
+        debounceTimer = setTimeout(() => {
+            checkDocumentTypeExists(name);
+        }, 500);
+    });
+
+    async function checkDocumentTypeExists(name) {
+        try {
+            const response = await fetch(`${wpApiSettings.root}prm/v1/document_type/check-name?name=${encodeURIComponent(name)}`, {
+                headers: {
+                    'X-WP-Nonce': wpApiSettings.nonce
+                },
+                credentials: 'include'
+            });
+            
+            const data = await response.json();
+            
+            if (data.exists) {
+                showWarning('A document type with this name already exists', 6000);
+            }
+        } catch (error) {
+            console.error('Name check failed:', error);
+        }
+    }
 });

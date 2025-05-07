@@ -13,7 +13,7 @@ $event_type = get_query_var('event_type');
     </div>
     <div class="p-4 flex flex-col justify-between flex-grow">
         <div>
-            <div class="text-sm text-gray-500 dark:text-gray-400 mb-1"><?php echo esc_html($date); ?> – Online</div>
+            <div class="text-sm text-gray-500 dark:text-gray-400 mb-1"><?php echo esc_html($date); ?> – <?php echo esc_html($event_type); ?></div>
             <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100"><?php the_title(); ?></h3>
             <p class="text-sm text-gray-600 dark:text-gray-300 mt-1"><?php echo esc_html($event_description); ?></p>
         </div>

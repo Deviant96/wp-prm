@@ -7,6 +7,28 @@ if (!in_array('partner_manager', $current_user->roles) && !in_array('administrat
 }
 
 ?>
+<style>
+    /* Loading Spinner */
+    .spinner {
+        display: inline-block;
+        width: 14px;
+        height: 14px;
+        border: 2px solid rgba(255,255,255,0.3);
+        border-radius: 50%;
+        border-top-color: white;
+        animation: spin 1s ease-in-out infinite;
+        margin-right: 8px;
+        vertical-align: middle;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    button .spinner {
+        border-top-color: currentColor;
+    }
+</style>
 <div class="space-y-6">
     <!-- Header & Add Button -->
     <div class="flex justify-between items-center">
@@ -71,7 +93,6 @@ if (!in_array('partner_manager', $current_user->roles) && !in_array('administrat
             </div>
             
             <input type="hidden" name="action" value="create_document_type">
-            <?php wp_nonce_field('create_document_type_nonce', 'document_type_nonce'); ?>
             
             <div class="flex justify-end gap-2">
                 <button type="button" id="cancel-create" class="px-4 py-2 text-gray-600 hover:text-gray-800 dark:text-gray-300 dark:hover:text-white">
@@ -85,7 +106,7 @@ if (!in_array('partner_manager', $current_user->roles) && !in_array('administrat
     </div>
 
     <!-- Document Types Table -->
-    <div class="overflow-auto rounded-lg shadow">
+    <div id="document-types-list" class="overflow-auto rounded-lg shadow">
         <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
             <thead class="bg-gray-100 dark:bg-gray-700">
                 <tr>
@@ -168,7 +189,6 @@ if (!in_array('partner_manager', $current_user->roles) && !in_array('administrat
             
             <input type="hidden" id="edit-document-type-id" name="term_id">
             <input type="hidden" name="action" value="update_document_type">
-            <?php wp_nonce_field('update_document_type_nonce', 'document_type_nonce'); ?>
             
             <div class="flex justify-end gap-2">
                 <button type="button" id="cancel-edit" class="px-4 py-2 text-gray-600 hover:text-gray-800 dark:text-gray-300 dark:hover:text-white">

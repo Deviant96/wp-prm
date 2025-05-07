@@ -102,7 +102,7 @@ function tbyte_prm_fetch_events($request) {
     if ($query->have_posts()) {
         while ($query->have_posts()) {
             $query->the_post();
-            get_template_part('template-parts/dashboard/event', 'card');
+            get_template_part('template-parts/dashboard/events/event', 'card');
         }
     } else {
         echo '<p class="text-gray-500 dark:text-gray-400">No events found.</p>';

@@ -48,12 +48,11 @@ function prm_ajax_load_assets() {
     if ($query->have_posts()) {
         while ($query->have_posts()) {
             $query->the_post();
-            get_template_part('template-parts/dashboard/asset', 'card', [
+            get_template_part('template-parts/dashboard/assets/asset', 'card', [
                 'layout' => $layout
             ]);
         }
     } else {
-        // var_dump($args);
         echo '<p class="text-gray-500 dark:text-gray-300">No assets found.</p>';
     }
 
@@ -69,137 +68,6 @@ function prm_ajax_load_assets() {
 add_action('wp_ajax_prm_load_assets', 'prm_ajax_load_assets');
 add_action('wp_ajax_nopriv_prm_load_assets', 'prm_ajax_load_assets');
 
-// Handle AJAX requests for document types
-add_action('wp_ajax_get_document_type_data', 'handle_get_document_type_data');
-add_action('wp_ajax_create_document_type', 'handle_create_document_type');
-add_action('wp_ajax_update_document_type', 'handle_update_document_type');
-add_action('wp_ajax_delete_document_type', 'handle_delete_document_type');
-
-
-// Unused?
-function handle_get_document_type_data() {
-    check_ajax_referer('update_document_type_nonce', 'security');
-    
-    if (!current_user_can('manage_options') && !current_user_can('manage_document_types')) {
-        wp_send_json_error('You do not have permission to perform this action.');
-    }
-    
-    $term_id = isset($_POST['term_id']) ? intval($_POST['term_id']) : 0;
-    
-    if (!$term_id) {
-        wp_send_json_error('Invalid term ID.');
-    }
-    
-    $term = get_term($term_id, 'doc_type');
-    $field_type = get_term_meta($term_id, 'doc_type_field_type', true);
-    
-    if (is_wp_error($term)) {
-        wp_send_json_error($term->get_error_message());
-    }
-    
-    wp_send_json_success(array(
-        'term_id' => $term->term_id,
-        'name' => $term->name,
-        'slug' => $term->slug,
-        'parent' => $term->parent,
-        'description' => $term->description,
-        'field_type' => $field_type ? $field_type : 'text'
-    ));
-}
-
-function handle_create_document_type() {
-    check_ajax_referer('create_document_type_nonce', 'document_type_nonce');
-    
-    if (!current_user_can('manage_options') && !current_user_can('manage_document_types')) {
-        wp_send_json_error('You do not have permission to perform this action.');
-    }
-    
-    $name = isset($_POST['name']) ? sanitize_text_field($_POST['name']) : '';
-    $slug = isset($_POST['slug']) ? sanitize_title($_POST['slug']) : '';
-    $parent = isset($_POST['parent']) ? intval($_POST['parent']) : 0;
-    $description = isset($_POST['description']) ? sanitize_textarea_field($_POST['description']) : '';
-    $field_type = isset($_POST['field_type']) ? sanitize_text_field($_POST['field_type']) : 'text';
-    
-    if (empty($name)) {
-        wp_send_json_error('Name is required.');
-    }
-    
-    $result = wp_insert_term($name, 'doc_type', array(
-        'slug' => $slug,
-        'parent' => $parent,
-        'description' => $description
-    ));
-    
-    if (is_wp_error($result)) {
-        wp_send_json_error($result->get_error_message());
-    }
-    
-    // Save the field type
-    update_term_meta($result['term_id'], 'doc_type_field_type', $field_type);
-    
-    wp_send_json_success('Document type created successfully.');
-}
-
-function handle_update_document_type() {
-    check_ajax_referer('update_document_type_nonce', 'document_type_nonce');
-    
-    if (!current_user_can('manage_options')) {
-        wp_send_json_error('You do not have permission to perform this action.');
-    }
-    
-    $term_id = isset($_POST['term_id']) ? intval($_POST['term_id']) : 0;
-    $name = isset($_POST['name']) ? sanitize_text_field($_POST['name']) : '';
-    $slug = isset($_POST['slug']) ? sanitize_title($_POST['slug']) : '';
-    $parent = isset($_POST['parent']) ? intval($_POST['parent']) : 0;
-    $description = isset($_POST['description']) ? sanitize_textarea_field($_POST['description']) : '';
-    
-    if (empty($name)) {
-        wp_send_json_error('Name is required.');
-    }
-    
-    if (!$term_id) {
-        wp_send_json_error('Invalid term ID.');
-    }
-    
-    $result = wp_update_term($term_id, 'doc_type', array(
-        'name' => $name,
-        'slug' => $slug,
-        'parent' => $parent,
-        'description' => $description
-    ));
-    
-    if (is_wp_error($result)) {
-        wp_send_json_error($result->get_error_message());
-    }
-    
-    wp_send_json_success('Document type updated successfully.');
-}
-
-function handle_delete_document_type() {
-    check_ajax_referer('update_document_type_nonce', 'security');
-    
-    if (!current_user_can('manage_options')) {
-        wp_send_json_error('You do not have permission to perform this action.');
-    }
-    
-    $term_id = isset($_POST['term_id']) ? intval($_POST['term_id']) : 0;
-    
-    if (!$term_id) {
-        wp_send_json_error('Invalid term ID.');
-    }
-    
-    $result = wp_delete_term($term_id, 'doc_type');
-    
-    if (is_wp_error($result)) {
-        wp_send_json_error($result->get_error_message());
-    }
-    
-    if (!$result) {
-        wp_send_json_error('Failed to delete document type.');
-    }
-    
-    wp_send_json_success('Document type deleted successfully.');
-}
 
 // Add custom field to taxonomy term
 function add_doc_type_field_type() {
@@ -454,143 +322,6 @@ function handle_upload_document() {
 }
 
 
-add_action('wp_ajax_save_asset', 'handle_save_asset');
-function handle_save_asset() {
-    check_ajax_referer('save_asset_nonce', 'security');
-
-    if (!current_user_can('edit_posts')) {
-        wp_send_json_error('You do not have permission to perform this action.');
-    }
-
-    $asset_id = isset($_POST['asset_id']) ? intval($_POST['asset_id']) : 0;
-    $title = isset($_POST['asset_name']) ? sanitize_text_field($_POST['asset_name']) : '';
-    $doc_type_id = isset($_POST['asset_doc_type']) ? intval($_POST['asset_doc_type']) : 0;
-    $language = isset($_POST['asset_language']) ? sanitize_text_field($_POST['asset_language']) : '';
-    $tags = isset($_POST['asset_tags']) ? sanitize_text_field($_POST['asset_tags']) : '';
-    $status = isset($_POST['asset_status']) ? sanitize_text_field($_POST['asset_status']) : 'published';
-    $publish_date = isset($_POST['asset_publish_date']) ? sanitize_text_field($_POST['asset_publish_date']) : '';
-    $description = isset($_POST['asset_description']) ? sanitize_textarea_field($_POST['asset_description']) : '';
-
-    // Basic validation
-    if (empty($title) || empty($doc_type_id)) {
-        wp_send_json_error('Title and document type are required.');
-    }
-
-    // Get document type details
-    $doc_type = get_term($doc_type_id, 'doc_type');
-    if (is_wp_error($doc_type) || !$doc_type) {
-        wp_send_json_error('Invalid document type.');
-    }
-
-    $field_type = get_term_meta($doc_type_id, 'doc_type_field_type', true);
-    $content = '';
-
-    // Handle content based on field type
-    switch ($field_type) {
-        case 'text':
-            $content = isset($_POST['asset_content']) ? sanitize_textarea_field($_POST['asset_content']) : '';
-            if (empty($content)) {
-                wp_send_json_error('Content is required for this document type.');
-            }
-            break;
-
-        case 'url':
-            $content = isset($_POST['asset_content']) ? esc_url_raw($_POST['asset_content']) : '';
-            if (empty($content) || !filter_var($content, FILTER_VALIDATE_URL)) {
-                wp_send_json_error('Please enter a valid URL.');
-            }
-            break;
-
-        case 'image':
-        case 'pdf':
-        case 'document':
-            if (empty($_FILES['asset_content'])) {
-                wp_send_json_error('Please upload a file.');
-            }
-
-            $file = $_FILES['asset_content'];
-            $allowed_types = [];
-            $max_size = 5 * 1024 * 1024; // 5MB
-
-            switch ($field_type) {
-                case 'image':
-                    $allowed_types = ['image/jpeg', 'image/png', 'image/gif'];
-                    break;
-                case 'pdf':
-                    $allowed_types = ['application/pdf'];
-                    break;
-                case 'document':
-                    $allowed_types = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
-                    break;
-            }
-
-            // Check file type and size
-            $filetype = wp_check_filetype($file['name']);
-            if (!in_array($filetype['type'], $allowed_types)) {
-                wp_send_json_error('Invalid file type. Please upload the correct file format.');
-            }
-
-            if ($file['size'] > $max_size) {
-                wp_send_json_error('File size exceeds maximum limit of 5MB.');
-            }
-
-            // Upload file
-            $upload = wp_upload_bits($file['name'], null, file_get_contents($file['tmp_name']));
-            if ($upload['error']) {
-                wp_send_json_error('Error uploading file: ' . $upload['error']);
-            }
-
-            $content = $upload['url'];
-            break;
-
-        default:
-            wp_send_json_error('Invalid document type configuration.');
-    }
-
-    // Prepare post data
-    $post_data = [
-        'post_title' => $title,
-        'post_content' => $content,
-        'post_status' => $status,
-        'post_type' => 'tbyte_prm_assets',
-    ];
-
-    // Set publish date if provided
-    if (!empty($publish_date)) {
-        $post_data['post_date'] = $publish_date . ' 00:00:00';
-    }
-
-    // Update or create post
-    if ($asset_id > 0) {
-        $post_data['ID'] = $asset_id;
-        $post_id = wp_update_post($post_data, true);
-    } else {
-        $post_id = wp_insert_post($post_data, true);
-    }
-
-    if (is_wp_error($post_id)) {
-        wp_send_json_error('Error saving asset: ' . $post_id->get_error_message());
-    }
-
-    // Set document type taxonomy
-    wp_set_object_terms($post_id, $doc_type_id, 'doc_type');
-
-    // Save meta fields
-    update_post_meta($post_id, 'language', $language);
-    update_post_meta($post_id, 'description', $description);
-
-    // Handle tags
-    if (!empty($tags)) {
-        $tags_array = array_map('trim', explode(',', $tags));
-        wp_set_post_tags($post_id, $tags_array, false);
-    }
-
-    wp_send_json_success([
-        'message' => 'Asset saved successfully!',
-        'post_id' => $post_id
-    ]);
-}
-
 // Unused?
 add_action('wp_ajax_get_asset_data', 'handle_get_asset_data');
 function handle_get_asset_data() {
@@ -683,4 +414,416 @@ function handle_delete_asset() {
     }
 
     wp_send_json_success('Asset deleted successfully.');
+}
+
+
+
+add_action('rest_api_init', function() {
+    register_rest_route('prm/v1', '/tbyte_prm_assets/create', [
+        'methods' => 'POST',
+        'callback' => 'create_asset_rest',
+        'permission_callback' => function() {
+            return current_user_can('edit_posts');
+        }
+    ]);
+
+    register_rest_route('prm/v1', '/tbyte_prm_assets', [
+        'methods' => 'GET',
+        'callback' => 'get_assets_data_rest',
+        'permission_callback' => '__return_true',
+        'args' => [
+            'page' => [
+                'required' => false,
+                'validate_callback' => function($param, $request, $key) {
+                    return is_numeric($param);
+                }
+            ],
+            'posts_per_page' => [
+                'required' => false,
+                'validate_callback' => function($param, $request, $key) {
+                    return is_numeric($param);
+                }
+            ]
+        ]
+    ]);
+});
+
+/**
+ * Fetch assets data for the REST API.
+ *
+ * @param WP_REST_Request $request The request object.
+ * @return WP_REST_Response
+ */
+function get_assets_data_rest($request) {
+    $paged = $request->get_param('page') ? intval($request->get_param('page')) : 1;
+    $posts_per_page = $request->get_param('posts_per_page') ? intval($request->get_param('posts_per_page')) : 10;
+
+    if ($paged < 1) {
+        $paged = 1;
+    }
+
+    if ($posts_per_page < 1 || $posts_per_page > 50) {
+        $posts_per_page = 10;
+    }
+
+    $args = [
+        'post_type' => 'tbyte_prm_assets',
+        'posts_per_page' => $posts_per_page,
+        'paged' => $paged,
+        'post_status' => 'publish'
+    ];
+
+    $query = new WP_Query($args);
+
+    if (is_wp_error($query)) {
+        return new WP_Error('query_failed', $query->get_error_message(), ['status' => 500]);
+    }
+
+    if (!$query->have_posts()) {
+        return new WP_REST_Response([
+            'message' => 'No assets found',
+            'items' => [],
+            'pagination' => [
+                'total' => 0,
+                'total_pages' => 0,
+                'current_page' => $paged,
+                'per_page' => $posts_per_page,
+            ],
+        ], 200);
+    }
+
+    $assets = [];
+    while ($query->have_posts()) {
+        $query->the_post();
+        $doc_type = wp_get_post_terms(get_the_ID(), 'doc_type');
+        $doc_type_name = !empty($doc_type) ? $doc_type[0]->name : 'N/A';
+        $language = get_post_meta(get_the_ID(), 'language', true);
+
+        $assets[] = [
+            'id' => get_the_ID(),
+            'title' => get_the_title(),
+            'content' => get_the_content(),
+            'date' => get_the_date(),
+            'author' => get_the_author(),
+            'link' => get_permalink(),
+            'url' => esc_url(get_post_meta(get_the_ID(), 'asset_url', true)),
+            // 'tags' => wp_get_post_terms(get_the_ID(), 'prm_asset_tag', ['fields' => 'names']),
+            'doc_type' => $doc_type_name,
+            'language' => $language,
+            'date' => get_the_date(),
+        ];
+    }
+    wp_reset_postdata();
+
+    $pagination = [
+        'total' => (int) $query->found_posts,
+        'total_pages' => (int) $query->max_num_pages,
+        'current_page' => (int) $paged,
+        'per_page' => (int) $posts_per_page,
+    ];
+
+    return new WP_REST_Response([
+        'items' => $assets,
+        'pagination' => $pagination,
+    ], 200);
+}
+
+function create_asset_rest($request) {
+    $params = $request->get_params();
+
+    $name = isset($params['asset_name']) ? sanitize_text_field($params['asset_name']) : '';
+    $doc_type_id = isset($params['asset_doc_type']) ? intval($params['asset_doc_type']) : 0;
+    $language = isset($params['asset_language']) ? sanitize_text_field($params['asset_language']) : '';
+    $tags = isset($params['asset_tags']) ? sanitize_text_field($params['asset_tags']) : '';
+    // $status = isset($params['asset_status']) ? sanitize_text_field($params['asset_status']) : 'published';
+    $publish_date = isset($params['asset_publish_date']) ? sanitize_text_field($params['asset_publish_date']) : '';
+    $description = isset($params['asset_description']) ? sanitize_textarea_field($params['asset_description']) : '';
+
+    if (empty($name)) {
+        return new WP_Error('creation_failed', 'Name is required.', ['status' => 400]);
+    }
+
+    if (empty($doc_type_id)) {
+        return new WP_Error('creation_failed', 'Document type is required.', ['status' => 400]);
+    }
+
+    if (empty($language)) {
+        return new WP_Error('creation_failed', 'Language is required.', ['status' => 400]);
+    }
+
+    $doc_type = get_term($doc_type_id, 'doc_type');
+    if (is_wp_error($doc_type) || !$doc_type) {
+        return new WP_Error('creation_failed', 'Invalid.', ['status' => 400]);
+    }
+
+    $field_type = get_term_meta($doc_type_id, 'doc_type_field_type', true);
+
+    // Handle content based on field type
+    switch ($field_type) {
+        case 'text':
+            $content = isset($_POST['asset_content']) ? sanitize_textarea_field($_POST['asset_content']) : '';
+            if (empty($content)) {
+                wp_send_json_error('Content is required for this document type.');
+            }
+            break;
+
+        case 'url':
+            $content = isset($_POST['asset_content']) ? esc_url_raw($_POST['asset_content']) : '';
+            if (empty($content) || !filter_var($content, FILTER_VALIDATE_URL)) {
+                wp_send_json_error('Please enter a valid URL.');
+            }
+            break;
+
+        case 'image':
+        case 'pdf':
+        case 'document':
+            if (empty($_FILES['asset_content'])) {
+                wp_send_json_error('Please upload a file.');
+            }
+
+            $file = $_FILES['asset_content'];
+            $allowed_types = [];
+            $max_size = 5 * 1024 * 1024; // 5MB
+
+            switch ($field_type) {
+                case 'image':
+                    $allowed_types = ['image/jpeg', 'image/png', 'image/gif'];
+                    break;
+                case 'pdf':
+                    $allowed_types = ['application/pdf'];
+                    break;
+                case 'document':
+                    $allowed_types = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+                    break;
+            }
+
+            // Check file type and size
+            $filetype = wp_check_filetype($file['name']);
+            if (!in_array($filetype['type'], $allowed_types)) {
+                wp_send_json_error('Invalid file type. Please upload the correct file format.');
+            }
+
+            if ($file['size'] > $max_size) {
+                wp_send_json_error('File size exceeds maximum limit of 5MB.');
+            }
+
+            // Upload file
+            $upload = wp_upload_bits($file['name'], null, file_get_contents($file['tmp_name']));
+            if ($upload['error']) {
+                wp_send_json_error('Error uploading file: ' . $upload['error']);
+            }
+
+            $content = $upload['url'];
+            break;
+
+        default:
+            wp_send_json_error('Invalid document type configuration.');
+    }
+
+    // Prepare post data
+    $post_data = [
+        'post_title' => $name,
+        'post_content' => $content,
+        'post_status' => 'publish',
+        'post_type' => 'tbyte_prm_assets',
+    ];
+
+    // Set publish date if provided
+    if (!empty($publish_date)) {
+        $post_data['post_date'] = $publish_date . ' 00:00:00';
+    }
+
+    // Update or create post
+    $post_id = wp_insert_post($post_data, true);
+
+    if (is_wp_error($post_id)) {
+        return new WP_Error('creation_failed', $post_id->get_error_message(), ['status' => 400]);
+    }
+    
+    // Set document type taxonomy
+    wp_set_object_terms($post_id, $doc_type_id, 'doc_type');
+
+    // Save meta fields
+    update_post_meta($post_id, 'language', $language);
+    update_post_meta($post_id, 'description', $description);
+    
+    // Handle tags
+    if (!empty($tags)) {
+        $tags_array = array_map('trim', explode(',', $tags));
+        wp_set_post_tags($post_id, $tags_array, false);
+    }
+    
+    return [
+        'success' => true,
+        'message' => 'Asset saved successfully!',
+        'post_id' => $post_id
+    ];
+}
+
+
+add_action('rest_api_init', function () {
+    register_rest_route('prm/v1', '/document_type/(?P<id>\d+)', array(
+        'methods'  => 'DELETE',
+        'callback' => 'delete_document_type_rest',
+        'permission_callback' => function () {
+            return current_user_can('manage_options'); // Only allow admins
+        },
+    ));
+});
+
+function delete_document_type_rest(WP_REST_Request $request) {
+    $term_id = $request->get_param('id');
+
+    if (empty($term_id)) {
+        return new WP_REST_Response([
+            'success' => false,
+            'message' => 'Invalid term ID.',
+        ], 400);
+    }
+    
+    $deleted = wp_delete_term($term_id, 'doc_type');
+    
+    if (is_wp_error($deleted)) {
+        return new WP_REST_Response([
+            'success' => false,
+            'message' => $deleted->get_error_message(),
+        ], 400);
+    }
+    
+    return new WP_REST_Response([
+        'success' => true,
+        'message' => 'Document type deleted successfully!',
+    ], 200);
+}
+
+
+add_action('rest_api_init', function() {
+    // GET endpoint for fetching term data
+    register_rest_route('prm/v1', '/document_type/(?P<id>\d+)', [
+        'methods' => 'GET',
+        'callback' => 'get_document_type_data_rest',
+        'permission_callback' => function() {
+            return current_user_can('edit_posts');
+        }
+    ]);
+
+    // POST/PUT endpoint for updating term data
+    register_rest_route('prm/v1', '/document_type/(?P<id>\d+)', [
+        'methods' => 'POST',
+        'callback' => 'update_document_type_rest',
+        'permission_callback' => function() {
+            return current_user_can('edit_posts');
+        }
+    ]);
+
+    register_rest_route('prm/v1', '/document_type', [
+        'methods' => 'POST',
+        'callback' => 'create_document_type_rest',
+        'permission_callback' => function() {
+            return current_user_can('edit_posts');
+        }
+    ]);
+
+    register_rest_route('prm/v1', '/document_type/check-name', [
+        'methods' => 'GET',
+        'callback' => 'check_document_type_name',
+        'permission_callback' => '__return_true',
+        'args' => [
+            'name' => [
+                'required' => true,
+                'sanitize_callback' => 'sanitize_text_field'
+            ]
+        ]
+    ]);
+});
+
+function get_document_type_data_rest($request) {
+    $term_id = $request['id'];
+    $term = get_term($term_id, 'doc_type'); // Change to your taxonomy
+    
+    if (is_wp_error($term)) {
+        return new WP_Error('term_not_found', 'Invalid term ID', ['status' => 404]);
+    }
+    
+    return [
+        'term_id' => $term->term_id,
+        'name' => $term->name,
+        'slug' => $term->slug,
+        'parent' => $term->parent,
+        'description' => $term->description
+    ];
+}
+
+function update_document_type_rest($request) {
+    $term_id = $request['id'];
+    $params = $request->get_params();
+    
+    $args = [
+        'name' => sanitize_text_field($params['name']),
+        'slug' => sanitize_title($params['slug']),
+        'parent' => intval($params['parent']),
+        'description' => sanitize_textarea_field($params['description'])
+    ];
+    
+    $updated = wp_update_term($term_id, 'doc_type', $args);
+    
+    if (is_wp_error($updated)) {
+        return new WP_Error('update_failed', $updated->get_error_message(), ['status' => 400]);
+    }
+    
+    return [
+        'success' => true,
+        'message' => 'Document type updated'
+    ];
+}
+
+function create_document_type_rest($request) {
+    $params = $request->get_params();
+
+    $name = isset($params['name']) ? sanitize_text_field($params['name']) : '';
+
+    if (empty($name)) {
+        // wp_send_json_error('Name is required.');
+        return new WP_Error('creation_failed', 'Name is required.', ['status' => 400]);
+    }
+    
+    $args = [
+        'name' => $name,
+        'slug' => sanitize_title($params['slug']),
+        'parent' => intval($params['parent']),
+        'description' => sanitize_textarea_field($params['description'])
+    ];
+    
+    $created = wp_insert_term($name, 'doc_type', $args);
+    
+    if (is_wp_error($created)) {
+        return new WP_Error('creation_failed', $created->get_error_message(), ['status' => 400]);
+    }
+
+    $term_id = isset($created['term_id']) ? $created['term_id'] : 0;
+
+    if ($term_id && isset($params['field_type'])) {
+        update_term_meta($term_id, 'doc_type_field_type', sanitize_text_field($params['field_type']));
+    }
+    
+    return [
+        'success' => true,
+        'message' => 'Document type created',
+        'term_id' => $term_id,
+    ];
+}
+
+
+
+function check_document_type_name($request) {
+    $name = $request->get_param('name');
+    $term = get_term_by('name', $name, 'doc_type');
+    
+    return [
+        'exists' => !empty($term),
+        'suggestions' => !empty($term) ? [
+            'id' => $term->term_id,
+            'slug' => $term->slug
+        ] : null
+    ];
 }

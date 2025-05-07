@@ -42,6 +42,12 @@ function wp_prm_enqueue_scripts()
         'ajax_url' => admin_url('admin-ajax.php'),
         'nonce' => wp_create_nonce('prm_nonce'),
     ));
+
+    wp_enqueue_script('wp-api');
+    wp_localize_script('wp-api', 'wpApiSettings', [
+        'root'  => esc_url_raw(rest_url()),
+        'nonce' => wp_create_nonce('wp_rest'),
+    ]);
 }
 add_action('wp_enqueue_scripts', 'wp_prm_enqueue_scripts');
 

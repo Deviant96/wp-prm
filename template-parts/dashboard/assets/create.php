@@ -126,23 +126,115 @@ if (!in_array('partner_manager', $current_user->roles) && !in_array('administrat
         document.getElementById('asset-form').classList.toggle('hidden');
     }
 
-    function submitAssetForm(e) {
+    async function submitAssetForm(e) {
         e.preventDefault();
-        const form = e.target;
+
+        const form = this;
         const formData = new FormData(form);
 
-        fetch(ajax_object.ajax_url + `?action=save_asset`, {
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="spinner"></span> Creating...';
+
+        try {
+            const response = await fetch(`${wpApiSettings.root}prm/v1/assets/create`, {
                 method: 'POST',
-                body: formData
-            })
-            .then(res => res.json())
-            .then(data => {
-                alert(data.message);
-                form.reset();
-                toggleAssetForm();
-                // loadAssets();
+                headers: {
+                    'X-WP-Nonce': wpApiSettings.nonce
+                },
+                body: formData,
             });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.message || 'Error saving asset');
+            }
+            
+            showSuccess('Document type created successfully!');
+            form.reset();
+
+            // TODO Redirect to the asset list page or show the new asset
+        } catch (error) {
+            console.error('Error:', error);
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalText;
+        }
     }
 
-    // document.addEventListener('DOMContentLoaded', loadAssets);
+    document.getElementById('assetForm').addEventListener('submit', submitAssetForm);
+</script>
+
+<script>
+    // Dynamic field based on document type
+    document.getElementById('asset_doc_type').addEventListener('change', function() {
+    var selectedOption = this.options[this.selectedIndex];
+    var fieldType = selectedOption.dataset.fieldType;
+    var fieldHtml = '';
+    
+    switch(fieldType) {
+        case 'text':
+            fieldHtml = `
+                <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Content*</label>
+                    <textarea name="asset_content" required rows="5" 
+                              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"></textarea>
+                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Enter the text content for this asset.</p>
+                </div>
+            `;
+            break;
+            
+        case 'url':
+            fieldHtml = `
+                <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">URL*</label>
+                    <input type="url" name="asset_content" required 
+                           class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                           placeholder="https://example.com">
+                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Enter the URL for this asset.</p>
+                </div>
+            `;
+            break;
+            
+        case 'image':
+            fieldHtml = `
+                <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Image File* (.jpg, .png, .gif)</label>
+                    <input type="file" name="asset_content" accept=".jpg,.jpeg,.png,.gif" required 
+                           class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 dark:file:bg-gray-600 dark:file:text-gray-100">
+                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Upload an image file (JPG, PNG, or GIF).</p>
+                </div>
+            `;
+            break;
+            
+        case 'pdf':
+            fieldHtml = `
+                <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">PDF File* (.pdf)</label>
+                    <input type="file" name="asset_content" accept=".pdf" required 
+                           class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 dark:file:bg-gray-600 dark:file:text-gray-100">
+                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Upload a PDF document.</p>
+                </div>
+            `;
+            break;
+            
+        case 'document':
+            fieldHtml = `
+                <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Document File* (.doc, .docx, .pdf)</label>
+                    <input type="file" name="asset_content" accept=".doc,.docx,.pdf" required 
+                           class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 dark:file:bg-gray-600 dark:file:text-gray-100">
+                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Upload a document (DOC, DOCX, or PDF).</p>
+                </div>
+            `;
+            break;
+            
+        default:
+            fieldHtml = '<div class="bg-gray-100 dark:bg-gray-700 p-4 rounded text-center text-gray-500 dark:text-gray-300">Please select a document type to see specific requirements</div>';
+    }
+    
+    document.getElementById('asset-content-field').innerHTML = fieldHtml;
+});
 </script>

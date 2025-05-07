@@ -37,13 +37,12 @@
         'post_type' => 'tbyte_prm_events',
         // filters here
     ]);
-
     set_query_var('events', $events);
     ?>
 
     <!-- <div id="event-results" class="grid gap-4 md:grid-cols-2 xl:grid-cols-3"> -->
     <div class="grid md:grid-cols-2 gap-6" id="eventList">
-        <?php get_template_part('template-parts/dashboard/events', 'loop'); ?>
+        <?php get_template_part('template-parts/dashboard/events/events', 'loop'); ?>
     </div>
 
     <div id="event-pagination" class="mt-6">
