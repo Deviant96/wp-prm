@@ -177,6 +177,14 @@ set_query_var('current_user', $current_user);
                     // List downloadable assets
                     break;
 
+                case 'assets-manage':
+                    get_template_part('template-parts/dashboard/assets/manage');
+                    break;
+
+                case 'assets-create':
+                    get_template_part('template-parts/dashboard/assets/create');
+                    break;
+                    
                 case 'support':
                     echo '<h2>Support</h2>';
                     echo '<p>Support info or form here.</p>';

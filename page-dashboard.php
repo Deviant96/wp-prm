@@ -180,7 +180,7 @@ set_query_var('current_user', $current_user);
                     break;
 
                 case 'assets-manage':
-                    get_template_part('template-parts/dashboard/dashboard', 'assets-manage');
+                    get_template_part('template-parts/dashboard/events/manage');
                     break;
 
                 case 'assets-doc-types':
