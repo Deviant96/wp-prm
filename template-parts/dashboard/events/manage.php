@@ -15,9 +15,10 @@ if (!in_array('partner_manager', $current_user->roles) && !in_array('administrat
     <!-- Header & Add Button -->
     <div class="flex justify-between items-center">
         <h2 class="text-2xl font-bold">Manage Events</h2>
-        <button onclick="toggleAssetForm()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
+        <a href="<?php echo home_url('/?tab=events-create'); ?>" class="bg-[#086ad7] text-white px-4 py-2 rounded hover:bg-[#2376bb] transition no-underline flex items-center">
+            <ion-icon name="add-outline" class="text-xl"></ion-icon>
             Add New Event
-        </button>
+        </a>
     </div>
 
     <!-- Add/Edit Form -->
@@ -79,8 +80,6 @@ if (!in_array('partner_manager', $current_user->roles) && !in_array('administrat
             </tfoot>
         </table>
     </div>
-
-
 </div>
 
 <script>
@@ -103,7 +102,6 @@ if (!in_array('partner_manager', $current_user->roles) && !in_array('administrat
             btn.addEventListener('click', () => {
                 const id = btn.dataset.id;
                 // fetch data for that asset via AJAX (to be implemented)
-                console.log('Edit', id);
                 formContainer.classList.remove('hidden');
             });
         });
@@ -113,7 +111,6 @@ if (!in_array('partner_manager', $current_user->roles) && !in_array('administrat
                 const id = btn.dataset.id;
                 if (confirm('Delete this asset?')) {
                     // delete via AJAX (to be implemented)
-                    console.log('Delete', id);
                 }
             });
         });
@@ -169,26 +166,6 @@ if (!in_array('partner_manager', $current_user->roles) && !in_array('administrat
 </script>
 
 <script>
-    function deleteAsset(id) {
-        if (confirm('Are you sure you want to delete this asset?')) {
-            fetch(ajax_object.ajax_url + `?action=delete_asset&id=${id}`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-WP-Nonce': '<?php echo wp_create_nonce('delete_asset_nonce'); ?>'
-                    }
-                })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success) {
-                        alert('Asset deleted successfully!');
-                        // Optionally, refresh the asset list
-                    } else {
-                        alert('Error deleting asset: ' + data.message);
-                    }
-                });
-        }
-    }
 </script>
 
 <script>
@@ -196,10 +173,10 @@ if (!in_array('partner_manager', $current_user->roles) && !in_array('administrat
     let totalPages = 1;
     const itemsPerPage = 5;
 
-    document.addEventListener('DOMContentLoaded', () => {
+    // document.addEventListener('DOMContentLoaded', () => {
         async function fetchAndRenderEvents(page = 1, perPage = 5, searchParams = {}) {
             let events;
-            console.log('Fetching events for page:', page, 'with params:', searchParams);
+            
             // Validate page number
             pageNumber = Math.max(1, Math.min(page, totalPages));
             currentPage = pageNumber;
@@ -229,7 +206,6 @@ if (!in_array('partner_manager', $current_user->roles) && !in_array('administrat
 
             try {
                 const url = `wp-json/prm/v1/tbyte_prm_events?${query}`;
-                console.error('Fetching URL:', url);
 
                 const response = await fetch(url);
 
@@ -262,8 +238,8 @@ if (!in_array('partner_manager', $current_user->roles) && !in_array('administrat
                     row.appendChild(createTableCell(event.date));
                     const actionsCell = createTableCell('', 'text-right');
                     actionsCell.innerHTML = `
-                        <button class="text-blue-600 hover:underline editAssetBtn" data-id="${event.id}"><ion-icon name="create-outline"></ion-icon></button>
-                        <button class="text-red-600 hover:underline ml-2 deleteAssetBtn" data-id="${event.id}" onclick="deleteAsset(${event.id})"><ion-icon name="trash-outline"></ion-icon></button>
+                        <button class="text-[#086ad7] hover:underline editAssetBtn p-2 rounded" data-id="${event.id}"><ion-icon name="create-outline"></ion-icon></button>
+                        <button class="text-red-600 hover:underline ml-2 deleteAssetBtn p-2 rounded" data-id="${event.id}" onclick="deleteEvent(${event.id})"><ion-icon name="trash-outline"></ion-icon></button>
                     `;
                     row.appendChild(actionsCell);
                     tbody.appendChild(row);
@@ -272,17 +248,14 @@ if (!in_array('partner_manager', $current_user->roles) && !in_array('administrat
                 // Fade in the new content
                 setTimeout(() => {
                     tbody.style.opacity = '1';
-                }, 10);
+                }, 300);
 
                 updateQueryParam('page', page);
                 // return data;
-                return events;
+                return data;
             } catch (error) {
-                console.error('Fetch error:', error);
                 tbody.style.opacity = '1'; // Reset opacity on error
-                return {
-                    error: error.message
-                }
+                throw error;
             }
         }
 
@@ -309,11 +282,29 @@ if (!in_array('partner_manager', $current_user->roles) && !in_array('administrat
                 const page = parseInt(e.target.dataset.page, 10);
 
                 // Add loading state
+                let originalText = e.target.innerHTML;
                 e.target.innerHTML = '<span class="animate-pulse">Loading...</span>';
                 e.target.classList.add('cursor-not-allowed', 'opacity-50');
 
                 fetchAndRenderEvents(page).then(data => {
-                    console.log('Pagination data:', data);
+                    // Assuming the API returns an object with a 'pagination' property
+                    // renderEvents(data.items);
+                    // renderPagination3(data.pagination);
+                    // Clear loading state
+                    e.target.innerHTML = originalText;
+                    e.target.classList.remove('cursor-not-allowed', 'opacity-50');
+                    // Update the URL without reloading
+                    // updateQueryParam('page', page);
+                    // Update the current page
+                    currentPage = page;
+                    // Update the total pages if available
+                    // totalPages = data.pagination.total_pages || 1;
+                    // Update the query parameters in the URL
+                    // updateQueryParam('page', page);
+                    // updateQueryParam('total_pages', totalPages);
+                    // Update the pagination
+                    renderPagination3(data.pagination);
+
                     // if (data && data.pagination) {
                     //     renderPagination3(data.pagination);
                     // }
@@ -348,7 +339,6 @@ if (!in_array('partner_manager', $current_user->roles) && !in_array('administrat
         function renderPagination2(pagination) {
             const paginationContainer = document.getElementById('asset-pagination');
             paginationContainer.innerHTML = '';
-            console.error("pagina: ", pagination.current_page)
             // Previous button
             if (pagination.current_page > 1) {
                 const prevLink = document.createElement('a');
@@ -364,7 +354,7 @@ if (!in_array('partner_manager', $current_user->roles) && !in_array('administrat
                 const pageLink = document.createElement('a');
                 pageLink.href = '#';
                 pageLink.dataset.page = i;
-                pageLink.className = `px-3 py-1 mx-1 border rounded ${i === pagination.current_page ? 'bg-blue-500 text-white' : ''}`;
+                pageLink.className = `px-3 py-1 mx-1 border rounded ${i === pagination.current_page ? 'bg-[#086ad7] text-white' : ''}`;
                 pageLink.textContent = i;
                 paginationContainer.appendChild(pageLink);
             }
@@ -394,7 +384,7 @@ if (!in_array('partner_manager', $current_user->roles) && !in_array('administrat
             prevLink.className = `px-4 py-2 rounded-md transition-all duration-300 ${
                 pagination.current_page === 1 
                     ? 'bg-gray-200 text-gray-500 cursor-not-allowed' 
-                    : 'bg-white text-blue-600 hover:bg-blue-50 border border-blue-200 cursor-pointer'
+                    : 'bg-white text-[#086ad7] hover:bg-blue-50 border border-blue-200 cursor-pointer'
             }`;
             prevLink.innerHTML = '&larr; Previous';
             prevLink.addEventListener('click', (e) => {
@@ -440,17 +430,47 @@ if (!in_array('partner_manager', $current_user->roles) && !in_array('administrat
                 paginationContainer.style.transition = 'opacity 300ms ease-in-out';
             }, 10);
         }
-        console.error('currentPage', currentPage);
+
+        function deleteEvent(id) {
+            // TODO Change into interesting confirmation dialog
+            // For now, just a simple confirm dialog
+            if (confirm('Are you sure you want to delete this asset?')) {
+                fetch(`${wpApiSettings.root}prm/v1/tbyte_prm_events/${id}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'X-WP-Nonce': wpApiSettings.nonce
+                        }
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            showSuccess('Asset deleted successfully!');
+                            // Optionally, refresh the asset list
+                            fetchAndRenderEvents(currentPage, itemsPerPage)
+                                .then(data => {
+                                    if (data.pagination) {
+                                        renderPagination3(data.pagination);
+                                    }
+                                })
+                                .catch(error => {
+                                    console.error('Error loading events:', error);
+                                });
+                        } else {
+                            showError('Error deleting asset: ' + data.message);
+                        }
+                    });
+            }
+        }
+
         // Call the function to load the first page
         fetchAndRenderEvents(1, 5)
-            .then(events => {
-                console.error('Initial data:', events);
-                if (events && events.events) {
-                    // renderPagination3(data.pagination);
+            .then(data  => {
+                if (data.pagination) {
+                    renderPagination3(data.pagination);
                 }
             })
             .catch(error => {
                 console.error('Error loading events:', error);
             });
-    })
+    // })
 </script>

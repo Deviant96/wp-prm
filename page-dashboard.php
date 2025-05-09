@@ -144,6 +144,39 @@ set_query_var('current_user', $current_user);
             border-top: 1px solid #ddd;
         }
     </style>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body, button, input, select, textarea {
+            font-family: 'Urbanist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        }
+
+        button {
+            border: none;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+        }
+
+        a {
+            text-decoration: none;
+        }
+
+        .events-section .events-banner {
+            flex: 1;
+            max-width: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-image: url("./../images/events.jpg");
+            background-position: center;
+            background-size: cover;
+            position: relative;
+        }
+    </style>
 </head>
 
 <body class="m-0">
@@ -170,6 +203,10 @@ set_query_var('current_user', $current_user);
                 
                 case 'events-manage':
                     get_template_part('template-parts/dashboard/events/manage');
+                    break;
+
+                case 'events-create':
+                    get_template_part('template-parts/dashboard/events/create');
                     break;
 
                 case 'assets':

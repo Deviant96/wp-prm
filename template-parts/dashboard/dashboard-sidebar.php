@@ -47,7 +47,7 @@ $has_submenu = in_array('administrator', $current_user->roles) ? 'has-submenu' :
                     <li><a href="<?php echo home_url('/?tab=events-manage'); ?>"
                             class="block px-3 py-1 rounded transition-all duration-200 hover:bg-blue-100 dark:hover:bg-blue-800 text-white hover:text-[#2376bb] dark:hover:text-blue-400">All
                             Posts</a></li>
-                    <li><a href="#"
+                    <li><a href="<?php echo home_url('/?tab=events-create'); ?>"
                             class="block px-3 py-1 rounded transition-all duration-200 hover:bg-blue-100 dark:hover:bg-blue-800 text-white hover:text-[#2376bb] dark:hover:text-blue-400">Add
                             New</a></li>
                 </ul>

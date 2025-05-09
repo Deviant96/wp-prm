@@ -1,7 +1,5 @@
 <?php
 function prm_enqueue_fonts() {
-    wp_enqueue_style('prm-style', get_stylesheet_uri());
-
     wp_enqueue_style(
         'prm-google-fonts',
         'https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700&display=swap',

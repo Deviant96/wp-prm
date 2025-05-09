@@ -6,23 +6,3 @@ Author URI: http://terrabytegroup.com/
 Description: A custom theme developed for PRM in Terrabyte Group.
 Version: 0.0.2
 */
-
-* {
-    box-sizing: border-box;
-}
-
-body {
-    font-family: 'Urbanist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-}
-
-.events-section .events-banner {
-    flex: 1;
-    max-width: 50%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background-image: url("./../images/events.jpg");
-    background-position: center;
-    background-size: cover;
-    position: relative;
-}

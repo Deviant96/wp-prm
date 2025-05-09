@@ -170,6 +170,10 @@ set_query_var('current_user', $current_user);
                     get_template_part('template-parts/dashboard/events/manage');
                     break;
 
+                case 'events-create':
+                    get_template_part('template-parts/dashboard/events/create');
+                    break;
+
                 case 'assets':
                     echo '<h2>My Assets</h2>';
                     echo '<p>Download your assets here.</p>';

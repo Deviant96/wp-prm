@@ -7,28 +7,30 @@ if (!in_array('partner_manager', $current_user->roles) && !in_array('administrat
 }
 ?>
 
-<h1>Create New Event</h1>
+<h1 class="text-3xl font-bold text-gray-800 dark:text-white mb-6">Create New Event</h1>
 
 <!-- Event Form -->
-<div id="eventFormContainer" class="bg-gray-50 dark:bg-gray-800 p-6 rounded-lg shadow">
-    <h3 class="text-xl font-semibold mb-4 text-gray-800 dark:text-white">Add New Event</h3>
-    <form id="eventForm" class="space-y-4" enctype="multipart/form-data">
+<div id="eventFormContainer" class="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700">
+    <h3 class="text-2xl font-semibold mb-6 text-gray-800 dark:text-white border-b pb-4 border-gray-200 dark:border-gray-700">Event Details</h3>
+    <form id="eventForm" class="space-y-6" enctype="multipart/form-data">
         <input type="hidden" name="event_id" id="event_id" value="">
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <!-- Event Name -->
-            <div>
-                <label for="event_name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Event Name*</label>
-                <input type="text" name="event_name" id="event_name" required
-                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-            </div>
+        <!-- Title Row -->
+        <div>
+            <label for="event_title" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Event Title*</label>
+            <input type="text" name="event_title" id="event_title" required
+                class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500 transition duration-200"
+                placeholder="Enter event title">
+        </div>
 
+        <!-- Grid Row 1: Event Type, Venue, Status -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             <!-- Event Type -->
             <div>
-                <label for="event_type" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Event Type*</label>
+                <label for="event_type" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Event Type*</label>
                 <select name="event_type" id="event_type" required
-                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-                    <option value="">Select Event Type</option>
+                    class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500 transition duration-200">
+                    <option value="" selected disabled>Select Event Type</option>
                     <?php
                     $event_types = get_terms(array(
                         'taxonomy' => 'event_type',
@@ -42,58 +44,89 @@ if (!in_array('partner_manager', $current_user->roles) && !in_array('administrat
                 </select>
             </div>
 
-            <!-- Event Location -->
+            <!-- Venue -->
             <div>
-                <label for="event_location" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Location*</label>
-                <input type="text" name="event_location" id="event_location" required
-                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-            </div>
-
-            <!-- Tags -->
-            <div>
-                <label for="event_tags" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Tags</label>
-                <input type="text" name="event_tags" id="event_tags"
-                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                    placeholder="Comma separated tags">
-            </div>
-        </div>
-
-        <!-- Event Date -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-                <label for="event_date" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Event Date*</label>
-                <input type="date" name="event_date" id="event_date" required
-                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                <label for="event_venue" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Venue*</label>
+                <input type="text" name="event_venue" id="event_venue" required
+                    class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500 transition duration-200"
+                    placeholder="Enter venue">
             </div>
 
             <!-- Event Status -->
             <div>
-                <label for="event_status" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Status</label>
-                <select name="event_status" id="event_status"
-                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                <label for="event_status" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Status*</label>
+                <select name="event_status" id="event_status" required
+                    class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500 transition duration-200">
                     <option value="draft">Draft</option>
-                    <option value="published" selected>Published</option>
+                    <option value="publish" selected>Publish</option>
                     <option value="archived">Archived</option>
+                    <option value="cancelled">Cancelled</option>
                 </select>
+            </div>
+        </div>
+
+        <!-- Grid Row 2: Date, Start Time, End Time -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- Event Date -->
+            <div>
+                <label for="event_date" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Event Date*</label>
+                <input type="date" name="event_date" id="event_date" required
+                    class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500 transition duration-200">
+            </div>
+
+            <!-- Start Time -->
+            <div>
+                <label for="start_time" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Start Time*</label>
+                <input type="time" name="start_time" id="start_time" required
+                    class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500 transition duration-200">
+            </div>
+
+            <!-- End Time -->
+            <div>
+                <label for="end_time" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">End Time*</label>
+                <input type="time" name="end_time" id="end_time" required
+                    class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500 transition duration-200">
+            </div>
+        </div>
+
+        <!-- Grid Row 3: URL, Tags -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Event URL -->
+            <div>
+                <label for="event_url" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Event URL</label>
+                <input type="url" name="event_url" id="event_url"
+                    class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500 transition duration-200"
+                    placeholder="https://example.com/event">
+                <small class="text-gray-500 dark:text-gray-400">If not filled, then Event URL will use default internal link.</small>
+            </div>
+
+            <!-- Tags -->
+            <div>
+                <label for="event_tags" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Tags</label>
+                <input type="text" name="event_tags" id="event_tags"
+                    class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500 transition duration-200"
+                    placeholder="Comma separated tags (e.g., music, conference, workshop)">
             </div>
         </div>
 
         <!-- Description -->
         <div>
-            <label for="event_description" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Description</label>
-            <textarea name="event_description" id="event_description" rows="3"
-                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"></textarea>
+            <label for="event_description" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Description*</label>
+            <textarea name="event_description" id="event_description" rows="5" required
+                class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500 transition duration-200"
+                placeholder="Enter detailed event description"></textarea>
         </div>
 
         <input type="hidden" name="action" value="save_event">
         <?php wp_nonce_field('save_event_nonce', 'security'); ?>
 
-        <div class="flex justify-end gap-2">
-            <button type="button" id="cancelEventBtn" class="px-4 py-2 text-gray-600 hover:text-gray-800 dark:text-gray-300 dark:hover:text-white">
+        <!-- Form Actions -->
+        <div class="flex justify-end gap-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+            <a href="<?php echo home_url('/?tab=events-manage'); ?>" id="cancelEventBtn" class="px-6 py-2.5 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium dark:text-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 transition duration-200">
                 Cancel
-            </button>
-            <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition">
-                Save Event
+            </a>
+            <button type="submit" class="px-6 py-2.5 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 focus:ring-4 focus:ring-blue-200 dark:focus:ring-blue-900 transition duration-200">
+                Create Event
             </button>
         </div>
     </form>
@@ -112,7 +145,7 @@ if (!in_array('partner_manager', $current_user->roles) && !in_array('administrat
         submitBtn.innerHTML = '<span class="spinner"></span> Creating...';
 
         try {
-            const response = await fetch(`${wpApiSettings.root}prm/v1/events/create`, {
+            const response = await fetch(`${wpApiSettings.root}prm/v1/tbyte_prm_events/create`, {
                 method: 'POST',
                 headers: {
                     'X-WP-Nonce': wpApiSettings.nonce
@@ -138,77 +171,4 @@ if (!in_array('partner_manager', $current_user->roles) && !in_array('administrat
     }
 
     document.getElementById('eventForm').addEventListener('submit', submitEventForm);
-</script>
-
-
-<script>
-    // Dynamic field based on document type
-    document.getElementById('asset_doc_type').addEventListener('change', function() {
-    var selectedOption = this.options[this.selectedIndex];
-    var fieldType = selectedOption.dataset.fieldType;
-    var fieldHtml = '';
-    
-    switch(fieldType) {
-        case 'text':
-            fieldHtml = `
-                <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded">
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Content*</label>
-                    <textarea name="asset_content" required rows="5" 
-                              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"></textarea>
-                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Enter the text content for this asset.</p>
-                </div>
-            `;
-            break;
-            
-        case 'url':
-            fieldHtml = `
-                <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded">
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">URL*</label>
-                    <input type="url" name="asset_content" required 
-                           class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                           placeholder="https://example.com">
-                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Enter the URL for this asset.</p>
-                </div>
-            `;
-            break;
-            
-        case 'image':
-            fieldHtml = `
-                <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded">
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Image File* (.jpg, .png, .gif)</label>
-                    <input type="file" name="asset_content" accept=".jpg,.jpeg,.png,.gif" required 
-                           class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 dark:file:bg-gray-600 dark:file:text-gray-100">
-                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Upload an image file (JPG, PNG, or GIF).</p>
-                </div>
-            `;
-            break;
-            
-        case 'pdf':
-            fieldHtml = `
-                <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded">
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">PDF File* (.pdf)</label>
-                    <input type="file" name="asset_content" accept=".pdf" required 
-                           class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 dark:file:bg-gray-600 dark:file:text-gray-100">
-                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Upload a PDF document.</p>
-                </div>
-            `;
-            break;
-            
-        case 'document':
-            fieldHtml = `
-                <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded">
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Document File* (.doc, .docx, .pdf)</label>
-                    <input type="file" name="asset_content" accept=".doc,.docx,.pdf" required 
-                           class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 dark:file:bg-gray-600 dark:file:text-gray-100">
-                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Upload a document (DOC, DOCX, or PDF).</p>
-                </div>
-            `;
-            break;
-            
-        default:
-            fieldHtml = '<div class="bg-gray-100 dark:bg-gray-700 p-4 rounded text-center text-gray-500 dark:text-gray-300">Please select a document type to see specific requirements</div>';
-    }
-    
-    document.getElementById('asset-content-field').innerHTML = fieldHtml;
-});
 </script>
