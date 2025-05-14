@@ -26,6 +26,8 @@ require get_template_directory() . '/inc/custom-post-types.php';
 require get_template_directory() . '/inc/shortcodes.php';
 // require get_template_directory() . '/inc/form-handler.php';
 require_once get_template_directory() . '/inc/form-handler.php';
+require_once get_template_directory() . '/template-parts/components/button/button.php';
+require_once get_template_directory() . '/template-parts/components/card/card.php';
 require_once get_template_directory() . '/inc/custom-features-functions.php';
 require get_template_directory() . '/inc/admin/assets-functions.php';
 require get_template_directory() . '/inc/dashboard-functions.php';
@@ -211,3 +213,88 @@ function my_enqueue_scripts()
     ));
 }
 add_action('wp_enqueue_scripts', 'my_enqueue_scripts');
+
+
+
+
+
+
+
+
+
+
+
+function custom_pagination($numpages = '', $pagerange = '', $paged = '') {
+    if (empty($pagerange)) {
+        $pagerange = 2;
+    }
+
+    /**
+     * This first part of our function is a fallback
+     * for custom pagination inside a regular loop that
+     * uses the global $paged and global $wp_query variables.
+     */
+    global $paged;
+    if (empty($paged)) {
+        $paged = 1;
+    }
+    if ($numpages == '') {
+        global $wp_query;
+        $numpages = $wp_query->max_num_pages;
+        if (!$numpages) {
+            $numpages = 1;
+        }
+    }
+
+    /** 
+     * Construct the pagination to show in your theme
+     */
+    $pagination_args = array(
+        'base'         => preg_replace('/\?.*/', '/', get_pagenum_link(1)) . '%_%',
+        'format'       => 'page/%#%',
+        'total'       => $numpages,
+        'current'      => $paged,
+        'show_all'     => false,
+        'end_size'     => 1,
+        'mid_size'     => $pagerange,
+        'prev_next'   => true,
+        'prev_text'    => __('« Previous'),
+        'next_text'    => __('Next »'),
+        'type'         => 'array',
+        'add_args'    => false,
+        'add_fragment' => ''
+    );
+
+    $paginate_links = paginate_links($pagination_args);
+
+    if ($paginate_links) {
+        echo '<nav class="flex items-center justify-between my-8" aria-label="Pagination">';
+        echo '<div class="hidden sm:block">';
+        echo '<p class="text-sm text-gray-700">';
+        printf(
+            __('Showing <span class="font-medium">%1$d</span> to <span class="font-medium">%2$d</span> of <span class="font-medium">%3$d</span> results'),
+            ($paged - 1) * $query->query_vars['posts_per_page'] + 1,
+            min($paged * $query->query_vars['posts_per_page'], $query->found_posts),
+            $query->found_posts
+        );
+        echo '</p>';
+        echo '</div>';
+        echo '<div class="flex-1 flex justify-between sm:justify-end">';
+        echo '<ul class="inline-flex -space-x-px">';
+        
+        foreach ($paginate_links as $link) {
+            // Add Tailwind classes based on link type
+            if (strpos($link, 'current') !== false) {
+                echo '<li>' . str_replace('page-numbers', 'px-4 py-2 border border-gray-300 bg-blue-500 text-white', $link) . '</li>';
+            } elseif (strpos($link, 'dots') !== false) {
+                echo '<li>' . str_replace('page-numbers', 'px-4 py-2 border border-gray-300', $link) . '</li>';
+            } else {
+                echo '<li>' . str_replace('page-numbers', 'px-4 py-2 border border-gray-300 hover:bg-gray-50', $link) . '</li>';
+            }
+        }
+        
+        echo '</ul>';
+        echo '</div>';
+        echo '</nav>';
+    }
+}
