@@ -19,6 +19,11 @@ if (!in_array('partner_manager', $current_user->roles) && !in_array('administrat
             <ion-icon name="add-outline" class="text-xl"></ion-icon>
             Add New Event
         </a>
+        <?php render_button([
+            'text' => 'Click Me',
+            'class' => 'custom-class',
+            'icon' => 'fas fa-check'
+        ]); ?>
     </div>
 
     <!-- Add/Edit Form -->
