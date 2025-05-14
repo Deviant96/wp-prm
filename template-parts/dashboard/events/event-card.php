@@ -9,7 +9,15 @@ $event_type = get_query_var('event_type');
 
 <div class="flex flex-col sm:flex-row bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
     <div class="sm:w-1/3 bg-gray-200 dark:bg-gray-700 h-32 sm:h-auto">
-        <img src="<?php echo esc_url($event_image); ?>" alt="Event" class="w-full h-full object-cover">
+        <?php if (empty($event_image)) : ?>
+            <div class="w-full h-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                <?php get_template_part('/template-parts/components/not-found/image'); ?>
+            </div>
+        <?php else : ?>
+            <div class="w-full h-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                <img src="<?php echo esc_url($event_image); ?>" alt="Event" class="w-full h-full object-cover">
+            </div>
+        <?php endif; ?>
     </div>
     <div class="p-4 flex flex-col justify-between flex-grow">
         <div>
