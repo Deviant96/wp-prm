@@ -5,6 +5,7 @@ $event_description = get_query_var('event_description');
 $event_link = get_query_var('event_link');
 $event_id = get_query_var('event_id');
 $event_type = get_query_var('event_type');
+$event_tags = get_query_var('event_tags');
 ?>
 
 <div class="flex flex-col sm:flex-row bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
@@ -23,7 +24,16 @@ $event_type = get_query_var('event_type');
         <div>
             <div class="text-sm text-gray-500 dark:text-gray-400 mb-1"><?php echo esc_html($date); ?> – <?php echo esc_html($event_type); ?></div>
             <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100"><?php the_title(); ?></h3>
-            <p class="text-sm text-gray-600 dark:text-gray-300 mt-1"><?php echo esc_html($event_description); ?></p>
+            <?php if ($event_tags) : ?>
+                <div class="mt-3 flex flex-wrap gap-2">
+                    <?php
+                        function print_tags($el) {
+                            echo '<span class="text-xs px-2 py-1 bg-gray-100 rounded-full">' . $el->name . '</span>';
+                        }
+                        array_map('print_tags', $event_tags);
+                    ?>
+                </div>
+            <?php endif; ?>
         </div>
         <div class="mt-3 flex justify-between items-center">
             <a href="<?php echo esc_url($event_link); ?>" class="text-blue-600 dark:text-blue-400 hover:underline text-sm">View Details</a>

@@ -26,17 +26,20 @@
         <?php $event_title = get_the_title(); ?>
         <?php $event_image = get_the_post_thumbnail_url(get_the_ID(), 'medium'); ?>
         <?php $event_description = get_the_excerpt(); ?>
+        <?php $event_tags = wp_get_post_tags(get_the_ID()); ?>
 
         <?php 
-        set_query_var('date', $date);
-        set_query_var('start_time', $start_time);
-        set_query_var('end_time', $end_time);
-        set_query_var('venue', $venue);
-        set_query_var('event_link', $event_link);
-        set_query_var('event_title', $event_title);
-        set_query_var('event_image', $event_image);
-        set_query_var('event_type', $event_type);
-        set_query_var('event_description', $event_description); ?>
+            set_query_var('date', $date);
+            set_query_var('start_time', $start_time);
+            set_query_var('end_time', $end_time);
+            set_query_var('venue', $venue);
+            set_query_var('event_link', $event_link);
+            set_query_var('event_title', $event_title);
+            set_query_var('event_image', $event_image);
+            set_query_var('event_type', $event_type);
+            set_query_var('event_description', $event_description); 
+            set_query_var('event_tags', $event_tags); 
+        ?>
 
         <?php get_template_part('template-parts/dashboard/events/event', 'card'); ?>
         

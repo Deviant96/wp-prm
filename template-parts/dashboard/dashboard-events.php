@@ -143,13 +143,13 @@ document.addEventListener('DOMContentLoaded', () => {
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const eventList = document.getElementById('eventList');
-        const pagination = document.getElementById('event-pagination');
+        const paginationEl = document.getElementById('event-pagination');
         const loadingSpinner = document.getElementById('loadingSpinner');
         
-        if (!pagination) return;
+        if (!paginationEl) return;
         
         // Handle pagination clicks
-        pagination.addEventListener('click', function(e) {
+        paginationEl.addEventListener('click', function(e) {
             e.preventDefault();
             
             const link = e.target.closest('a');
@@ -184,6 +184,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         
                         // Update pagination
                         updatePagination(data.pagination);
+                        // console.error(pagination)
                         
                         // Scroll to top smoothly
                         window.scrollTo({
@@ -270,6 +271,8 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('Current Page2: ', currentPage);
             for (let i = 1; i <= totalPages; i++) {
                 if (1 != totalPages && (!(i >= currentPage + range + 1 || i <= currentPage - range - 1) || totalPages <= showItems)) {
+                    console.error('Current Page3: ', currentPage);
+                    console.error('i: ', i)
                     if (currentPage == i) {
                         html += `<span class="px-4 py-2 bg-blue-600 text-white rounded-lg">${i}</span>`;
                     } else {
@@ -289,7 +292,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             
             html += '</nav>';
-            pagination.innerHTML = html;
+            paginationEl.innerHTML = html;
         }
         
         // Add history pushState for AJAX navigation
