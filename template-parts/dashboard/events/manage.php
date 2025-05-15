@@ -6,9 +6,6 @@ if (!in_array('partner_manager', $current_user->roles) && !in_array('administrat
     echo '<p class="text-red-500">Access Denied.</p>';
     return;
 }
-
-// Handle Add/Edit/Delete logic here or via separate AJAX endpoints
-// For now, focus on UI
 ?>
 
 <div class="space-y-6">
@@ -24,29 +21,6 @@ if (!in_array('partner_manager', $current_user->roles) && !in_array('administrat
             'class' => 'custom-class',
             'icon' => 'fas fa-check'
         ]); ?>
-    </div>
-
-    <!-- Add/Edit Form -->
-    <div id="assetFormContainer" class="hidden bg-gray-50 dark:bg-gray-800 p-4 rounded shadow">
-        <form id="assetForm" class="space-y-4">
-            <input type="hidden" name="asset_id" id="asset_id" value="">
-            <div>
-                <label class="block font-medium">Event Name</label>
-                <input type="text" name="asset_name" id="asset_name" class="w-full p-2 rounded border">
-            </div>
-            <div>
-                <label class="block font-medium">Tags (comma separated)</label>
-                <input type="text" name="asset_tags" id="asset_tags" class="w-full p-2 rounded border">
-            </div>
-            <div>
-                <label class="block font-medium">Asset File</label>
-                <input type="file" name="asset_file" id="asset_file" class="w-full">
-            </div>
-            <div class="flex justify-end gap-2">
-                <button type="button" id="cancelAssetBtn" class="text-gray-600 hover:underline">Cancel</button>
-                <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Save</button>
-            </div>
-        </form>
     </div>
 
     <form id="asset-form" class="hidden bg-white dark:bg-gray-800 p-4 rounded shadow" onsubmit="submitAssetForm(event)">
