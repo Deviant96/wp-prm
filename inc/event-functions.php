@@ -1,6 +1,6 @@
 <?php
-// wp_enqueue_script('flatpickr', 'https://cdn.jsdelivr.net/npm/flatpickr', [], null, true);
-// wp_enqueue_style('flatpickr-style', 'https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css');
+wp_enqueue_script('flatpickr', 'https://cdn.jsdelivr.net/npm/flatpickr', [], null, true);
+wp_enqueue_style('flatpickr-style', 'https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css');
 
 
 // add_action( 'rest_api_init',  'hfm_register_custom_rest_route');
@@ -132,65 +132,133 @@ function create_event_rest($request) {
 //     return ob_get_clean();
 // }
 
-// add_action('rest_api_init', function () {
-//     register_rest_route('prm/v1', '/events', [
-//         'methods' => 'POST',
-//         'callback' => 'prm_fetch_events',
-//         'permission_callback' => '__return_true',
-//     ]);
-// });
+add_action('rest_api_init', function () {
+    register_rest_route('prm/v1', '/tbyte_prm_events', [
+        'methods' => 'POST',
+        'callback' => 'tbyte_prm_fetch_events',
+        'permission_callback' => '__return_true',
+    ]);
+});
 
 function tbyte_prm_fetch_events($request) {
     $params = $request->get_json_params();
+
+    // Validate and sanitize input
+    $search = isset($params['search']) ? sanitize_text_field($params['search']) : '';
+    $page = isset($params['page']) ? absint($params['page']) : 1;
+    $per_page = isset($params['posts_per_page']) ? absint($params['posts_per_page']) : 10;
     
     $args = [
         'post_type' => 'tbyte_prm_events',
-        'posts_per_page' => 9,
-        's' => $params['search'] ?? '',
-        'tax_query' => [],
+        'posts_per_page' => $per_page,
+        'paged' => $page,
+        's' => $search,
+        'tax_query' => ['relation' => 'AND'],
         'meta_query' => [],
     ];
 
-    // Taxonomy filter
-    if (!empty($params['filters'])) {
+    // Taxonomy filters
+    if (!empty($params['filters']) && is_array($params['filters'])) {
+        $tax_queries = [];
+        
         foreach ($params['filters'] as $filter) {
+            if (!isset($filter['tax']) || !isset($filter['value'])) continue;
+            
+            $taxonomy = sanitize_text_field($filter['tax']);
+            $term = sanitize_text_field($filter['value']);
+            
+            if (taxonomy_exists($taxonomy) && term_exists($term, $taxonomy)) {
+                $tax_queries[$taxonomy][] = $term;
+            }
+        }
+        
+        foreach ($tax_queries as $tax => $terms) {
             $args['tax_query'][] = [
-                'taxonomy' => sanitize_text_field($filter['tax']),
+                'taxonomy' => $tax,
                 'field' => 'slug',
-                'terms' => sanitize_text_field($filter['value']),
+                'terms' => $terms,
+                'operator' => 'IN',
             ];
         }
     }
 
     // Date range filter
     if (!empty($params['range'])) {
-        $dates = explode(" to ", $params['range']);
+        $dates = explode(" to ", sanitize_text_field($params['range']));
+        
         if (count($dates) === 2) {
-            $args['meta_query'][] = [
-                'key' => '_event_date',
-                'value' => [strtotime($dates[0]), strtotime($dates[1])],
-                'compare' => 'BETWEEN',
-                'type' => 'NUMERIC'
-            ];
+            $start_date = strtotime($dates[0]);
+            $end_date = strtotime($dates[1]);
+            
+            if ($start_date && $end_date) {
+                $args['meta_query'][] = [
+                    'key' => '_event_date',
+                    'value' => [$start_date, $end_date],
+                    'compare' => 'BETWEEN',
+                    'type' => 'NUMERIC'
+                ];
+                
+                // Optional: Order by event date
+                $args['meta_key'] = '_event_date';
+                $args['orderby'] = 'meta_value_num';
+                $args['order'] = 'ASC';
+            }
         }
     }
 
-    ob_start();
-    $query = new WP_Query([
-        'post_type' => 'tbyte_prm_events',
-        // filters here
-    ]);
+    $query = new WP_Query($args);
+
+    if (is_wp_error($query)) {
+        return new WP_Error('query_failed', 'Failed to retrieve events: ' . $query->get_error_message(), ['status' => 500]);
+    }
+
     if ($query->have_posts()) {
+        $data = [];
+        
         while ($query->have_posts()) {
             $query->the_post();
-            get_template_part('template-parts/dashboard/events/event', 'card');
+            $post_id = get_the_ID();
+            
+            $data[] = [
+                'id' => $post_id,
+                'title' => get_the_title(),
+                'link' => get_permalink(),
+                'excerpt' => get_the_excerpt(),
+                'thumbnail' => get_the_post_thumbnail_url($post_id, 'medium'),
+                'type' => wp_get_post_terms($post_id, 'event_type', ['fields' => 'names']),
+                'tags' => wp_get_post_terms($post_id, 'post_tag', ['fields' => 'names']),
+                'date' => get_post_meta($post_id, '_event_date', true),
+                'formatted_date' => date_i18n(get_option('date_format'), get_post_meta($post_id, '_event_date', true)),
+                'venue' => get_post_meta($post_id, '_event_venue', true),
+                'location' => get_post_meta($post_id, '_event_location', true),
+            ];
         }
+        
+        $response = [
+            'items' => $data,
+            'pagination' => [
+                'total' => (int) $query->found_posts,
+                'total_pages' => (int) $query->max_num_pages,
+                'current_page' => $page,
+                'per_page' => $per_page,
+            ],
+            'message' => 'Events retrieved successfully',
+        ];
     } else {
-        echo '<p class="text-gray-500 dark:text-gray-400">No events found.</p>';
+        $response = [
+            'items' => [],
+            'message' => 'No events found matching your criteria',
+            'pagination' => [
+                'total' => 0,
+                'total_pages' => 0,
+                'current_page' => $page,
+                'per_page' => $per_page,
+            ],
+        ];
     }
-    $html = ob_get_clean();
 
-    return new WP_REST_Response($html, 200);
+    wp_reset_postdata();
+    return new WP_REST_Response($response, 200);
 }
 
 
