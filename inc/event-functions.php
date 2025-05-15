@@ -184,18 +184,18 @@ function tbyte_prm_fetch_events($request) {
 
     // Date range filter
     if (!empty($params['range'])) {
-        $dates = explode(" to ", sanitize_text_field($params['range']));
+        $dates = $params['range'];
         
         if (count($dates) === 2) {
-            $start_date = strtotime($dates[0]);
-            $end_date = strtotime($dates[1]);
+            $start_date = $dates[0];
+            $end_date = $dates[1];
             
             if ($start_date && $end_date) {
                 $args['meta_query'][] = [
                     'key' => '_event_date',
                     'value' => [$start_date, $end_date],
                     'compare' => 'BETWEEN',
-                    'type' => 'NUMERIC'
+                    'type' => 'DATE'
                 ];
                 
                 // Optional: Order by event date
