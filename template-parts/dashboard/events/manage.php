@@ -1,6 +1,12 @@
 <?php
 $current_user = wp_get_current_user();
 
+// Check if user is logged in, if not, redirect to login page
+if (!is_user_logged_in()) {
+    wp_redirect(home_url('/partner-portal?tab=login'));
+    exit;
+}
+
 // Check if current user is Partner Manager
 if (!in_array('partner_manager', $current_user->roles) && !in_array('administrator', $current_user->roles)) {
     echo '<p class="text-red-500">Access Denied.</p>';
