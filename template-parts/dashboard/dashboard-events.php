@@ -1,6 +1,18 @@
 <div class="events-container p-4 dark:bg-gray-900 text-gray-800 dark:text-gray-100">
+    <!-- Filters -->
     <div class="flex justify-between items-center mb-4">
-        <input type="text" id="event-search" placeholder="Search events..." class="input" />
+        <div class="flex items-center gap-4 relative">
+            <label for="event-search" class="text-sm">Search Events:</label>
+            <input type="text" id="event-search" placeholder="Search events..." class="input" /> 
+            
+            <!-- Loading spinner (hidden) -->
+            <div id="loadingSpinnerSearch" class="absolute left-full ml-2 hidden">
+                <svg class="animate-spin h-4 w-4 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+            </div>
+        </div>
         
         <input type="text" id="date-range" class="input max-w-xs" placeholder="Filter by date range" />
 
@@ -103,42 +115,8 @@
     </div>
 </div>
 
-
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-    flatpickr("#date-range", {
-        mode: "range",
-        onChange: fetchEvents
-    });
-
-    document.getElementById('event-search').addEventListener('input', fetchEvents);
-    document.querySelectorAll('.event-filter').forEach(cb => cb.addEventListener('change', fetchEvents));
-    document.getElementById('calendar-toggle').addEventListener('click', toggleCalendarView);
-
-    function fetchEvents() {
-        const search = document.getElementById('event-search').value;
-        const range = document.getElementById('date-range').value;
-        const filters = [...document.querySelectorAll('.event-filter:checked')].map(cb => ({
-            tax: cb.dataset.tax,
-            value: cb.value
-        }));
-
-        fetch(`/wp-json/prm/v1/tbyte_prm_events`, {
-            method: "POST",
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ search, range, filters })
-        })
-        .then(res => res.text())
-        .then(html => {
-            document.getElementById('eventList').innerHTML = html;
-        });
-    }
-
-    function toggleCalendarView() {
-        document.getElementById('eventList').classList.toggle('calendar-view');
-    }
-});
-</script>
+<!-- Load events filter -->
+<script src="<?php echo get_template_directory_uri(); ?>/assets/js/events-filter.js"></script>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
