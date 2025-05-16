@@ -53,6 +53,13 @@ function wp_prm_enqueue_scripts()
     wp_localize_script('wp-api', 'wpApiSettings', [
         'root'  => esc_url_raw(rest_url()),
         'nonce' => wp_create_nonce('wp_rest'),
+        'theme_path'  => get_template_directory_uri(),
+        'site_url'    => home_url(),
+        'current_user' => [
+            'id'      => get_current_user_id(),
+            'is_admin' => current_user_can('manage_options'),
+        ],
+        'assets_path'  => get_template_directory_uri() . '/assets/',
     ]);
 }
 add_action('wp_enqueue_scripts', 'wp_prm_enqueue_scripts');
