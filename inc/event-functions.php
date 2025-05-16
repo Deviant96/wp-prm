@@ -1,8 +1,10 @@
 <?php
-wp_enqueue_script('flatpickr', 'https://cdn.jsdelivr.net/npm/flatpickr', [], null, true);
-wp_enqueue_style('flatpickr-style', 'https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css');
-
-
+function wp_prm_enqueue_flatpickr()
+{
+    wp_enqueue_script('flatpickr', 'https://cdn.jsdelivr.net/npm/flatpickr', [], null, true);
+    wp_enqueue_style('flatpickr-style', 'https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css');
+}
+add_action('wp_enqueue_scripts', 'wp_prm_enqueue_flatpickr');
 // add_action( 'rest_api_init',  'hfm_register_custom_rest_route');
 
 // function hfm_register_custom_rest_route() {
