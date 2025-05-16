@@ -27,10 +27,9 @@ $event_tags = get_query_var('event_tags');
             <?php if ($event_tags) : ?>
                 <div class="mt-3 flex flex-wrap gap-2">
                     <?php
-                        function print_tags($el) {
+                        array_map(function ($el) {
                             echo '<span class="text-xs px-2 py-1 bg-gray-100 rounded-full">' . $el->name . '</span>';
-                        }
-                        array_map('print_tags', $event_tags);
+                        }, $event_tags);
                     ?>
                 </div>
             <?php endif; ?>
