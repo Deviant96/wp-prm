@@ -7,19 +7,19 @@ if (!in_array('partner_manager', $current_user->roles) && !in_array('administrat
 }
 ?>
 
-<h1 class="text-3xl font-bold text-gray-800 dark:text-white mb-6">Create New Event</h1>
+<h1 class="text-3xl font-bold text-gray-800  mb-6">Create New Event</h1>
 
 <!-- Event Form -->
-<div id="eventFormContainer" class="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700">
-    <h3 class="text-2xl font-semibold mb-6 text-gray-800 dark:text-white border-b pb-4 border-gray-200 dark:border-gray-700">Event Details</h3>
+<div id="eventFormContainer" class="bg-white  p-8 rounded-lg shadow-lg border border-gray-200 ">
+    <h3 class="text-2xl font-semibold mb-6 text-gray-800  border-b pb-4 border-gray-200 ">Event Details</h3>
     <form id="eventForm" class="space-y-6" enctype="multipart/form-data">
         <input type="hidden" name="event_id" id="event_id" value="">
 
         <!-- Title Row -->
         <div>
-            <label for="event_title" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Event Title*</label>
+            <label for="event_title" class="block text-sm font-medium text-gray-700  mb-2">Event Title*</label>
             <input type="text" name="event_title" id="event_title" required
-                class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500 transition duration-200"
+                class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500       transition duration-200"
                 placeholder="Enter event title">
         </div>
 
@@ -27,9 +27,9 @@ if (!in_array('partner_manager', $current_user->roles) && !in_array('administrat
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             <!-- Event Type -->
             <div>
-                <label for="event_type" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Event Type*</label>
+                <label for="event_type" class="block text-sm font-medium text-gray-700  mb-2">Event Type*</label>
                 <select name="event_type" id="event_type" required
-                    class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500 transition duration-200">
+                    class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500       transition duration-200">
                     <option value="" selected disabled>Select Event Type</option>
                     <?php
                     $event_types = get_terms(array(
@@ -46,17 +46,17 @@ if (!in_array('partner_manager', $current_user->roles) && !in_array('administrat
 
             <!-- Venue -->
             <div>
-                <label for="event_venue" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Venue*</label>
+                <label for="event_venue" class="block text-sm font-medium text-gray-700  mb-2">Venue*</label>
                 <input type="text" name="event_venue" id="event_venue" required
-                    class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500 transition duration-200"
+                    class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500       transition duration-200"
                     placeholder="Enter venue">
             </div>
 
             <!-- Event Status -->
             <div>
-                <label for="event_status" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Status*</label>
+                <label for="event_status" class="block text-sm font-medium text-gray-700  mb-2">Status*</label>
                 <select name="event_status" id="event_status" required
-                    class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500 transition duration-200">
+                    class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500       transition duration-200">
                     <option value="draft">Draft</option>
                     <option value="publish" selected>Publish</option>
                     <option value="archived">Archived</option>
@@ -69,23 +69,23 @@ if (!in_array('partner_manager', $current_user->roles) && !in_array('administrat
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             <!-- Event Date -->
             <div>
-                <label for="event_date" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Event Date*</label>
+                <label for="event_date" class="block text-sm font-medium text-gray-700  mb-2">Event Date*</label>
                 <input type="date" name="event_date" id="event_date" required
-                    class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500 transition duration-200">
+                    class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500       transition duration-200">
             </div>
 
             <!-- Start Time -->
             <div>
-                <label for="start_time" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Start Time*</label>
+                <label for="start_time" class="block text-sm font-medium text-gray-700  mb-2">Start Time*</label>
                 <input type="time" name="start_time" id="start_time" required
-                    class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500 transition duration-200">
+                    class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500       transition duration-200">
             </div>
 
             <!-- End Time -->
             <div>
-                <label for="end_time" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">End Time*</label>
+                <label for="end_time" class="block text-sm font-medium text-gray-700  mb-2">End Time*</label>
                 <input type="time" name="end_time" id="end_time" required
-                    class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500 transition duration-200">
+                    class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500       transition duration-200">
             </div>
         </div>
 
@@ -93,27 +93,27 @@ if (!in_array('partner_manager', $current_user->roles) && !in_array('administrat
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <!-- Event URL -->
             <div>
-                <label for="event_url" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Event URL</label>
+                <label for="event_url" class="block text-sm font-medium text-gray-700  mb-2">Event URL</label>
                 <input type="url" name="event_url" id="event_url"
-                    class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500 transition duration-200"
+                    class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500       transition duration-200"
                     placeholder="https://example.com/event">
-                <small class="text-gray-500 dark:text-gray-400">If not filled, then Event URL will use default internal link.</small>
+                <small class="text-gray-500 ">If not filled, then Event URL will use default internal link.</small>
             </div>
 
             <!-- Tags -->
             <div>
-                <label for="event_tags" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Tags</label>
+                <label for="event_tags" class="block text-sm font-medium text-gray-700  mb-2">Tags</label>
                 <input type="text" name="event_tags" id="event_tags"
-                    class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500 transition duration-200"
+                    class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500       transition duration-200"
                     placeholder="Comma separated tags (e.g., music, conference, workshop)">
             </div>
         </div>
 
         <!-- Description -->
         <div>
-            <label for="event_description" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Description*</label>
+            <label for="event_description" class="block text-sm font-medium text-gray-700  mb-2">Description*</label>
             <textarea name="event_description" id="event_description" rows="5" required
-                class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500 transition duration-200"
+                class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500       transition duration-200"
                 placeholder="Enter detailed event description"></textarea>
         </div>
 
@@ -121,11 +121,11 @@ if (!in_array('partner_manager', $current_user->roles) && !in_array('administrat
         <?php wp_nonce_field('save_event_nonce', 'security'); ?>
 
         <!-- Form Actions -->
-        <div class="flex justify-end gap-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-            <a href="<?php echo home_url('/?tab=events-manage'); ?>" id="cancelEventBtn" class="px-6 py-2.5 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium dark:text-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 transition duration-200">
+        <div class="flex justify-end gap-4 pt-4 border-t border-gray-200 ">
+            <a href="<?php echo home_url('/?tab=events-manage'); ?>" id="cancelEventBtn" class="px-6 py-2.5 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium    transition duration-200">
                 Cancel
             </a>
-            <button type="submit" class="px-6 py-2.5 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 focus:ring-4 focus:ring-blue-200 dark:focus:ring-blue-900 transition duration-200">
+            <button type="submit" class="px-6 py-2.5 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 focus:ring-4 focus:ring-blue-200  transition duration-200">
                 Create Event
             </button>
         </div>

@@ -1,9 +1,9 @@
-<div class="asset-card bg-white dark:bg-gray-800 rounded shadow p-4 relative">
+<div class="asset-card bg-white  rounded shadow p-4 relative">
     <?php if (has_post_thumbnail()): ?>
         <img src="<?php the_post_thumbnail_url(); ?>" class="mb-3 rounded h-32 object-cover w-full" alt="">
     <?php endif; ?>
     <h3 class="font-bold"><?php the_title(); ?></h3>
-    <p class="text-sm text-gray-500 dark:text-gray-300">
+    <p class="text-sm text-gray-500 ">
         <?php echo get_the_date(); ?> •
         <?php echo size_format(filesize(get_attached_file(get_post_thumbnail_id()))); ?>
     </p>

@@ -18,7 +18,7 @@ if (!in_array('partner_manager', $current_user->roles) && !in_array('administrat
     </div>
 
     <!-- Add/Edit Form -->
-    <div id="assetFormContainer" class="hidden bg-gray-50 dark:bg-gray-800 p-4 rounded shadow">
+    <div id="assetFormContainer" class="hidden bg-gray-50  p-4 rounded shadow">
         <form id="assetForm" class="space-y-4">
             <input type="hidden" name="asset_id" id="asset_id" value="">
             <div>
@@ -40,7 +40,7 @@ if (!in_array('partner_manager', $current_user->roles) && !in_array('administrat
         </form>
     </div>
 
-    <form id="asset-form" class="hidden bg-white dark:bg-gray-800 p-4 rounded shadow" onsubmit="submitAssetForm(asset)">
+    <form id="asset-form" class="hidden bg-white  p-4 rounded shadow" onsubmit="submitAssetForm(asset)">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <input type="text" name="asset_name" placeholder="Asset Name" class="input" required />
             <input type="url" name="asset_url" placeholder="Asset URL" class="input" required />
@@ -53,7 +53,7 @@ if (!in_array('partner_manager', $current_user->roles) && !in_array('administrat
     <!-- Assets Table -->
     <div id="assets-list" class="overflow-auto rounded shadow">
         <table class="w-full table-auto text-left text-sm">
-            <thead class="bg-gray-100 dark:bg-gray-700">
+            <thead class="bg-gray-100 ">
                 <tr>
                     <th class="p-2">ID</th>
                     <th class="p-2">Name</th>
@@ -63,10 +63,10 @@ if (!in_array('partner_manager', $current_user->roles) && !in_array('administrat
                     <th class="p-2 text-right">Actions</th>
                 </tr>
             </thead>
-            <tbody id="assets-table-body2" class="bg-white dark:bg-gray-900 divide-y">
+            <tbody id="assets-table-body2" class="bg-white  divide-y">
                 <!-- Assets list -->
             </tbody>
-            <tfoot class="bg-gray-100 dark:bg-gray-700">
+            <tfoot class="bg-gray-100 ">
                 <tr>
                     <td colspan="6" class="p-2 text-center text-gray-500">
                         <div id="asset-pagination" class="flex justify-center mt-4">

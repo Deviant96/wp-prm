@@ -10,7 +10,7 @@ jQuery(document).ready(function($) {
         $('#assetFormContainer').addClass('hidden');
         $('#show-asset-form').removeClass('hidden');
         $('#assetForm')[0].reset();
-        $('#asset-content-field').html('<div class="bg-gray-100 dark:bg-gray-700 p-4 rounded text-center text-gray-500 dark:text-gray-300">Please select a document type to see specific requirements</div>');
+        $('#asset-content-field').html('<div class="bg-gray-100  p-4 rounded text-center text-gray-500 ">Please select a document type to see specific requirements</div>');
     });
     
     // Handle form submission

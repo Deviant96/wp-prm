@@ -53,7 +53,7 @@ function prm_ajax_load_assets() {
             ]);
         }
     } else {
-        echo '<p class="text-gray-500 dark:text-gray-300">No assets found.</p>';
+        echo '<p class="text-gray-500 ">No assets found.</p>';
     }
 
     $html = ob_get_clean();
@@ -128,17 +128,17 @@ function document_upload_form() {
     
     ?>
     <div class="space-y-6">
-        <h2 class="text-2xl font-bold text-gray-800 dark:text-white">Add New Document</h2>
+        <h2 class="text-2xl font-bold text-gray-800 ">Add New Document</h2>
         
         <form id="document-upload-form" class="space-y-4" enctype="multipart/form-data">
             <div>
-                <label for="document-title" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Title*</label>
-                <input type="text" id="document-title" name="title" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                <label for="document-title" class="block text-sm font-medium text-gray-700 ">Title*</label>
+                <input type="text" id="document-title" name="title" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500   ">
             </div>
             
             <div>
-                <label for="document-type" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Document Type*</label>
-                <select id="document-type" name="document_type" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                <label for="document-type" class="block text-sm font-medium text-gray-700 ">Document Type*</label>
+                <select id="document-type" name="document_type" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500   ">
                     <option value="">Select a document type</option>
                     <?php foreach ($doc_types as $type) : 
                         $field_type = get_term_meta($type->term_id, 'doc_type_field_type', true);
@@ -173,35 +173,35 @@ function document_upload_form() {
             switch(fieldType) {
                 case 'text':
                     fieldHtml = `
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Content*</label>
-                        <textarea name="content" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"></textarea>
+                        <label class="block text-sm font-medium text-gray-700 ">Content*</label>
+                        <textarea name="content" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500   "></textarea>
                     `;
                     break;
                     
                 case 'url':
                     fieldHtml = `
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">URL*</label>
-                        <input type="url" name="content" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                        <label class="block text-sm font-medium text-gray-700 ">URL*</label>
+                        <input type="url" name="content" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500   ">
                     `;
                     break;
                     
                 case 'image':
                     fieldHtml = `
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Image File* (JPG, PNG, GIF)</label>
+                        <label class="block text-sm font-medium text-gray-700 ">Image File* (JPG, PNG, GIF)</label>
                         <input type="file" name="content" accept=".jpg,.jpeg,.png,.gif" required class="mt-1 block w-full">
                     `;
                     break;
                     
                 case 'pdf':
                     fieldHtml = `
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">PDF File* (.pdf)</label>
+                        <label class="block text-sm font-medium text-gray-700 ">PDF File* (.pdf)</label>
                         <input type="file" name="content" accept=".pdf" required class="mt-1 block w-full">
                     `;
                     break;
                     
                 case 'document':
                     fieldHtml = `
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Document File* (.doc, .docx, .pdf)</label>
+                        <label class="block text-sm font-medium text-gray-700 ">Document File* (.doc, .docx, .pdf)</label>
                         <input type="file" name="content" accept=".doc,.docx,.pdf" required class="mt-1 block w-full">
                     `;
                     break;

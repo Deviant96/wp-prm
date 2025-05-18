@@ -128,7 +128,7 @@ function create_event_rest($request) {
 //             get_template_part('template-parts/dashboard/event', 'card');
 //         }
 //     } else {
-//         echo '<p class="text-gray-500 dark:text-gray-400">No events found.</p>';
+//         echo '<p class="text-gray-500 ">No events found.</p>';
 //     }
 //     wp_reset_postdata();
 //     return ob_get_clean();

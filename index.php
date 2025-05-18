@@ -149,7 +149,7 @@ set_query_var('current_user', $current_user);
     <?php get_template_part('template-parts/dashboard/dashboard', 'header'); ?>
 
     <!-- <div class="dashboard-container"> -->
-    <div class="flex min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-100">
+    <div class="flex min-h-screen bg-gray-100  text-gray-800 ">
 
         <!-- Sidebar -->
         <?php get_template_part('template-parts/dashboard/dashboard', 'sidebar'); ?>

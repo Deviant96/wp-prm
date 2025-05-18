@@ -1,4 +1,4 @@
-<div class="events-container p-4 dark:bg-gray-900 text-gray-800 dark:text-gray-100">
+<div class="events-container p-4  text-gray-800 ">
     <!-- Filters -->
     <div class="flex justify-between items-center mb-4">
         <div class="flex items-center gap-4 relative">
@@ -34,7 +34,7 @@
     </div>
 
     <!-- Upcoming Featured Event -->
-    <div class="relative w-full rounded-2xl overflow-hidden bg-gray-100 dark:bg-gray-800 mb-4 shadow-lg">
+    <div class="relative w-full rounded-2xl overflow-hidden bg-gray-100  mb-4 shadow-lg">
         <div class="absolute inset-0 bg-gradient-to-br from-blue-500 to-blue-700 opacity-50"></div>
         <img src="<?php get_template_directory_uri() . '/assets/images/events-bg.'; ?>'" alt="" class="w-full h-64 object-cover opacity-80" />
         <div class="absolute inset-0 bg-gradient-to-br from-black/60 to-transparent flex flex-col justify-end p-6 text-white">
@@ -191,32 +191,32 @@
                 const eventDescription = event.description || '';
                 
                 return `
-                    <div class="flex flex-col sm:flex-row bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
-                        <div class="sm:w-1/3 bg-gray-200 dark:bg-gray-700 h-32 sm:h-auto">
+                    <div class="flex flex-col sm:flex-row bg-white  border border-gray-200  rounded-xl overflow-hidden">
+                        <div class="sm:w-1/3 bg-gray-200  h-32 sm:h-auto">
                             ${!eventImage ? `
-                                <div class="w-full h-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                                <div class="w-full h-full bg-gray-100  flex items-center justify-center">
                                     <!-- Your not-found image placeholder would go here -->
                                     <svg class="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                                     </svg>
                                 </div>
                             ` : `
-                                <div class="w-full h-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                                <div class="w-full h-full bg-gray-100  flex items-center justify-center">
                                     <img src="${eventImage}" alt="Event" class="w-full h-full object-cover">
                                 </div>
                             `}
                         </div>
                         <div class="p-4 flex flex-col justify-between flex-grow">
                             <div>
-                                <div class="text-sm text-gray-500 dark:text-gray-400 mb-1">${date} – ${eventType}</div>
-                                <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100">
+                                <div class="text-sm text-gray-500  mb-1">${date} – ${eventType}</div>
+                                <h3 class="text-lg font-semibold text-gray-800 ">
                                     ${event.title}
                                 </h3>
-                                <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">${eventDescription}</p>
+                                <p class="text-sm text-gray-600  mt-1">${eventDescription}</p>
                             </div>
                             <div class="mt-3 flex justify-between items-center">
-                                <a href="${event.link}" class="text-blue-600 dark:text-blue-400 hover:underline text-sm">View Details</a>
-                                <ion-icon name="calendar-outline" class="text-gray-400 dark:text-gray-500 text-xl"></ion-icon>
+                                <a href="${event.link}" class="text-blue-600  hover:underline text-sm">View Details</a>
+                                <ion-icon name="calendar-outline" class="text-gray-400  text-xl"></ion-icon>
                             </div>
                         </div>
                     </div>

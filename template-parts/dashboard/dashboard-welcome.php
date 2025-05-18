@@ -16,7 +16,7 @@
         <div class="flex justify-between items-center mb-4">
             <h3 class="text-xl font-semibold">Latest Marketing Assets</h3>
             <input type="text" placeholder="Search assets..."
-                class="border border-gray-300 dark:border-gray-700 rounded px-3 py-1.5 text-sm focus:ring-2 focus:ring-blue-500">
+                class="border border-gray-300  rounded px-3 py-1.5 text-sm focus:ring-2 focus:ring-blue-500">
         </div>
         <div class="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             <?php
@@ -28,16 +28,16 @@
                 while ($assets->have_posts()):
                     $assets->the_post(); ?>
                     <div
-                        class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-4 rounded-xl shadow hover:shadow-md transition">
+                        class="bg-white  border border-gray-200  p-4 rounded-xl shadow hover:shadow-md transition">
                         <h4 class="font-semibold text-lg mb-1"><?php the_title(); ?></h4>
-                        <p class="text-sm text-gray-600 dark:text-gray-300"><?php echo wp_trim_words(get_the_excerpt(), 15); ?>
+                        <p class="text-sm text-gray-600 "><?php echo wp_trim_words(get_the_excerpt(), 15); ?>
                         </p>
                         <a href="<?php the_permalink(); ?>" class="text-blue-600 text-sm mt-2 inline-block">View Asset</a>
                     </div>
                 <?php endwhile;
                 wp_reset_postdata();
             else: ?>
-                <p class="text-gray-500 dark:text-gray-400">No assets found.</p>
+                <p class="text-gray-500 ">No assets found.</p>
             <?php endif; ?>
         </div>
     </div>
@@ -83,13 +83,13 @@
                     $venue      = get_post_meta(get_the_ID(), '_event_venue', true);
             ?>
 
-                    <div class="p-4 border border-gray-200 dark:border-gray-700 rounded-xl shadow bg-white dark:bg-gray-800 shadow hover:shadow-md transition">
+                    <div class="p-4 border border-gray-200  rounded-xl shadow bg-white  shadow hover:shadow-md transition">
                         <h2 class="text-xl font-semibold mb-1"><?php the_title(); ?></h2>
-                        <p class="text-gray-600 dark:text-gray-300 mb-2">
+                        <p class="text-gray-600  mb-2">
                             📅 <?= date('F j, Y', strtotime($date)); ?>,
                             🕒 <?= esc_html($start_time); ?> - <?= esc_html($end_time); ?>
                         </p>
-                        <p class="text-gray-500 dark:text-gray-400 mb-4">📍 <?= esc_html($venue); ?></p>
+                        <p class="text-gray-500  mb-4">📍 <?= esc_html($venue); ?></p>
                         <a href="<?= get_permalink(); ?>" class="text-blue-600 hover:underline">View Details →</a>
                     </div>
 
@@ -106,12 +106,12 @@
     <!-- (Optional) Quick Actions -->
     <div class="grid md:grid-cols-2 gap-4 mt-6">
         <div
-            class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-4 rounded-xl shadow text-center hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+            class="bg-white  border border-gray-200  p-4 rounded-xl shadow text-center hover:bg-gray-50  transition">
             <p class="font-semibold">Need help?</p>
             <a href="/partner-portal?tab=support" class="text-blue-600 text-sm mt-1 inline-block">Contact Support</a>
         </div>
         <div
-            class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-4 rounded-xl shadow text-center hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+            class="bg-white  border border-gray-200  p-4 rounded-xl shadow text-center hover:bg-gray-50  transition">
             <p class="font-semibold">Want to add new content?</p>
             <a href="/partner-portal?tab=assets&action=add" class="text-blue-600 text-sm mt-1 inline-block">Add New
                 Asset</a>
