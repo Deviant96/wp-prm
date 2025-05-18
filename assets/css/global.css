@@ -1,0 +1,58 @@
+/* Global CSS Styles for WordPress Custom Theme */
+:root {
+  --font-family-base: 'Urbanist', sans-serif;
+  --font-weight-normal: 400;
+  --font-weight-bold: 700;
+  --text-color: #222;
+  --background-color: #fff;
+  --accent-color: #0073e6;
+  --heading-color: #111;
+  --link-color: var(--accent-color);
+  --link-hover-color: #005bb5;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-family-base);
+  font-weight: var(--font-weight-normal);
+  color: var(--text-color);
+  background-color: var(--background-color);
+  line-height: 1.6;
+  font-size: 16px;
+}
+/* 
+h1, h2, h3, h4, h5, h6 {
+  color: var(--heading-color);
+  font-weight: var(--font-weight-bold);
+  line-height: 1.2;
+  margin-top: 1em;
+  margin-bottom: 0.5em;
+} */
+
+a {
+  /* color: var(--link-color); */
+  text-decoration: none;
+}
+/* 
+a:hover,
+a:focus {
+  color: var(--link-hover-color);
+  text-decoration: underline;
+}
+
+p {
+  margin-bottom: 1em;
+}
+
+ul, ol {
+  margin-bottom: 1em;
+  padding-left: 1.5em;
+} */
+
+button,
+input,
+select,
+textarea {
+  font-family: var(--font-family-base);
+}

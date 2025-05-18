@@ -39,6 +39,22 @@ require get_template_directory() . '/inc/assets-functions.php';
 require get_template_directory() . '/inc/event-functions.php';
 require get_template_directory() . '/inc/user-approval-functions.php';
 
+function mytheme_enqueue_styles() {
+    wp_enqueue_style(
+        'urbanist-font',
+        'https://fonts.googleapis.com/css2?family=Urbanist:wght@300;400;500;600;700;800&display=swap',
+        false
+    );
+
+    wp_enqueue_style(
+        'mytheme-global-style',
+        get_template_directory_uri() . '/assets/css/global.css',
+        array('urbanist-font')
+    );
+}
+add_action('wp_enqueue_scripts', 'mytheme_enqueue_styles');
+
+
 // Enqueue styles and scripts
 function wp_prm_enqueue_scripts()
 {
