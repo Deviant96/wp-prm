@@ -49,7 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentPage = 1;
     let isLoading = false;
 
-    async function fetchEvents() {
+    async function fetchEvents(perPage = 10) {
         if (isLoading) return;
         isLoading = true;
         showSearchLoadingIndicator();
@@ -75,7 +75,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     search, 
                     range, 
                     filters, 
-                    page: currentPage 
+                    page: currentPage,
+                    post_per_page: perPage,
                 })
             });
 

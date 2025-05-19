@@ -13,12 +13,12 @@
 
     <!-- Latest Assets -->
     <div>
-        <div class="flex justify-between items-center mb-4">
+        <div class="flex justify-between items-center">
             <h3 class="text-xl font-semibold">Latest Marketing Assets</h3>
             <input type="text" placeholder="Search assets..."
-                class="border border-gray-300  rounded px-3 py-1.5 text-sm focus:ring-2 focus:ring-blue-500">
+                id="asset-search" class="border border-gray-300  rounded px-3 py-1.5 text-sm focus:ring-2 focus:ring-blue-500">
         </div>
-        <div class="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <div id="asset-list" class="min-h-[300px] border border-[#d2d2d2] rounded-[19px] p-5 grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             <?php
             $assets = new WP_Query([
                 'post_type' => 'tbyte_prm_assets',
@@ -27,13 +27,7 @@
             if ($assets->have_posts()):
                 while ($assets->have_posts()):
                     $assets->the_post(); ?>
-                    <div
-                        class="bg-white  border border-gray-200  p-4 rounded-xl shadow hover:shadow-md transition">
-                        <h4 class="font-semibold text-lg mb-1"><?php the_title(); ?></h4>
-                        <p class="text-sm text-gray-600 "><?php echo wp_trim_words(get_the_excerpt(), 15); ?>
-                        </p>
-                        <a href="<?php the_permalink(); ?>" class="text-blue-600 text-sm mt-2 inline-block">View Asset</a>
-                    </div>
+                    <?php get_template_part('template-parts/dashboard/assets/asset-card'); ?>
                 <?php endwhile;
                 wp_reset_postdata();
             else: ?>
@@ -119,3 +113,21 @@
     </div>
 
 </div>
+
+
+<script src="<?php echo get_template_directory_uri(); ?>/assets/js/assets-filter.js"></script>
+<script>
+    function copyAsset(e, el) {
+        e.preventDefault(); // Prevent the link from navigating
+
+        const textToCopy = el.getAttribute('href');
+
+        navigator.clipboard.writeText(textToCopy)
+            .then(() => {
+                showSuccess("Copied to clipboard: " + textToCopy);
+            })
+            .catch(err => {
+                ShowError("Failed to copy: " + err);
+            });
+    }
+</script>

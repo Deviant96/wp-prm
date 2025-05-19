@@ -457,6 +457,7 @@ add_action('rest_api_init', function() {
 function get_assets_data_rest($request) {
     $paged = $request->get_param('page') ? intval($request->get_param('page')) : 1;
     $posts_per_page = $request->get_param('posts_per_page') ? intval($request->get_param('posts_per_page')) : 10;
+    $search = $request->get_param('s') ? sanitize_text_field($request->get_param('s')) : '';
 
     if ($paged < 1) {
         $paged = 1;
@@ -470,7 +471,8 @@ function get_assets_data_rest($request) {
         'post_type' => 'tbyte_prm_assets',
         'posts_per_page' => $posts_per_page,
         'paged' => $paged,
-        'post_status' => 'publish'
+        'post_status' => 'publish',
+        's' => $search,
     ];
 
     $query = new WP_Query($args);
@@ -558,6 +560,9 @@ function create_asset_rest($request) {
 
     $field_type = get_term_meta($doc_type_id, 'doc_type_field_type', true);
 
+    // TODO Check if there is already a file with the same name
+    // FIXME: Check if the file already exists in the uploads directory
+    // TODO File must appear in media library
     // Handle content based on field type
     switch ($field_type) {
         case 'text':

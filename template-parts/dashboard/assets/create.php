@@ -138,7 +138,7 @@ if (!in_array('partner_manager', $current_user->roles) && !in_array('administrat
         submitBtn.innerHTML = '<span class="spinner"></span> Creating...';
 
         try {
-            const response = await fetch(`${wpApiSettings.root}prm/v1/assets/create`, {
+            const response = await fetch(`${wpApiSettings.root}prm/v1/tbyte_prm_assets/create`, {
                 method: 'POST',
                 headers: {
                     'X-WP-Nonce': wpApiSettings.nonce
