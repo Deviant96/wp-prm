@@ -135,8 +135,8 @@ if (!in_array('partner_manager', $current_user->roles) && !in_array('administrat
                     echo '<td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 ">' . $term->name . '</td>';
                     echo '<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 ">' . $field_type_label . '</td>';
                     echo '<td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">';
-                    echo '<button class="edit-document-type text-blue-600 hover:text-blue-900   mr-3" data-term-id="' . $term->term_id . '">Edit</button>';
-                    echo '<button class="delete-document-type text-red-600 hover:text-red-900  " data-term-id="' . $term->term_id . '">Delete</button>';
+                    echo '<button class="edit-document-type text-blue-600 hover:text-blue-900   mr-3" data-term-id="' . $term->term_id . '"><ion-icon name="create-outline"></ion-icon></button>';
+                    echo '<button class="delete-document-type text-red-600 hover:text-red-900  " data-term-id="' . $term->term_id . '"><ion-icon name="trash-outline"></ion-icon></button>';
                     echo '</td>';
                     echo '</tr>';
                 }
