@@ -1,7 +1,4 @@
 <div class="toast-container" id="toast-container"></div>
-<div class="dashboard-footer">
-    &copy; <?php echo date('Y'); ?> Your Company. All rights reserved.
-</div>
 
 <!-- Toast -->
 <script src="<?php echo get_template_directory_uri() . '/assets/js/toast.js' ?>"></script>
