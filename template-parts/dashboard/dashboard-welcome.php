@@ -18,7 +18,7 @@
             <input type="text" placeholder="Search assets..."
                 id="asset-search" class="border border-gray-300  rounded px-3 py-1.5 text-sm focus:ring-2 focus:ring-blue-500">
         </div>
-        <div id="asset-list" class="min-h-[300px] border border-[#d2d2d2] rounded-[19px] p-5 grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <div id="asset-list" class="relative min-h-[300px] border border-[#d2d2d2] rounded-[19px] p-5 grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             <?php
             $assets = new WP_Query([
                 'post_type' => 'tbyte_prm_assets',
@@ -33,6 +33,9 @@
             else: ?>
                 <p class="text-gray-500 ">No assets found.</p>
             <?php endif; ?>
+            <div class="absolute bottom-0 right-0 me-4 mb-[-20px] border border-[#d2d2d2] rounded-[3px] px-2 py-1 bg-[#f3f4f6]">
+                <a href="<?php echo home_url('/?tab=assets'); ?>" class="text-[#086ad7] hover:text-[#2376bb] text-sm">See all assets</a>
+            </div>
         </div>
     </div>
 
@@ -43,7 +46,7 @@
             style="background-image: url('<?php echo get_template_directory_uri(); ?>/assets/images/events-bg.jpg');">
             <div class="bg-black/50 w-full p-5">
                 <h3 class="text-xl font-semibold text-white mb-2">Upcoming Events</h3>
-                <a href="/partner-portal?tab=events" class="text-white underline text-sm">See all events</a>
+                <a href="<?php echo home_url('/?tab=events'); ?>" class="text-white underline text-sm">See all events</a>
             </div>
         </div>
 
