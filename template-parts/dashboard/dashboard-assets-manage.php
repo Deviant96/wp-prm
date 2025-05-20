@@ -38,30 +38,37 @@ jQuery(document).ready(function($) {
             }
         });
     });
-    
-    // Delete asset
-    jQuery('.delete-asset').on('click', function() {
-        if (!confirm('Are you sure you want to delete this asset?')) {
-            return;
-        }
-        
-        var assetId = $(this).data('asset-id');
-        
-        $.ajax({
-            url: ajaxurl,
-            type: 'POST',
-            data: {
-                action: 'delete_asset',
-                asset_id: assetId,
-                security: $('#asset_nonce').val()
-            },
-            success: function(response) {
-                if (response.success) {
-                    alert('Asset deleted successfully!');
+
+    // Delete asset using fetch API (Vanilla JS)
+    deleteButtons = document.querySelectorAll('.delete-asset');
+    deleteButtons.forEach(function(button) {
+        button.addEventListener('click', async function() {
+            if (!confirm('Are you sure you want to delete this asset?')) {
+                return;
+            }
+            
+            var assetId = this.dataset.assetId;
+
+            try {
+                const response = await fetch(`${wpApiSettings}prm/v1/tbyte_prm_assets/${assetId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-WP-Nonce': wpApiSettings.nonce,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    alert('Document type deleted successfully!');
                     location.reload();
                 } else {
-                    alert('Error: ' + response.data);
+                    alert('Error: ' + data.data);
                 }
+            } catch (error) {
+                // TODO Add logging
+                showError('An error occurred while deleting the asset. Please try again.');
             }
         });
     });
@@ -203,30 +210,6 @@ jQuery(document).ready(function($) {
         const newUrl = `${window.location.pathname}${newQuery ? '?' + newQuery : ''}`;
 
         window.history.pushState({}, '', newUrl);
-    }
-</script>
-
-<script>
-    function deleteAsset(id) {
-        if (confirm('Are you sure you want to delete this asset?')) {
-            fetch(ajax_object.ajax_url + `?action=delete_asset&id=${id}`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-WP-Nonce': '<?php echo wp_create_nonce('delete_asset_nonce'); ?>'
-                    }
-                })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success) {
-                        alert('Asset deleted successfully!');
-                        // Optionally, refresh the asset list
-                        // loadAssets();
-                    } else {
-                        alert('Error deleting asset: ' + data.message);
-                    }
-                });
-        }
     }
 </script>
 

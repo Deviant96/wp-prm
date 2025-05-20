@@ -446,6 +446,14 @@ add_action('rest_api_init', function() {
             ]
         ]
     ]);
+
+    register_rest_route('prm/v1', '/tbyte_prm_assets/(?P<id>\d+)', [
+        'methods' => 'DELETE',
+        'callback' => 'delete_asset_rest',
+        'permission_callback' => function() {
+            return current_user_can('delete_posts');
+        }
+    ]);
 });
 
 /**
@@ -818,7 +826,35 @@ function create_document_type_rest($request) {
     ];
 }
 
+/**
+ * Delete an asset by the ID.
+ *
+ * @param WP_REST_Request $request The request object.
+ * @return array
+ */
+function delete_asset_rest($request) {
+    $asset_id = $request['id'];
 
+    // Check permission
+    if (!current_user_can('delete_posts')) {
+        return new WP_Error('permission_denied', 'You do not have permission.', ['status' => 403]);
+    }
+
+    if (empty($asset_id)) {
+        return new WP_Error('deletion_failed', 'Invalid asset ID.', ['status' => 400]);
+    }
+
+    $deleted = wp_delete_post($asset_id, true);
+
+    if (!$deleted) {
+        return new WP_Error('deletion_failed', 'Failed to delete asset.', ['status' => 400]);
+    }
+
+    return [
+        'success' => true,
+        'message' => 'Asset deleted successfully!'
+    ];
+}
 
 function check_document_type_name($request) {
     $name = $request->get_param('name');

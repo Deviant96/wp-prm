@@ -161,24 +161,31 @@ if (!in_array('partner_manager', $current_user->roles) && !in_array('administrat
 </script>
 
 <script>
-    function deleteAsset(id) {
+    async function deleteAsset(id) {
         if (confirm('Are you sure you want to delete this asset?')) {
-            fetch(ajax_object.ajax_url + `?action=delete_asset&id=${id}`, {
-                    method: 'POST',
+            var assetId = id;
+
+            try {
+                const response = await fetch(`${wpApiSettings.root}prm/v1/tbyte_prm_assets/${assetId}`, {
+                    method: 'DELETE',
                     headers: {
-                        'Content-Type': 'application/json',
-                        'X-WP-Nonce': '<?php echo wp_create_nonce('delete_asset_nonce'); ?>'
-                    }
-                })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success) {
-                        alert('Asset deleted successfully!');
-                        // Optionally, refresh the asset list
-                    } else {
-                        alert('Error deleting asset: ' + data.message);
+                        'X-WP-Nonce': wpApiSettings.nonce,
+                        'Content-Type': 'application/json'
                     }
                 });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showSuccess('Document type deleted successfully!');
+                    location.reload();
+                } else {
+                    showError('Error: ' + data.data);
+                }
+            } catch (error) {
+                // TODO Add logging
+                showError('An error occurred while deleting the asset. Please try again.');
+            }
         }
     }
 </script>
