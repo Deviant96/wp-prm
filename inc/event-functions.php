@@ -146,10 +146,10 @@ function tbyte_prm_fetch_events($request) {
     $params = $request->get_json_params();
 
     // Validate and sanitize input
-    $search = isset($params['search']) ? sanitize_text_field($params['search']) : '';
+    $search = isset($params['s']) ? sanitize_text_field($params['s']) : '';
     $page = isset($params['page']) ? absint($params['page']) : 1;
     $per_page = isset($params['posts_per_page']) ? absint($params['posts_per_page']) : 10;
-    
+    var_dump($search);
     $args = [
         'post_type' => 'tbyte_prm_events',
         'posts_per_page' => $per_page,
@@ -233,6 +233,8 @@ function tbyte_prm_fetch_events($request) {
                 'formatted_date' => date_i18n(get_option('date_format'), get_post_meta($post_id, '_event_date', true)),
                 'venue' => get_post_meta($post_id, '_event_venue', true),
                 'location' => get_post_meta($post_id, '_event_location', true),
+                'start_time' => get_post_meta($post_id, '_event_start_time', true),
+                'end_time' => get_post_meta($post_id, '_event_end_time', true),
             ];
         }
         
@@ -339,13 +341,14 @@ function tbyte_prm_get_events($request) {
     $paged = $paged > 0 ? $paged : 1;
 
     $posts_per_page = (int) $request->get_param('posts_per_page');
-    $posts_per_page = ($posts_per_page > 0 && $posts_per_page <= 50) ? $posts_per_page : 10;
+    $search = $request->get_param('s');
     // var_dump($posts_per_page);
     $events_query = new WP_Query([
         'post_type' => 'tbyte_prm_events',
         'posts_per_page' => $posts_per_page,
         'paged' => $paged,
         'post_status' => 'publish',
+        's' => $search,
     ]);
 
     if (is_wp_error($events_query)) {
@@ -366,6 +369,8 @@ function tbyte_prm_get_events($request) {
             'tags' => wp_get_post_terms(get_the_ID(), 'post_tag', ['fields' => 'names']),
             'date'  => get_post_meta(get_the_ID(), '_event_date', true),
             'venue' => get_post_meta(get_the_ID(), '_event_venue', true),
+            'start_time' => get_post_meta(get_the_ID(), '_event_start_time', true),
+            'end_time' => get_post_meta(get_the_ID(), '_event_end_time', true),
         ];
     }
     wp_reset_postdata();

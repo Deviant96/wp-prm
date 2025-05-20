@@ -40,65 +40,74 @@
     </div>
 
     <!-- Upcoming Events -->
-    <div class="grid md:grid-cols-3 gap-6 items-stretch">
-        <!-- Left Side: Feature Card -->
-        <div class="col-span-1 bg-cover bg-center rounded-2xl overflow-hidden shadow relative flex items-end justify-start"
-            style="background-image: url('<?php echo get_template_directory_uri(); ?>/assets/images/events-bg.jpg');">
-            <div class="bg-black/50 w-full p-5">
-                <h3 class="text-xl font-semibold text-white mb-2">Upcoming Events</h3>
-                <a href="<?php echo home_url('/?tab=events'); ?>" class="text-white underline text-sm">See all events</a>
+    <div class="mt-12">
+        <div class="flex justify-between items-center">
+            <h3 class="text-xl font-semibold">Recent Marketing Events</h3>
+            <input type="text" placeholder="Search events..."
+                id="event-search" class="border border-gray-300 rounded px-3 py-1.5 text-sm focus:ring-2 focus:ring-blue-500">
+        </div>
+
+        <div class="grid md:grid-cols-3 gap-6 items-stretch">
+            <!-- Left Side: Feature Card -->
+            <div class="col-span-1 bg-cover bg-center rounded-2xl overflow-hidden shadow relative flex items-end justify-start"
+                style="background-image: url('<?php echo get_template_directory_uri(); ?>/assets/images/events-bg.jpg');">
+                <div class="bg-black/50 w-full p-5">
+                    <h3 class="text-xl font-semibold text-white mb-2">Upcoming Events</h3>
+                    <a href="<?php echo home_url('/?tab=events'); ?>" class="text-white underline text-sm">See all events</a>
+                </div>
+            </div>
+
+            <!-- Right Side: List of Events -->
+            <div class="col-span-2 space-y-4 relative min-h-[300px] border border-[#d2d2d2] rounded-[19px] p-5">
+                <?php
+                $args = [
+                    'post_type' => 'tbyte_prm_events',
+                    'posts_per_page' => 4,
+                    'meta_key' => '_event_date',
+                    'orderby' => 'meta_value',
+                    'order' => 'ASC',
+                    'meta_query' => [
+                        [
+                            'key' => '_event_date',
+                            'value' => date('Y-m-d'),
+                            'compare' => '>=',
+                            'type' => 'DATE'
+                        ]
+                    ]
+                ];
+                $events = new WP_Query($args);
+
+                if ($events->have_posts()) :
+                    echo '<div id="event-list" class="grid grid-cols-1 md:grid-cols-2 gap-6">';
+                    while ($events->have_posts()) : $events->the_post();
+
+                        $date       = get_post_meta(get_the_ID(), '_event_date', true);
+                        $start_time = get_post_meta(get_the_ID(), '_event_start_time', true);
+                        $end_time   = get_post_meta(get_the_ID(), '_event_end_time', true);
+                        $venue      = get_post_meta(get_the_ID(), '_event_venue', true);
+                ?>
+
+                        <div class="p-4 border border-gray-200  rounded-xl shadow bg-white  shadow hover:shadow-md transition">
+                            <h2 class="text-xl font-semibold mb-1"><?php the_title(); ?></h2>
+                            <p class="text-gray-600  mb-2">
+                                📅 <?= date('F j, Y', strtotime($date)); ?>,
+                                🕒 <?= esc_html($start_time); ?> - <?= esc_html($end_time); ?>
+                            </p>
+                            <p class="text-gray-500  mb-4">📍 <?= esc_html($venue); ?></p>
+                            <a href="<?= get_permalink(); ?>" class="text-blue-600 hover:underline">View Details →</a>
+                        </div>
+
+                <?php endwhile;
+                    echo '</div>';
+                    wp_reset_postdata();
+                else :
+                    echo '<p>No events found.</p>';
+                endif;
+                ?>
             </div>
         </div>
-
-        <!-- Right Side: List of Events -->
-        <div class="col-span-2 space-y-4">
-            <?php
-            $args = [
-                'post_type' => 'tbyte_prm_events',
-                'posts_per_page' => 4,
-                'meta_key' => '_event_date',
-                'orderby' => 'meta_value',
-                'order' => 'ASC',
-                'meta_query' => [
-                    [
-                        'key' => '_event_date',
-                        'value' => date('Y-m-d'),
-                        'compare' => '>=',
-                        'type' => 'DATE'
-                    ]
-                ]
-            ];
-            $events = new WP_Query($args);
-
-            if ($events->have_posts()) :
-                echo '<div class="grid grid-cols-1 md:grid-cols-2 gap-6">';
-                while ($events->have_posts()) : $events->the_post();
-
-                    $date       = get_post_meta(get_the_ID(), '_event_date', true);
-                    $start_time = get_post_meta(get_the_ID(), '_event_start_time', true);
-                    $end_time   = get_post_meta(get_the_ID(), '_event_end_time', true);
-                    $venue      = get_post_meta(get_the_ID(), '_event_venue', true);
-            ?>
-
-                    <div class="p-4 border border-gray-200  rounded-xl shadow bg-white  shadow hover:shadow-md transition">
-                        <h2 class="text-xl font-semibold mb-1"><?php the_title(); ?></h2>
-                        <p class="text-gray-600  mb-2">
-                            📅 <?= date('F j, Y', strtotime($date)); ?>,
-                            🕒 <?= esc_html($start_time); ?> - <?= esc_html($end_time); ?>
-                        </p>
-                        <p class="text-gray-500  mb-4">📍 <?= esc_html($venue); ?></p>
-                        <a href="<?= get_permalink(); ?>" class="text-blue-600 hover:underline">View Details →</a>
-                    </div>
-
-            <?php endwhile;
-                echo '</div>';
-                wp_reset_postdata();
-            else :
-                echo '<p>No events found.</p>';
-            endif;
-            ?>
-        </div>
     </div>
+    
 
     <!-- (Optional) Quick Actions -->
     <div class="grid md:grid-cols-2 gap-4 mt-6">

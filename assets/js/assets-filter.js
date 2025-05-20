@@ -13,8 +13,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    let currentPage = 1;
     let isLoading = false;
+    let isEventLoading = false;
 
     async function fetchAssets(perPage = 10) {
         if (isLoading) return;
@@ -151,6 +151,90 @@ document.addEventListener('DOMContentLoaded', () => {
         assetList.innerHTML = html;
     }
 
+    document.getElementById('event-search').addEventListener('input', debounce(fetchEvents, 300));
+    document.querySelectorAll('.event-filter').forEach(cb => cb.addEventListener('change', debounce(fetchAssets, 200)));
+    document.getElementById('event-search').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            fetchEvents();
+        }
+    });
+    document.getElementById('event-search').addEventListener('blur', () => {
+        if (document.getElementById('event-search').value === '') {
+            document.getElementById('event-search').value = '';
+        }
+    });
+
+    async function fetchEvents(perPage = 10) {
+        if (isEventLoading) return;
+        isEventLoading = true;
+        showEventSearchLoadingIndicator();
+        // const loadingSpinner = document.getElementById('loadingSpinner');
+        // loadingSpinner.classList.remove('hidden');
+
+        const search = document.getElementById('event-search').value;
+
+        const s = encodeURIComponent(search);
+        try {
+            const response = await fetch(`${wpApiSettings.root}prm/v1/tbyte_prm_events?s=${s}&posts_per_page=4`, {
+                method: "GET",
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'X-WP-Nonce': wpApiSettings.nonce,
+                },
+            });
+
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+
+            const data = await response.json();
+            updateEventList(data);
+        } catch (error) {
+            console.error('Error fetching assets:', error);
+            showError('Error fetching events. Please try again later.');
+        } finally {
+            isEventLoading   = false;
+            hideEventSearchLoadingIndicator();
+        }
+    }
+
+    function updateEventList(data) {
+        const eventList = document.getElementById('event-list');
+
+        if (data.items.length === 0) {
+            eventList.innerHTML = `<div class="no-events col-span-4 md:col-span-4 text-[#9d9d9d] font-bold">${data.message}</div>`;
+            return;
+        }
+        
+        // Build HTML from the data (you might want to use a template)
+        let html = '';
+        data.items.forEach(event => {
+            console.error(event);
+            const id = event.id || '';
+            const title = event.title || 'No Title';
+            const date = event.date ? formatDate(event.date) : '';
+            const link = event.link || '#';
+            const startTime = event.start_time ? event.start_time : '';
+            const endTime = event.end_time ? event.end_time : '';
+            const venue = event.venue ? event.venue : '';
+
+            html += `
+                <div class="p-4 border border-gray-200  rounded-xl shadow bg-white  shadow hover:shadow-md transition" data-id="${id}">
+                    <h2 class="text-xl font-semibold mb-1">${title}</h2>
+                    <p class="text-gray-600  mb-2">
+                        📅 <?= date('F j, Y', strtotime($date)); ?>${date},
+                        🕒 ${startTime} - ${endTime}
+                    </p>
+                    <p class="text-gray-500  mb-4">📍 ${venue}</p>
+                    <a href="${link}" class="text-blue-600 hover:underline">View Details →</a>
+                </div>
+            `;
+        });
+        
+        eventList.innerHTML = html;
+    }
+
     // Utility functions
     function debounce(func, wait) {
         let timeout;
@@ -193,6 +277,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function hideAssetSearchLoadingIndicator() {
         const assetList = document.getElementById('asset-list');
+        // assetList.innerHTML = '';
+    }
+
+    function showEventSearchLoadingIndicator() {
+        console.error('showEventSearchLoadingIndicator');
+        const eventList = document.getElementById('event-list');
+        eventList.innerHTML = ''; // Clear previous content
+
+        const skeletonCount = 4; // Or however many placeholders you want
+        let html = '';
+
+        for (let i = 0; i < skeletonCount; i++) {
+            html += `
+            <div class="bg-white border border-gray-200 p-4 rounded-xl shadow animate-pulse mb-4">
+                <div class="h-40 bg-gray-300 rounded mb-2"></div>
+                <div class="h-4 bg-gray-300 rounded w-3/4 mb-2"></div>
+                <div class="h-4 bg-gray-300 rounded w-full mb-2"></div>
+                <div class="h-4 bg-gray-300 rounded w-5/6"></div>
+            </div>`;
+        }
+
+        eventList.innerHTML = html;
+    }
+
+    function hideEventSearchLoadingIndicator() {
+        const eventList = document.getElementById('event-list');
         // assetList.innerHTML = '';
     }
 });
