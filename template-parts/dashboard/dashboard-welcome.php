@@ -105,12 +105,12 @@
         <div
             class="bg-white  border border-gray-200  p-4 rounded-xl shadow text-center hover:bg-gray-50  transition">
             <p class="font-semibold">Need help?</p>
-            <a href="/partner-portal?tab=support" class="text-blue-600 text-sm mt-1 inline-block">Contact Support</a>
+            <a href="mailto:marketing@terrabytegroup.com" class="text-blue-600 text-sm mt-1 inline-block">Contact Support</a>
         </div>
         <div
             class="bg-white  border border-gray-200  p-4 rounded-xl shadow text-center hover:bg-gray-50  transition">
             <p class="font-semibold">Want to add new content?</p>
-            <a href="/partner-portal?tab=assets&action=add" class="text-blue-600 text-sm mt-1 inline-block">Add New
+            <a href="<?php echo home_url('?tab=assets-create'); ?>" class="text-blue-600 text-sm mt-1 inline-block">Add New
                 Asset</a>
         </div>
     </div>
