@@ -192,8 +192,6 @@ set_query_var('current_user', $current_user);
         <main id="mainContent" class="flex-1 p-6 transition-all duration-300 ml-[60px] md:ml-0">
             <?php
             $tab = isset($_GET['tab']) ? sanitize_text_field($_GET['tab']) : 'dashboard';
-            // var_dump($tab); // Debugging line to check the value of $tab
-
             switch ($tab) {
                 case 'events':
                     get_template_part('template-parts/dashboard/dashboard', 'events');

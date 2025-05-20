@@ -149,7 +149,6 @@ function tbyte_prm_fetch_events($request) {
     $search = isset($params['s']) ? sanitize_text_field($params['s']) : '';
     $page = isset($params['page']) ? absint($params['page']) : 1;
     $per_page = isset($params['posts_per_page']) ? absint($params['posts_per_page']) : 10;
-    var_dump($search);
     $args = [
         'post_type' => 'tbyte_prm_events',
         'posts_per_page' => $per_page,
@@ -342,7 +341,6 @@ function tbyte_prm_get_events($request) {
 
     $posts_per_page = (int) $request->get_param('posts_per_page');
     $search = $request->get_param('s');
-    // var_dump($posts_per_page);
     $events_query = new WP_Query([
         'post_type' => 'tbyte_prm_events',
         'posts_per_page' => $posts_per_page,

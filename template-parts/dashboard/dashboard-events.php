@@ -26,7 +26,6 @@
         <!-- Checkbox Filters -->
         <?php
         $terms = get_terms(['taxonomy' => 'event_type', 'hide_empty' => false]);
-        // var_dump($terms); // Debugging line to check the terms fetched
         foreach ($terms as $term) {
             echo "<label class='flex items-center gap-1'><input type='checkbox' value='{$term->slug}' class='event-filter' data-tax='event_type'> {$term->name}</label>";
         }
@@ -162,7 +161,6 @@
                         
                         // Update pagination
                         updatePagination(data.pagination);
-                        // console.error(pagination)
                         
                         // Scroll to top smoothly
                         window.scrollTo({
@@ -174,7 +172,6 @@
                     }
                 })
                 .catch(error => {
-                    console.error('Error:', error);
                     eventList.innerHTML = '<p class="col-span-full text-center py-8 text-red-500">Error loading events</p>';
                 })
                 .finally(() => {
@@ -232,7 +229,6 @@
         
         // Update pagination based on API response
         function updatePagination(pagination) {
-            console.error('Updating Pagination. Page: ', pagination);
             if (!pagination || pagination.total_pages <= 1) {
                 pagination.innerHTML = '';
                 return;
@@ -240,9 +236,6 @@
             
             const currentPage = pagination.current_page;
             const totalPages = pagination.total_pages;
-
-            console.error('Current Page: ', currentPage);
-            console.error('Total Pages: ', totalPages);
             
             let html = '<nav class="flex items-center space-x-2">';
             
@@ -260,11 +253,8 @@
             const range = 2;
             const showItems = (range * 2) + 1;
             
-            console.error('Current Page2: ', currentPage);
             for (let i = 1; i <= totalPages; i++) {
                 if (1 != totalPages && (!(i >= currentPage + range + 1 || i <= currentPage - range - 1) || totalPages <= showItems)) {
-                    console.error('Current Page3: ', currentPage);
-                    console.error('i: ', i)
                     if (currentPage == i) {
                         html += `<span class="px-4 py-2 bg-blue-600 text-white rounded-lg">${i}</span>`;
                     } else {

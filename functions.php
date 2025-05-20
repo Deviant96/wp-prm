@@ -196,7 +196,6 @@ function prm_redirect_on_failed_login($username)
 
     if (!empty($referrer) && strpos($referrer, 'partner-portal') !== false) {
         wp_redirect(add_query_arg('login', 'failed', $referrer));
-        // var_dump($referrer);
         exit;
     }
 }

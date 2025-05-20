@@ -157,7 +157,7 @@ if (!in_array('partner_manager', $current_user->roles) && !in_array('administrat
 
             // TODO Redirect to the asset list page or show the new asset
         } catch (error) {
-            console.error('Error:', error);
+            showError('Failed to create asset. Please try again.');
         } finally {
             submitBtn.disabled = false;
             submitBtn.innerHTML = originalText;

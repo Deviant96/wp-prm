@@ -1,6 +1,5 @@
 <?php
 function render_button($button) {
-    var_dump($button);
     if (!is_object($button)) {
         return '<button class="btn btn-primary">Invalid Button</button>';
     }

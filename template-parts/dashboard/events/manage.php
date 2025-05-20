@@ -103,7 +103,6 @@ if (!in_array('partner_manager', $current_user->roles) && !in_array('administrat
         assetForm.addEventListener('submit', (e) => {
             e.preventDefault();
             // handle form submit via AJAX
-            console.log('Submitting form...');
         });
     });
 </script>
@@ -438,7 +437,7 @@ if (!in_array('partner_manager', $current_user->roles) && !in_array('administrat
                                     }
                                 })
                                 .catch(error => {
-                                    console.error('Error loading events:', error);
+                                    showError('Error loading events.');
                                 });
                         } else {
                             showError('Error deleting asset: ' + data.message);
@@ -455,7 +454,7 @@ if (!in_array('partner_manager', $current_user->roles) && !in_array('administrat
                 }
             })
             .catch(error => {
-                console.error('Error loading events:', error);
+                showError('Error loading events.');
             });
     // })
 </script>

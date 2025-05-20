@@ -163,7 +163,7 @@ if (!in_array('partner_manager', $current_user->roles) && !in_array('administrat
             form.reset();
             // Optional: Redirect or refresh list
         } catch (error) {
-            console.error('Error:', error);
+            showError('Failed to create event. Please try again.');
         } finally {
             submitBtn.disabled = false;
             submitBtn.innerHTML = originalText;

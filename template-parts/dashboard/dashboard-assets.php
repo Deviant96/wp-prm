@@ -2,7 +2,6 @@
 $layout = $_GET['layout'] ?? 'grid';
 $search = sanitize_text_field($_GET['s'] ?? '');
 $doc_type = isset($_GET['doc_type']) ? explode(',', sanitize_text_field($_GET['doc_type'])) : [];
-// var_dump($doc_type);
 $language = isset($_GET['language']) ? explode(',', sanitize_text_field($_GET['language'])) : [];
 // $paged = max(1, get_query_var('paged') ?: get_query_var('page'));
 // $posts_per_page = 6;
@@ -234,10 +233,8 @@ $language = isset($_GET['language']) ? explode(',', sanitize_text_field($_GET['l
         }
 
         async function loadAssets() {
-            // console.log("hahaha")
             showLoading();
             const params = collectFilters();
-            // console.log("params: ", params);
             updateURL(params);
 
             try {
@@ -260,7 +257,7 @@ $language = isset($_GET['language']) ? explode(',', sanitize_text_field($_GET['l
                     renderPagination(data.data.max_pages);
                 }
             } catch (error) {
-                console.error('Error loading assets:', error);
+                showError("Error loading assets. Please try again.");
                 resultsContainer.innerHTML = '<p class="text-red-500">Error loading assets. Please try again.</p>';
             } finally {
                 hideLoading();

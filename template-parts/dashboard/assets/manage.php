@@ -100,7 +100,6 @@ if (!in_array('partner_manager', $current_user->roles) && !in_array('administrat
             btn.addEventListener('click', () => {
                 const id = btn.dataset.id;
                 // fetch data for that asset via AJAX (to be implemented)
-                console.log('Edit', id);
                 formContainer.classList.remove('hidden');
             });
         });
@@ -110,7 +109,6 @@ if (!in_array('partner_manager', $current_user->roles) && !in_array('administrat
                 const id = btn.dataset.id;
                 if (confirm('Delete this asset?')) {
                     // delete via AJAX (to be implemented)
-                    console.log('Delete', id);
                 }
             });
         });
@@ -118,7 +116,6 @@ if (!in_array('partner_manager', $current_user->roles) && !in_array('administrat
         assetForm.addEventListener('submit', (e) => {
             e.preventDefault();
             // handle form submit via AJAX
-            console.log('Submitting form...');
         });
     });
 </script>
@@ -198,7 +195,6 @@ if (!in_array('partner_manager', $current_user->roles) && !in_array('administrat
     document.addEventListener('DOMContentLoaded', () => {
         async function fetchAndRenderAssets(page = 1, perPage = 5, searchParams = {}) {
             let assets = [];
-            console.log('Fetching assets for page:', page, 'with params:', searchParams);
             // Validate page number
             pageNumber = Math.max(1, Math.min(page, totalPages));
             currentPage = pageNumber;
@@ -228,7 +224,6 @@ if (!in_array('partner_manager', $current_user->roles) && !in_array('administrat
 
             try {
                 const url = `wp-json/prm/v1/tbyte_prm_assets?${query}`;
-                console.error('Fetching URL:', url);
 
                 const response = await fetch(url);
 
@@ -277,7 +272,7 @@ if (!in_array('partner_manager', $current_user->roles) && !in_array('administrat
                 // return data;
                 return assets;
             } catch (error) {
-                console.error('Fetch error:', error);
+                showError('Error loading assets. Please try again.');
                 tbody.style.opacity = '1'; // Reset opacity on error
                 return {
                     error: error.message
@@ -312,7 +307,6 @@ if (!in_array('partner_manager', $current_user->roles) && !in_array('administrat
                 e.target.classList.add('cursor-not-allowed', 'opacity-50');
 
                 fetchAndRenderEvents(page).then(data => {
-                    console.log('Pagination data:', data);
                     // if (data && data.pagination) {
                     //     renderPagination3(data.pagination);
                     // }
@@ -347,7 +341,6 @@ if (!in_array('partner_manager', $current_user->roles) && !in_array('administrat
         function renderPagination2(pagination) {
             const paginationContainer = document.getElementById('asset-pagination');
             paginationContainer.innerHTML = '';
-            console.error("pagina: ", pagination.current_page)
             // Previous button
             if (pagination.current_page > 1) {
                 const prevLink = document.createElement('a');
@@ -439,17 +432,15 @@ if (!in_array('partner_manager', $current_user->roles) && !in_array('administrat
                 paginationContainer.style.transition = 'opacity 300ms ease-in-out';
             }, 10);
         }
-        console.error('currentPage', currentPage);
         // Call the function to load the first page
         fetchAndRenderAssets(1, 5)
             .then(assets => {
-                console.error('Initial data:', assets);
                 if (assets && assets.assets) {
                     // renderPagination3(data.pagination);
                 }
             })
             .catch(error => {
-                console.error('Error loading assets:', error);
+                showError('Error loading assets. Please try again.');
             });
     })
 </script>

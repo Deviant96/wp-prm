@@ -62,7 +62,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await response.json();
             updateAssetList(data);
         } catch (error) {
-            console.error('Error fetching assets:', error);
             showError('Error fetching assets. Please try again later.');
         } finally {
             isLoading = false;
@@ -191,7 +190,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await response.json();
             updateEventList(data);
         } catch (error) {
-            console.error('Error fetching assets:', error);
             showError('Error fetching events. Please try again later.');
         } finally {
             isEventLoading   = false;
@@ -210,7 +208,6 @@ document.addEventListener('DOMContentLoaded', () => {
         // Build HTML from the data (you might want to use a template)
         let html = '';
         data.items.forEach(event => {
-            console.error(event);
             const id = event.id || '';
             const title = event.title || 'No Title';
             const date = event.date ? formatDate(event.date) : '';
@@ -257,8 +254,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const assetList = document.getElementById('asset-list');
         assetList.innerHTML = ''; // Clear previous content
 
-        console.log('showSearchLoadingIndicator');
-
         const skeletonCount = 4; // Or however many placeholders you want
         let html = '';
 
@@ -281,7 +276,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function showEventSearchLoadingIndicator() {
-        console.error('showEventSearchLoadingIndicator');
         const eventList = document.getElementById('event-list');
         eventList.innerHTML = ''; // Clear previous content
 

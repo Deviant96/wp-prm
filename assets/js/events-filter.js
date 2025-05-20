@@ -87,7 +87,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await response.json();
             updateEventList(data);
         } catch (error) {
-            console.error('Error fetching events:', error);
             showError('Error fetching events. Please try again later.');
         } finally {
             isLoading = false;
@@ -106,7 +105,6 @@ document.addEventListener('DOMContentLoaded', () => {
         // Build HTML from the data (you might want to use a template)
         let html = '';
         data.items.forEach(event => {
-            console.error(event); // Debugging line to check the event data
             const id = event.id || '';
             const title = event.title || 'No Title';
             const date = event.date ? formatDate(event.date) : '';
@@ -174,7 +172,6 @@ document.addEventListener('DOMContentLoaded', () => {
     function fetchCalendarViewEvents() {
         // Fetch events in calendar view format
         // This is a placeholder; implement your logic to fetch and display events in calendar view
-        console.log('Fetching events for calendar view...');
     }
 
     function updatePaginationControls(pagination) {

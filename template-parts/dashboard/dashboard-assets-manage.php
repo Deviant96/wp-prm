@@ -15,12 +15,9 @@ jQuery(document).ready(function($) {
     
     // Handle form submission
     jQuery('#assetForm').on('submit', function(e) {
-        console.error('Form submitting...');
         e.preventDefault();
         
         var formData = new FormData(this);
-        
-        console.error('Form data:', formData);
         
         $.ajax({
             url: ajaxurl,
@@ -146,7 +143,6 @@ jQuery(document).ready(function($) {
             btn.addEventListener('click', () => {
                 const id = btn.dataset.id;
                 // fetch data for that asset via AJAX (to be implemented)
-                console.log('Edit', id);
                 formContainer.classList.remove('hidden');
             });
         });
@@ -156,7 +152,6 @@ jQuery(document).ready(function($) {
                 const id = btn.dataset.id;
                 if (confirm('Delete this asset?')) {
                     // delete via AJAX (to be implemented)
-                    console.log('Delete', id);
                 }
             });
         });
@@ -164,7 +159,6 @@ jQuery(document).ready(function($) {
         assetForm.addEventListener('submit', (e) => {
             e.preventDefault();
             // handle form submit via AJAX
-            console.log('Submitting form...');
         });
     });
 </script>
@@ -251,7 +245,8 @@ jQuery(document).ready(function($) {
                 const data = await response.json();
 
                 if (!data.success) {
-                    console.error('API error:', data.data.message);
+                    showError('Failed to load assets.');
+                    tbody.style.opacity = '1'; // Reset opacity on error
                     return;
                 }
 
@@ -313,7 +308,6 @@ jQuery(document).ready(function($) {
 
                 return data;
             } catch (error) {
-                console.error('Fetch error:', error);
                 tbody.style.opacity = '1'; // Reset opacity on error
                 return {
                     error: error.message
@@ -348,7 +342,6 @@ jQuery(document).ready(function($) {
                 e.target.classList.add('cursor-not-allowed', 'opacity-50');
 
                 fetchAndRenderAssets(page).then(data => {
-                    console.log('Pagination data:', data);
                     if (data && data.data && data.data.pagination) {
                         renderPagination3(data.data.pagination);
                     }
@@ -383,7 +376,6 @@ jQuery(document).ready(function($) {
         function renderPagination2(pagination) {
             const paginationContainer = document.getElementById('asset-pagination');
             paginationContainer.innerHTML = '';
-            console.error("pagina: ", pagination.current_page)
             // Previous button
             if (pagination.current_page > 1) {
                 const prevLink = document.createElement('a');
@@ -478,7 +470,6 @@ jQuery(document).ready(function($) {
 
         // Call the function to load the first page
         fetchAndRenderAssets(1, 5).then(data => {
-            console.error('data', data.data.pagination);
             if (data && data.data && data.data.pagination) {
                 renderPagination3(data.data.pagination);
             }

@@ -207,7 +207,7 @@ jQuery(document).ready(function($) {
                 showWarning('A document type with this name already exists', 6000);
             }
         } catch (error) {
-            console.error('Name check failed:', error);
+            showError('Failed to check document type name');
         }
     }
 });
