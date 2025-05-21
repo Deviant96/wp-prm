@@ -6,7 +6,7 @@
 
 $doc_types = get_the_terms(get_the_ID(), 'doc_type');
 $doc_types = $doc_types ? $doc_types[0]->name : 'N/A';
-$languages = get_the_terms(get_the_ID(), 'language');
+$language = get_post_meta(get_the_ID(), 'language', true);
 ?>
 <!DOCTYPE html>
 <html <?php language_attributes(); ?> class="">
@@ -60,58 +60,66 @@ $languages = get_the_terms(get_the_ID(), 'language');
                 <article class="bg-white rounded-xl shadow-md overflow-hidden">
                     <!-- Header section -->
                     <header class="p-6 border-b border-gray-100">
-                    <h1 class="text-3xl font-bold text-gray-900 mb-4"><?php the_title(); ?></h1>
-                    
-                    <div class="flex flex-wrap gap-4 text-sm text-gray-600">
-                        <?php if ($languages) : ?>
-                        <div class="flex items-center gap-2">
-                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                            <path fill-rule="evenodd" d="M7 2a1 1 0 011 1v1h3a1 1 0 110 2H9.578a18.87 18.87 0 01-1.724 4.78c.29.354.596.696.914 1.026a1 1 0 11-1.44 1.389c-.188-.196-.373-.396-.554-.6a19.098 19.098 0 01-3.107 3.567 1 1 0 01-1.334-1.49 17.087 17.087 0 003.13-3.733 18.992 18.992 0 01-1.487-2.494 1 1 0 111.79-.89c.234.47.489.928.764 1.372.417-.934.752-1.913.997-2.927H3a1 1 0 110-2h3V3a1 1 0 011-1zm6 6a1 1 0 01.894.553l2.991 5.982a.869.869 0 01.02.037l.99 1.98a1 1 0 11-1.79.895L15.383 16h-4.764l-.724 1.447a1 1 0 11-1.788-.894l.99-1.98.019-.038 2.99-5.982A1 1 0 0113 8z" clip-rule="evenodd"></path>
-                            </svg>
-                            <span><?php echo esc_html($languages); ?></span>
-                        </div>
-                        <?php endif; ?>
+                        <h1 class="text-3xl font-bold text-gray-900 mb-4"><?php the_title(); ?></h1>
                         
-                        <?php if ($tags = wp_get_post_tags(get_the_ID())) : ?>
-                        <div class="flex items-center gap-2">
-                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                            <path fill-rule="evenodd" d="M17.707 9.293a1 1 0 010 1.414l-7 7a1 1 0 01-1.414 0l-7-7A.997.997 0 012 10V5a3 3 0 013-3h5c.256 0 .512.098.707.293l7 7zM5 6a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"></path>
-                            </svg>
-                            <div class="flex flex-wrap gap-1">
-                            <?php foreach ($tags as $tag) : ?>
-                                <span class="bg-gray-100 px-2 py-1 rounded"><?php echo esc_html($tag->name); ?></span>
-                            <?php endforeach; ?>
+                        <div class="flex flex-wrap gap-4 text-sm text-gray-600">
+                            <?php if ($language) : ?>
+                            <div class="flex items-center gap-2 text-sm text-gray-600">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                    <path fill-rule="evenodd" d="M7 2a1 1 0 011 1v1h3a1 1 0 110 2H9.578a18.87 18.87 0 01-1.724 4.78c.29.354.596.696.914 1.026a1 1 0 11-1.44 1.389c-.188-.196-.373-.396-.554-.6a19.098 19.098 0 01-3.107 3.567 1 1 0 01-1.334-1.49 17.087 17.087 0 003.13-3.733 18.992 18.992 0 01-1.487-2.494 1 1 0 111.79-.89c.234.47.489.928.764 1.372.417-.934.752-1.913.997-2.927H3a1 1 0 110-2h3V3a1 1 0 011-1zm6 6a1 1 0 01.894.553l2.991 5.982a.869.869 0 01.02.037l.99 1.98a1 1 0 11-1.79.895L15.383 16h-4.764l-.724 1.447a1 1 0 11-1.788-.894l.99-1.98.019-.038 2.99-5.982A1 1 0 0113 8z" clip-rule="evenodd"></path>
+                                </svg>
+                                <a href="<?php echo esc_url(
+                                            home_url('/?tab=assets&language=' . strtolower($language))
+                                ); ?>" class="text-sm text-gray-600 underline">
+                                    <?php echo esc_html($language); ?>
+                                </a>
                             </div>
-                        </div>
-                        <?php endif; ?>
-                        
-                        <?php if ($status = get_post_status(get_the_ID())) : ?>
-                        <div class="flex items-center gap-2">
-                            <span class="w-2 h-2 rounded-full 
-                            <?php echo strtolower($status) === 'publish' ? 'bg-green-500' : ''; ?>
-                            <?php echo strtolower($status) === 'draft' ? 'bg-yellow-500' : ''; ?>
-                            <?php echo strtolower($status) === 'archived' ? 'bg-gray-500' : ''; ?>">
-                            </span>
-                            <span><?php echo esc_html($status); ?></span>
-                        </div>
-                        <?php endif; ?>
-                        
-                        <div class="flex items-center gap-2">
-                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                            <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"></path>
-                        </svg>
-                        <span><?php echo get_the_date(); ?></span>
-                        </div>
-                        
-                        <?php if ($doc_types) : ?>
-                        <div class="flex items-center gap-2">
+                            <?php endif; ?>
+                            
+                            <?php if ($tags = wp_get_post_tags(get_the_ID())) : ?>
+                            <div class="flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                <path fill-rule="evenodd" d="M17.707 9.293a1 1 0 010 1.414l-7 7a1 1 0 01-1.414 0l-7-7A.997.997 0 012 10V5a3 3 0 013-3h5c.256 0 .512.098.707.293l7 7zM5 6a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"></path>
+                                </svg>
+                                <div class="flex flex-wrap gap-1">
+                                <?php foreach ($tags as $tag) : ?>
+                                    <span class="bg-gray-100 px-2 py-1 rounded"><?php echo esc_html($tag->name); ?></span>
+                                <?php endforeach; ?>
+                                </div>
+                            </div>
+                            <?php endif; ?>
+                            
+                            <?php if ($status = get_post_status(get_the_ID())) : ?>
+                            <div class="flex items-center gap-2">
+                                <span class="w-2 h-2 rounded-full 
+                                <?php echo strtolower($status) === 'publish' ? 'bg-green-500' : ''; ?>
+                                <?php echo strtolower($status) === 'draft' ? 'bg-yellow-500' : ''; ?>
+                                <?php echo strtolower($status) === 'archived' ? 'bg-gray-500' : ''; ?>">
+                                </span>
+                                <span><?php echo esc_html($status); ?></span>
+                            </div>
+                            <?php endif; ?>
+                            
+                            <div class="flex items-center gap-2">
                             <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                            <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"></path>
+                                <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"></path>
                             </svg>
-                            <span><?php echo esc_html($doc_types); ?></span>
+                            <span><?php echo get_the_date(); ?></span>
+                            </div>
+                            
+                            <?php if ($doc_types) : ?>
+                            <div class="flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"></path>
+                                </svg>
+                                <a href="<?php echo esc_url(
+                                            home_url('/?tab=assets&doc_type=' . strtolower($doc_types))
+                                ); ?>" class="text-sm text-gray-600 underline">
+                                    <?php echo esc_html($doc_types); ?>
+                                </a>
+                            </div>
+                            <?php endif; ?>
                         </div>
-                        <?php endif; ?>
-                    </div>
                     </header>
                     
                     <!-- Description section -->
