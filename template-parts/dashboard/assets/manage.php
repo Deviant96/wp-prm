@@ -82,19 +82,8 @@ if (!in_array('partner_manager', $current_user->roles) && !in_array('administrat
 
 <script>
     document.addEventListener('DOMContentLoaded', () => {
-        const addBtn = document.getElementById('addAssetBtn');
-        const cancelBtn = document.getElementById('cancelAssetBtn');
         const formContainer = document.getElementById('assetFormContainer');
         const assetForm = document.getElementById('assetForm');
-
-        addBtn.addEventListener('click', () => {
-            assetForm.reset();
-            formContainer.classList.remove('hidden');
-        });
-
-        cancelBtn.addEventListener('click', () => {
-            formContainer.classList.add('hidden');
-        });
 
         document.querySelectorAll('.editAssetBtn').forEach(btn => {
             btn.addEventListener('click', () => {
@@ -270,7 +259,7 @@ if (!in_array('partner_manager', $current_user->roles) && !in_array('administrat
 
                 updateQueryParam('page', page);
                 // return data;
-                return assets;
+                return data;
             } catch (error) {
                 showError('Error loading assets. Please try again.');
                 tbody.style.opacity = '1'; // Reset opacity on error
@@ -303,13 +292,15 @@ if (!in_array('partner_manager', $current_user->roles) && !in_array('administrat
                 const page = parseInt(e.target.dataset.page, 10);
 
                 // Add loading state
+                let originalText = e.target.innerHTML;
                 e.target.innerHTML = '<span class="animate-pulse">Loading...</span>';
                 e.target.classList.add('cursor-not-allowed', 'opacity-50');
 
-                fetchAndRenderEvents(page).then(data => {
-                    // if (data && data.pagination) {
-                    //     renderPagination3(data.pagination);
-                    // }
+                fetchAndRenderAssets(page).then(data => {
+                    e.target.innerHTML = originalText
+                    e.target.classList.remove('cursor-not-allowed', 'opacity-50');
+                    currentPage = page;
+                    renderPagination3(data.pagination);
                 });
             }
         });
@@ -435,8 +426,9 @@ if (!in_array('partner_manager', $current_user->roles) && !in_array('administrat
         // Call the function to load the first page
         fetchAndRenderAssets(1, 5)
             .then(assets => {
-                if (assets && assets.assets) {
-                    // renderPagination3(data.pagination);
+                console.error(assets);  
+                if (assets.pagination) {
+                    renderPagination3(assets.pagination);
                 }
             })
             .catch(error => {
