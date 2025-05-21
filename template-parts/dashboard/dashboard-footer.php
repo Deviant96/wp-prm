@@ -1,7 +1,5 @@
-<div class="toast-container" id="toast-container"></div>
 
-<!-- Toast -->
-<script src="<?php echo get_template_directory_uri() . '/assets/js/toast.js' ?>"></script>
+
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
