@@ -21,33 +21,14 @@ if (!in_array('partner_manager', $current_user->roles) && !in_array('administrat
             <div>
                 <label for="asset_name" class="block text-sm font-medium text-gray-700 ">Asset Name*</label>
                 <input type="text" name="asset_name" id="asset_name" required
-                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500   ">
-            </div>
-
-            <!-- Document Type -->
-            <div>
-                <label for="asset_doc_type" class="block text-sm font-medium text-gray-700 ">Document Type*</label>
-                <select name="asset_doc_type" id="asset_doc_type" required
-                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500   ">
-                    <option value="">Select Document Type</option>
-                    <?php
-                    $doc_types = get_terms(array(
-                        'taxonomy' => 'doc_type',
-                        'hide_empty' => false,
-                    ));
-
-                    foreach ($doc_types as $type) {
-                        echo '<option value="' . $type->term_id . '" data-field-type="' . get_term_meta($type->term_id, 'doc_type_field_type', true) . '">' . $type->name . '</option>';
-                    }
-                    ?>
-                </select>
+                    class="mt-1 block w-full shadow-sm w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500       transition duration-200">
             </div>
 
             <!-- Language -->
             <div>
                 <label for="asset_language" class="block text-sm font-medium text-gray-700 ">Language*</label>
                 <select name="asset_language" id="asset_language" required
-                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500   ">
+                    class="mt-1 block w-full shadow-sm w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500       transition duration-200">
                     <option value="">Select Language</option>
                     <?php
                     $languages = get_terms([
@@ -67,8 +48,27 @@ if (!in_array('partner_manager', $current_user->roles) && !in_array('administrat
             <div>
                 <label for="asset_tags" class="block text-sm font-medium text-gray-700 ">Tags</label>
                 <input type="text" name="asset_tags" id="asset_tags"
-                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500   "
+                    class="mt-1 block w-full shadow-sm w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500       transition duration-200"
                     placeholder="Comma separated tags">
+            </div>
+
+            <!-- Document Type -->
+            <div>
+                <label for="asset_doc_type" class="block text-sm font-medium text-gray-700 ">Document Type*</label>
+                <select name="asset_doc_type" id="asset_doc_type" required
+                    class="mt-1 block w-full shadow-sm w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500       transition duration-200">
+                    <option value="">Select Document Type</option>
+                    <?php
+                    $doc_types = get_terms(array(
+                        'taxonomy' => 'doc_type',
+                        'hide_empty' => false,
+                    ));
+
+                    foreach ($doc_types as $type) {
+                        echo '<option value="' . $type->term_id . '" data-field-type="' . get_term_meta($type->term_id, 'doc_type_field_type', true) . '">' . $type->name . '</option>';
+                    }
+                    ?>
+                </select>
             </div>
         </div>
 
@@ -85,7 +85,7 @@ if (!in_array('partner_manager', $current_user->roles) && !in_array('administrat
             <div>
                 <label for="asset_status" class="block text-sm font-medium text-gray-700 ">Status</label>
                 <select name="asset_status" id="asset_status"
-                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500   ">
+                    class="mt-1 block w-full shadow-sm w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500       transition duration-200">
                     <option value="draft">Draft</option>
                     <option value="published" selected>Published</option>
                     <option value="archived">Archived</option>
@@ -96,7 +96,7 @@ if (!in_array('partner_manager', $current_user->roles) && !in_array('administrat
             <div>
                 <label for="asset_publish_date" class="block text-sm font-medium text-gray-700 ">Publish Date</label>
                 <input type="date" name="asset_publish_date" id="asset_publish_date"
-                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500   ">
+                    class="mt-1 block w-full shadow-sm w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500       transition duration-200">
             </div>
         </div>
 
@@ -104,7 +104,7 @@ if (!in_array('partner_manager', $current_user->roles) && !in_array('administrat
         <div>
             <label for="asset_description" class="block text-sm font-medium text-gray-700 ">Description</label>
             <textarea name="asset_description" id="asset_description" rows="3"
-                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500   "></textarea>
+                class="mt-1 block w-full shadow-sm w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500       transition duration-200"></textarea>
         </div>
 
         <input type="hidden" name="action" value="save_asset">
