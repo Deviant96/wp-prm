@@ -88,7 +88,7 @@ $languages = get_the_terms(get_the_ID(), 'language');
                         <?php if ($status = get_post_status(get_the_ID())) : ?>
                         <div class="flex items-center gap-2">
                             <span class="w-2 h-2 rounded-full 
-                            <?php echo strtolower($status) === 'published' ? 'bg-green-500' : ''; ?>
+                            <?php echo strtolower($status) === 'publish' ? 'bg-green-500' : ''; ?>
                             <?php echo strtolower($status) === 'draft' ? 'bg-yellow-500' : ''; ?>
                             <?php echo strtolower($status) === 'archived' ? 'bg-gray-500' : ''; ?>">
                             </span>
