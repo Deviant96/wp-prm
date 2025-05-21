@@ -10,7 +10,7 @@ $current_user = wp_get_current_user();
 $user_roles = $current_user->roles;
 set_query_var('current_user', $current_user);
 
-wp_header();
+get_header();
 ?>
 
 <script>
