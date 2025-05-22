@@ -1,4 +1,5 @@
 <?php
+// USED BY: dashboard-assets.php to load assets list
 function prm_ajax_load_assets() {
     check_ajax_referer('prm_ajax_nonce', 'nonce');
 

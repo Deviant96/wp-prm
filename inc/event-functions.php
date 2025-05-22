@@ -1,35 +1,207 @@
 <?php
-function wp_prm_enqueue_flatpickr()
-{
+function wp_prm_enqueue_flatpickr() {
     wp_enqueue_script('flatpickr', 'https://cdn.jsdelivr.net/npm/flatpickr', [], null, true);
     wp_enqueue_style('flatpickr-style', 'https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css');
 }
 add_action('wp_enqueue_scripts', 'wp_prm_enqueue_flatpickr');
-// add_action( 'rest_api_init',  'hfm_register_custom_rest_route');
 
-// function hfm_register_custom_rest_route() {
-//     register_rest_route( 'prm/v1', '/events', array(
-//      'methods'          => 'GET',
-//      'callback'         => 'prm_get_events',
-//      'permission_callback' => '__return_true',
-//     ) );
-// }
+function register_event_taxonomies() {
+    register_taxonomy('event_type', 'tbyte_prm_events', [
+        'label'        => 'Event Types',
+        'public'       => true,
+        'hierarchical' => true,
+        'show_ui'      => true,
+        'rewrite'      => ['slug' => 'event-type'],
+        'show_in_rest' => true,
+    ]);
+}
+add_action('init', 'register_event_taxonomies');
 
-// function hfm_benchmark_rest_request() {
-//     return array( 'time' => time() );
-// }
+add_action('rest_api_init', function () {
+    register_rest_route('prm/v1', '/tbyte_prm_events', [
+        'methods'  => 'GET',
+        'callback' => 'tbyte_prm_get_events',
+        'permission_callback' => '__return_true',
+    ]);
 
-add_action('rest_api_init', function() {
-    register_rest_route('prm/v1', '/tbyte_prm_events/create', [
-        'methods' => 'POST',
-        'callback' => 'create_event_rest',
-        'permission_callback' => function() {
-            return current_user_can('edit_posts');
-        }
+    register_rest_route('prm/v1', '/tbyte_prm_events/(?P<id>\d+)', [
+        'methods'  => 'GET',
+        'callback' => 'tbyte_prm_get_event',
+        'permission_callback' => '__return_true',
+    ]);
+
+    register_rest_route('prm/v1', '/tbyte_prm_events', [
+        'methods'  => 'POST',
+        'callback' => 'tbyte_prm_create_event',
+        'permission_callback' => 'tbyte_prm_can_manage_events',
+    ]);
+
+    register_rest_route('prm/v1', '/tbyte_prm_events/(?P<id>\d+)', [
+        'methods'  => 'POST',
+        'callback' => 'tbyte_prm_update_event',
+        'permission_callback' => 'tbyte_prm_can_manage_events',
+    ]);
+
+    register_rest_route('prm/v1', '/tbyte_prm_events/(?P<id>\d+)', [
+        'methods'  => 'DELETE',
+        'callback' => 'tbyte_prm_delete_event',
+        'permission_callback' => 'tbyte_prm_can_manage_events',
     ]);
 });
 
-function create_event_rest($request) {
+// Check permissions
+function tbyte_prm_can_manage_events() {
+    return current_user_can('edit_posts');
+}
+
+// GET all events
+function tbyte_prm_get_events($request) {
+    $params = $request->get_params();
+
+    $paged = (int) $request->get_param('page');
+    $paged = $paged > 0 ? $paged : 1;
+
+    $posts_per_page = (int) $request->get_param('posts_per_page');
+    $posts_per_page = $posts_per_page > 0 ? $posts_per_page : 10;
+    $posts_per_page = min($posts_per_page, 20);
+    $posts_per_page = max($posts_per_page, 1);
+
+    $search = $request->get_param('search');
+    $search = !empty($search) ? sanitize_text_field($search) : '';
+
+    $search = preg_replace('/[^a-zA-Z0-9\s]/', '', $search); // Sanitize search input
+
+    $filters = !empty($params['filters']) ? json_decode($params['filters'], true) : [];
+    $filters = is_array($filters) ? $filters : [];
+
+    $start_date = !empty($params['start_date']) ? sanitize_text_field($params['start_date']) : '';
+    $end_date = !empty($params['end_date']) ? sanitize_text_field($params['end_date']) : '';
+
+    $events_query = [
+        'post_type' => 'tbyte_prm_events',
+        'posts_per_page' => $posts_per_page,
+        'paged' => $paged,
+        'post_status' => 'publish',
+        's' => $search,
+        'tax_query' => [
+            'relation' => 'AND',
+        ],
+        'meta_query' => [],
+    ];
+ 
+    // Taxonomy filters
+    if (!empty($params['filters']) && is_array($filters)) {
+        $tax_queries = [];
+
+        foreach ($filters as $filter) {
+            if (!isset($filter['tax']) || !isset($filter['value'])) continue;
+
+            $taxonomy = sanitize_text_field($filter['tax']);
+            $term = sanitize_text_field($filter['value']);
+
+            if (taxonomy_exists($taxonomy) && term_exists($term, $taxonomy)) {
+                $tax_queries[$taxonomy][] = $term;
+            }
+        }
+
+        foreach ($tax_queries as $tax => $terms) {
+            $events_query['tax_query'][] = [
+                'taxonomy' => $tax,
+                'field' => 'slug',
+                'terms' => $terms,
+                'operator' => 'IN',
+            ];
+        }
+    }
+    
+    // Date range filter
+    if (!empty($start_date) && !empty($end_date)) {
+        $start_date = date('Y-m-d', strtotime($start_date));
+        $end_date = date('Y-m-d', strtotime($end_date));
+
+        $events_query['meta_query'][] = [
+            'key' => '_event_date',
+            'value' => [$start_date, $end_date],
+            'compare' => 'BETWEEN',
+            'type' => 'DATE'
+        ];
+    }
+
+    $query = new WP_Query($events_query);
+
+    if (is_wp_error($events_query)) {
+        return new WP_Error('query_failed', 'Failed to retrieve events: ' . $query->get_error_message(), ['status' => 500]);
+    }
+
+    $data = [];
+    if ($query->have_posts()) {
+        $data = [];
+
+        while ($query->have_posts()) {
+            $query->the_post();
+            $data[] = [
+                'id'    => get_the_ID(),
+                'title' => get_the_title(),
+                'link'  => get_permalink(),
+                'excerpt' => get_the_excerpt(),
+                'thumbnail' => get_the_post_thumbnail_url(get_the_ID(), 'medium'),
+                'type' => wp_get_post_terms(get_the_ID(), 'event_type', ['fields' => 'names']),
+                'tags' => wp_get_post_terms(get_the_ID(), 'post_tag', ['fields' => 'names']),
+                'date'  => get_post_meta(get_the_ID(), '_event_date', true),
+                'formatted_date' => date_i18n(get_option('date_format'), get_post_meta(get_the_ID(), '_event_date', true)),
+                'venue' => get_post_meta(get_the_ID(), '_event_venue', true),
+                'location' => get_post_meta(get_the_ID(), '_event_location', true),
+                'start_time' => get_post_meta(get_the_ID(), '_event_start_time', true),
+                'end_time' => get_post_meta(get_the_ID(), '_event_end_time', true),
+            ];
+        }
+
+        $response = [
+            'items' => json_encode($data),
+            'pagination' => [
+                'total' => (int) $query->found_posts,
+                'total_pages' => (int) $query->max_num_pages,
+                'current_page' => (int) $paged,
+                'per_page' => (int) $posts_per_page,
+            ],
+            'message' => 'Events retrieved successfully',
+        ];
+    } else {
+        $response = [
+            'items' => [],
+            'message' => 'No events found matching your criteria',
+            'pagination' => [
+                'total' => 0,
+                'total_pages' => 0,
+                'current_page' => (int) $paged,
+                'per_page' => (int) $posts_per_page,
+            ],
+        ];
+    }
+    
+    wp_reset_postdata();
+    return new WP_REST_Response($response, 200);
+}
+
+// GET a single event
+function tbyte_prm_get_event($request) {
+    $post_id = (int)$request['id'];
+    $post = get_post($post_id);
+
+    if (!$post || $post->post_type !== 'tbyte_prm_events') {
+        return new WP_Error('not_found', 'Event not found', ['status' => 404]);
+    }
+
+    return [
+        'id'    => $post->ID,
+        'title' => $post->post_title,
+        'date'  => get_post_meta($post->ID, 'event_date', true),
+        'venue' => get_post_meta($post->ID, 'event_venue', true),
+    ];
+}
+
+// CREATE an event
+function tbyte_prm_create_event($request) {
     $params = $request->get_params();
 
     // Validate and sanitize input
@@ -100,340 +272,6 @@ function create_event_rest($request) {
     ], 200);
 }
 
-/*
- * GET Events
- * This function fetches events based on the provided parameters.
- * It uses WP_Query to retrieve the events and returns the HTML for the events list.
- */
-// add_action('rest_api_init', function () {
-//     register_rest_route('prm/v1', '/events', [
-//         'methods' => 'GET',
-//         'callback' => 'prm_get_eventss',
-//         'permission_callback' => '__return_true',
-//     ]);
-// });
-// function prm_get_events($args = []) {
-//     $defaults = [
-//         'post_type' => 'events',
-//         'posts_per_page' => 9,
-//         'paged' => 1,
-//     ];
-//     $args = wp_parse_args($args, $defaults);
-//     $query = new WP_Query($args);
-
-//     ob_start();
-//     if ($query->have_posts()) {
-//         while ($query->have_posts()) {
-//             $query->the_post();
-//             get_template_part('template-parts/dashboard/event', 'card');
-//         }
-//     } else {
-//         echo '<p class="text-gray-500 ">No events found.</p>';
-//     }
-//     wp_reset_postdata();
-//     return ob_get_clean();
-// }
-
-add_action('rest_api_init', function () {
-    register_rest_route('prm/v1', '/tbyte_prm_events', [
-        'methods' => 'POST',
-        'callback' => 'tbyte_prm_fetch_events',
-        'permission_callback' => '__return_true',
-    ]);
-});
-
-function tbyte_prm_fetch_events($request) {
-    $params = $request->get_json_params();
-
-    // Validate and sanitize input
-    $search = isset($params['s']) ? sanitize_text_field($params['s']) : '';
-    $page = isset($params['page']) ? absint($params['page']) : 1;
-    $per_page = isset($params['posts_per_page']) ? absint($params['posts_per_page']) : 10;
-    $args = [
-        'post_type' => 'tbyte_prm_events',
-        'posts_per_page' => $per_page,
-        'paged' => $page,
-        's' => $search,
-        'tax_query' => ['relation' => 'AND'],
-        'meta_query' => [],
-    ];
-
-    // Taxonomy filters
-    if (!empty($params['filters']) && is_array($params['filters'])) {
-        $tax_queries = [];
-        
-        foreach ($params['filters'] as $filter) {
-            if (!isset($filter['tax']) || !isset($filter['value'])) continue;
-            
-            $taxonomy = sanitize_text_field($filter['tax']);
-            $term = sanitize_text_field($filter['value']);
-            
-            if (taxonomy_exists($taxonomy) && term_exists($term, $taxonomy)) {
-                $tax_queries[$taxonomy][] = $term;
-            }
-        }
-        
-        foreach ($tax_queries as $tax => $terms) {
-            $args['tax_query'][] = [
-                'taxonomy' => $tax,
-                'field' => 'slug',
-                'terms' => $terms,
-                'operator' => 'IN',
-            ];
-        }
-    }
-
-    // Date range filter
-    if (!empty($params['range'])) {
-        $dates = $params['range'];
-        
-        if (count($dates) === 2) {
-            $start_date = $dates[0];
-            $end_date = $dates[1];
-            
-            if ($start_date && $end_date) {
-                $args['meta_query'][] = [
-                    'key' => '_event_date',
-                    'value' => [$start_date, $end_date],
-                    'compare' => 'BETWEEN',
-                    'type' => 'DATE'
-                ];
-                
-                // Optional: Order by event date
-                $args['meta_key'] = '_event_date';
-                $args['orderby'] = 'meta_value_num';
-                $args['order'] = 'ASC';
-            }
-        }
-    }
-
-    $query = new WP_Query($args);
-
-    if (is_wp_error($query)) {
-        return new WP_Error('query_failed', 'Failed to retrieve events: ' . $query->get_error_message(), ['status' => 500]);
-    }
-
-    if ($query->have_posts()) {
-        $data = [];
-        
-        while ($query->have_posts()) {
-            $query->the_post();
-            $post_id = get_the_ID();
-            
-            $data[] = [
-                'id' => $post_id,
-                'title' => get_the_title(),
-                'link' => get_permalink(),
-                'excerpt' => get_the_excerpt(),
-                'thumbnail' => get_the_post_thumbnail_url($post_id, 'medium'),
-                'type' => wp_get_post_terms($post_id, 'event_type', ['fields' => 'names']),
-                'tags' => wp_get_post_terms($post_id, 'post_tag', ['fields' => 'names']),
-                'date' => get_post_meta($post_id, '_event_date', true),
-                'formatted_date' => date_i18n(get_option('date_format'), get_post_meta($post_id, '_event_date', true)),
-                'venue' => get_post_meta($post_id, '_event_venue', true),
-                'location' => get_post_meta($post_id, '_event_location', true),
-                'start_time' => get_post_meta($post_id, '_event_start_time', true),
-                'end_time' => get_post_meta($post_id, '_event_end_time', true),
-            ];
-        }
-        
-        $response = [
-            'items' => $data,
-            'pagination' => [
-                'total' => (int) $query->found_posts,
-                'total_pages' => (int) $query->max_num_pages,
-                'current_page' => $page,
-                'per_page' => $per_page,
-            ],
-            'message' => 'Events retrieved successfully',
-        ];
-    } else {
-        $response = [
-            'items' => [],
-            'message' => 'No events found matching your criteria',
-            'pagination' => [
-                'total' => 0,
-                'total_pages' => 0,
-                'current_page' => $page,
-                'per_page' => $per_page,
-            ],
-        ];
-    }
-
-    wp_reset_postdata();
-    return new WP_REST_Response($response, 200);
-}
-
-
-function register_event_taxonomies() {
-    register_taxonomy('event_type', 'tbyte_prm_events', [
-        'label'        => 'Event Types',
-        'public'       => true,
-        'hierarchical' => true,
-        'show_ui'      => true,
-        'rewrite'      => ['slug' => 'event-type'],
-        'show_in_rest' => true,
-    ]);
-}
-add_action('init', 'register_event_taxonomies');
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-add_action('rest_api_init', function () {
-    register_rest_route('prm/v1', '/tbyte_prm_events', [
-        'methods'  => 'GET',
-        'callback' => 'tbyte_prm_get_events',
-        'permission_callback' => '__return_true',
-    ]);
-
-    register_rest_route('prm/v1', '/tbyte_prm_events/(?P<id>\d+)', [
-        'methods'  => 'GET',
-        'callback' => 'tbyte_prm_get_event',
-        'permission_callback' => '__return_true',
-    ]);
-
-    register_rest_route('prm/v1', '/tbyte_prm_events', [
-        'methods'  => 'POST',
-        'callback' => 'tbyte_prm_create_event',
-        'permission_callback' => 'tbyte_prm_can_manage_events',
-    ]);
-
-    register_rest_route('prm/v1', '/tbyte_prm_events/(?P<id>\d+)', [
-        'methods'  => 'POST',
-        'callback' => 'tbyte_prm_update_event',
-        'permission_callback' => 'tbyte_prm_can_manage_events',
-    ]);
-
-    register_rest_route('prm/v1', '/tbyte_prm_events/(?P<id>\d+)', [
-        'methods'  => 'DELETE',
-        'callback' => 'tbyte_prm_delete_event',
-        'permission_callback' => 'tbyte_prm_can_manage_events',
-    ]);
-});
-
-// Check permissions
-function tbyte_prm_can_manage_events() {
-    return current_user_can('edit_posts');
-}
-
-// GET all events
-function tbyte_prm_get_events($request) {
-    // Get query parameters from the REST request
-    $paged = (int) $request->get_param('page');
-    $paged = $paged > 0 ? $paged : 1;
-
-    $posts_per_page = (int) $request->get_param('posts_per_page');
-    $search = $request->get_param('s');
-    $events_query = new WP_Query([
-        'post_type' => 'tbyte_prm_events',
-        'posts_per_page' => $posts_per_page,
-        'paged' => $paged,
-        'post_status' => 'publish',
-        's' => $search,
-    ]);
-
-    if (is_wp_error($events_query)) {
-        wp_send_json_error([
-            'message' => 'Failed to retrieve assets.',
-            'error' => $events_query->get_error_message(),
-        ], 500);
-    }
-
-    $data = [];
-    while ($events_query->have_posts()) {
-        $events_query->the_post();
-        $data[] = [
-            'id'    => get_the_ID(),
-            'title' => get_the_title(),
-            'link'  => get_permalink(),
-            'type' => wp_get_post_terms(get_the_ID(), 'event_type', ['fields' => 'names']),
-            'tags' => wp_get_post_terms(get_the_ID(), 'post_tag', ['fields' => 'names']),
-            'date'  => get_post_meta(get_the_ID(), '_event_date', true),
-            'venue' => get_post_meta(get_the_ID(), '_event_venue', true),
-            'start_time' => get_post_meta(get_the_ID(), '_event_start_time', true),
-            'end_time' => get_post_meta(get_the_ID(), '_event_end_time', true),
-        ];
-    }
-    wp_reset_postdata();
-
-    if (empty($data)) {
-        return rest_ensure_response([
-            'items' => [], 
-            'message' => 'No events found',
-            'pagination' => [
-                'total' => 0,
-                'total_pages' => 0,
-                'current_page' => $paged,
-                'per_page' => $posts_per_page,
-            ],
-        ]);
-    }
-
-    $pagination = [
-        'total' => (int) $events_query->found_posts,
-        'total_pages' => (int) $events_query->max_num_pages,
-        'current_page' => (int) $paged,
-        'per_page' => (int) $posts_per_page,
-    ];
-
-    return rest_ensure_response([
-        'items' => $data,
-        'pagination' => $pagination,
-    ]);
-}
-
-// GET a single event
-function tbyte_prm_get_event($request) {
-    $post_id = (int)$request['id'];
-    $post = get_post($post_id);
-
-    if (!$post || $post->post_type !== 'tbyte_prm_events') {
-        return new WP_Error('not_found', 'Event not found', ['status' => 404]);
-    }
-
-    return [
-        'id'    => $post->ID,
-        'title' => $post->post_title,
-        'date'  => get_post_meta($post->ID, 'event_date', true),
-        'venue' => get_post_meta($post->ID, 'event_venue', true),
-    ];
-}
-
-// CREATE an event
-function tbyte_prm_create_event($request) {
-    $post_id = wp_insert_post([
-        'post_type'   => 'tbyte_prm_events',
-        'post_title'  => sanitize_text_field($request['title']),
-        'post_status' => 'publish',
-    ]);
-
-    if (is_wp_error($post_id)) {
-        return $post_id;
-    }
-
-    update_post_meta($post_id, 'event_date', sanitize_text_field($request['date']));
-    update_post_meta($post_id, 'event_venue', sanitize_text_field($request['venue']));
-
-    return ['message' => 'Event created', 'id' => $post_id];
-}
-
 // UPDATE an event
 function tbyte_prm_update_event($request) {
     $post_id = (int)$request['id'];
@@ -463,8 +301,10 @@ function tbyte_prm_delete_event($request) {
         return new WP_Error('delete_failed', 'Failed to delete event', ['status' => 400]);
     }
 
-    return [
+    $response = [
         'success' => true,
         'message' => 'Event deleted',
     ];
+
+    return new WP_REST_Response($response, 200);
 }

@@ -200,14 +200,7 @@ if (!in_array('partner_manager', $current_user->roles) && !in_array('administrat
                 const data = await response.json();
 
                 // Assuming the API returns an object with a 'data' property
-                events = data.items;
-                // const pagination = data.data.pagination;
-
-                // Render the events
-                // renderEvents(events);
-                // renderPagination3(pagination);
-                // });
-
+                events = JSON.parse(data.items);
 
                 // Clear existing rows
                 tbody.innerHTML = '';

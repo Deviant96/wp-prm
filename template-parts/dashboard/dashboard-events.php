@@ -59,50 +59,6 @@
     </div>
 
     <div id="event-pagination" class="mt-6 flex justify-center">
-        <?php
-        $total_pages = $events->max_num_pages;
-        if ($total_pages > 1) {
-            $current_page = max(1, get_query_var('paged'));
-            
-            echo '<nav class="flex items-center space-x-2">';
-            
-            // Previous button
-            if ($current_page > 1) {
-                echo '<a href="' . get_pagenum_link($current_page - 1) . '" class="px-4 py-2 border rounded-lg hover:bg-blue-600 hover:text-white transition-colors duration-200 flex items-center" data-page="' . ($current_page - 1) . '">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-                    </svg>
-                    Previous
-                </a>';
-            }
-            
-            // Page numbers
-            $range = 2; // how many pages to show around current page
-            $show_items = ($range * 2) + 1;
-            
-            for ($i = 1; $i <= $total_pages; $i++) {
-                if (1 != $total_pages && (!($i >= $current_page + $range + 1 || $i <= $current_page - $range - 1) || $total_pages <= $show_items)) {
-                    if ($current_page == $i) {
-                        echo '<span class="px-4 py-2 bg-blue-600 text-white rounded-lg">' . $i . '</span>';
-                    } else {
-                        echo '<a href="' . get_pagenum_link($i) . '" class="px-4 py-2 border rounded-lg hover:bg-blue-600 hover:text-white transition-colors duration-200" data-page="' . $i . '">' . $i . '</a>';
-                    }
-                }
-            }
-            
-            // Next button
-            if ($current_page < $total_pages) {
-                echo '<a href="' . get_pagenum_link($current_page + 1) . '" class="px-4 py-2 border rounded-lg hover:bg-blue-600 hover:text-white transition-colors duration-200 flex items-center" data-page="' . ($current_page + 1) . '">
-                    Next
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                    </svg>
-                </a>';
-            }
-            
-            echo '</nav>';
-        }
-        ?>
     </div>
 
     <!-- Loading spinner (hidden by default) -->
@@ -226,6 +182,68 @@
             const options = { year: 'numeric', month: 'long', day: 'numeric' };
             return new Date(dateString).toLocaleDateString('en-US', options);
         }
+
+        function renderPagination3(pagination) {
+            console.error('Rendering pagination:');
+            const paginationContainer = document.getElementById('event-pagination');
+            paginationContainer.innerHTML = '';
+
+            // Add smooth transition class to container
+            paginationContainer.className = 'flex space-x-2 transition-all duration-300';
+
+            // Previous button (always visible but disabled when on first page)
+            const prevLink = document.createElement('a');
+            prevLink.href = '#';
+            prevLink.dataset.page = pagination.current_page - 1;
+            prevLink.className = `px-4 py-2 rounded-md transition-all duration-300 ${
+                pagination.current_page === 1 
+                    ? 'bg-gray-200 text-gray-500 cursor-not-allowed' 
+                    : 'bg-white text-[#086ad7] hover:bg-blue-50 border border-blue-200 cursor-pointer'
+            }`;
+            prevLink.innerHTML = '&larr; Previous';
+            prevLink.addEventListener('click', (e) => {
+                if (pagination.current_page === 1) e.preventDefault();
+            });
+            paginationContainer.appendChild(prevLink);
+
+            // Page numbers
+            for (let i = 1; i <= pagination.total_pages; i++) {
+                let pageLink;
+                if (i === pagination.current_page) {
+                    pageLink = document.createElement('span');
+                    pageLink.className = 'px-4 py-2 bg-blue-500 text-white rounded-md transition-all duration-300';
+                } else {
+                    pageLink = document.createElement('a');
+                    pageLink.className = 'px-4 py-2 bg-white text-blue-600 hover:bg-blue-50 border border-blue-200 cursor-pointer rounded-md transition-all duration-300';
+                    pageLink.href = '#';
+                }
+                pageLink.dataset.page = i;
+                pageLink.textContent = i;
+                paginationContainer.appendChild(pageLink);
+            }
+
+            // Next button (always visible but disabled when on last page)
+            const nextLink = document.createElement('a');
+            nextLink.href = '#';
+            nextLink.dataset.page = pagination.current_page + 1;
+            nextLink.className = `px-4 py-2 rounded-md transition-all duration-300 ${
+                pagination.current_page === pagination.total_pages 
+                    ? 'bg-gray-200 text-gray-500 cursor-not-allowed' 
+                    : 'bg-white text-blue-600 hover:bg-blue-50 border border-blue-200 cursor-pointer'
+            }`;
+            nextLink.innerHTML = 'Next &rarr;';
+            nextLink.addEventListener('click', (e) => {
+                if (pagination.current_page === pagination.total_pages) e.preventDefault();
+            });
+            paginationContainer.appendChild(nextLink);
+
+            // Add fade-in animation to the container
+            paginationContainer.style.opacity = '0';
+            setTimeout(() => {
+                paginationContainer.style.opacity = '1';
+                paginationContainer.style.transition = 'opacity 300ms ease-in-out';
+            }, 10);
+        }
         
         // Update pagination based on API response
         function updatePagination(pagination) {
@@ -276,6 +294,147 @@
             html += '</nav>';
             paginationEl.innerHTML = html;
         }
+
+        const pagination = document.getElementById('event-pagination');
+        pagination.addEventListener('click', (e) => {
+            console.error('Pagination clicked:', e.target);
+            if (e.target.tagName === 'A' && !e.target.classList.contains('cursor-not-allowed')) {
+                console.error('Pagination link clicked:', e.target);
+                e.preventDefault();
+                const page = parseInt(e.target.dataset.page, 10);
+
+                // Add loading state
+                let originalText = e.target.innerHTML;
+                e.target.innerHTML = '<span class="animate-pulse">Loading...</span>';
+                e.target.classList.add('cursor-not-allowed', 'opacity-50');
+
+                fetchAndRenderEvents(page).then(data => {
+                    console.error('Events fetched successfully - Pagination clicked');
+                    e.target.innerHTML = originalText;
+                    e.target.classList.remove('cursor-not-allowed', 'opacity-50');
+                    currentPage = page;
+                    renderPagination3(data.pagination);
+                })
+                .catch(error => {
+                    console.error('Error in fetchAndRenderEvents:', error);
+                });
+            }
+        });
+
+        
+        let currentPage = 1;
+        let totalPages = 1;
+        const itemsPerPage = 5;
+
+        async function fetchAndRenderEvents(page = 1, perPage = 5, searchParams = {}) {
+            let events;
+            
+            // Validate page number
+            pageNumber = Math.max(1, Math.min(page, totalPages));
+            currentPage = pageNumber;
+
+            // const tbody = document.getElementById('events-table-body2');
+            const tbody = eventList;
+            // const eventList = document.getElementById('events-list');
+            // Add fade-out animation
+            tbody.style.opacity = '0.5';
+            tbody.style.transition = 'opacity 300ms ease-in-out';
+
+            // Helper function to create a table cell
+            const createTableCell = (content, className = 'p-2') => {
+                const td = document.createElement('td');
+                td.textContent = content;
+                td.className = className;
+                return td;
+            };
+
+            // Build query string
+            const query = new URLSearchParams({
+                page: page,
+                posts_per_page: perPage,
+                ...searchParams // Include any filters/search terms
+            }).toString();
+
+            showLoading('eventList'); // Show loading skeleton
+
+            try {
+                const url = `wp-json/prm/v1/tbyte_prm_events?${query}`;
+
+                const response = await fetch(url);
+
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+
+                const data = await response.json();
+
+                // Assuming the API returns an object with a 'data' property
+                events = JSON.parse(data.items);
+
+                // Clear existing rows
+                tbody.innerHTML = '';
+
+                // Render each event
+                events.forEach(event => {
+                    const row = document.createElement('div');
+                    row.className = 'flex flex-col sm:flex-row bg-white border border-gray-200 rounded-xl overflow-hidden';
+                    row.innerHTML = `
+                            <div class="sm:w-1/3 bg-gray-200 h-32 sm:h-auto">
+                                ${!event.image ? `
+                                    <div class="w-full h-full bg-gray-100 flex items-center justify-center">
+                                        <svg class="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                        </svg>
+                                    </div>
+                                ` : `
+                                    <div class="w-full h-full bg-gray-100 flex items-center justify-center">
+                                        <img src="${event.image}" alt="Event" class="w-full h-full object-cover">
+                                    </div>
+                                `}
+                            </div>
+                            <div class="p-4 flex flex-col justify-between flex-grow">
+                                <div>
+                                    <div class="text-sm text-gray-500 mb-1">${event.date} – ${event.type ? event.type.join(', ') : ''}</div>
+                                    <h3 class="text-lg font-semibold text-gray-800">${event.title}</h3>
+                                    ${event.tags ? `
+                                        <div class="mt-3 flex flex-wrap gap-2">
+                                            ${event.tags.map(tag => `
+                                                <span class="text-xs px-2 py-1 bg-gray-100 rounded-full">${tag}</span>
+                                            `).join('')}
+                                        </div>
+                                    ` : ''}
+                                </div>
+                                <div class="mt-3 flex justify-between items-center">
+                                    <a href="${event.link}" class="text-blue-600 hover:underline text-sm">View Details</a>
+                                    <ion-icon name="calendar-outline" class="text-gray-400 text-xl"></ion-icon>
+                                </div>
+                            </div>
+                    `;
+                    tbody.appendChild(row);
+                });
+
+                // Fade in the new content
+                setTimeout(() => {
+                    tbody.style.opacity = '1';
+                }, 300);
+
+                // updateQueryParam('page', page);
+                // return data;
+                return data;
+            } catch (error) {
+                tbody.style.opacity = '1'; // Reset opacity on error
+                throw error;
+            }
+        }
+        
+        function showLoading(elementId) {
+            const element = document.getElementById(elementId);
+            element.innerHTML = '<div class="loader">Loading...</div>';
+        }
+        function hideLoading(elementId) {
+            const element = document.getElementById(elementId);
+            element.innerHTML = '';
+        }
         
         // Add history pushState for AJAX navigation
         window.addEventListener('popstate', function() {
@@ -283,5 +442,16 @@
             const page = params.get('page') || 1;
             loadEvents(page);
         });
+
+        // Initial load
+        fetchAndRenderEvents(1, 3)
+            .then(data  => {
+                if (data.pagination) {
+                    renderPagination3(data.pagination);
+                }
+            })
+            .catch(error => {
+                showError('Error loading events.');
+            });
     });
 </script>

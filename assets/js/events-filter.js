@@ -65,26 +65,32 @@ document.addEventListener('DOMContentLoaded', () => {
         }));
 
         try {
-            const response = await fetch(`${wpApiSettings.root}prm/v1/tbyte_prm_events`, {
-                method: "POST",
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'X-WP-Nonce': wpApiSettings.nonce,
-                },
-                body: JSON.stringify({ 
-                    search, 
-                    range, 
-                    filters, 
-                    page: currentPage,
-                    post_per_page: perPage,
-                })
+            const queryParams = new URLSearchParams({
+                search: search || '',
+                start_date: range ? range[0] : '',
+                end_date: range ? range[1] : '',
+                page: currentPage,
+                per_page: perPage,
+                filters: JSON.stringify(filters),
             });
+
+            const response = await fetch(
+                `${wpApiSettings.root}prm/v1/tbyte_prm_events?${queryParams.toString()}`, 
+                {
+                    method: 'GET',
+                    headers: {
+                        'X-WP-Nonce': wpApiSettings.nonce
+                    }
+                }
+            );
 
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }
 
             const data = await response.json();
+
+            data.items = JSON.parse(data.items);
             updateEventList(data);
         } catch (error) {
             showError('Error fetching events. Please try again later.');

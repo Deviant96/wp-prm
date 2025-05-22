@@ -175,7 +175,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const s = encodeURIComponent(search);
         try {
-            const response = await fetch(`${wpApiSettings.root}prm/v1/tbyte_prm_events?s=${s}&posts_per_page=4`, {
+            const response = await fetch(`${wpApiSettings.root}prm/v1/tbyte_prm_events?search=${s}&posts_per_page=4`, {
                 method: "GET",
                 headers: { 
                     'Content-Type': 'application/json',
@@ -190,15 +190,19 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await response.json();
             updateEventList(data);
         } catch (error) {
+            // FIXME - Why when the items are empty, it shows the error message
             showError('Error fetching events. Please try again later.');
         } finally {
-            isEventLoading   = false;
+            isEventLoading = false;
             hideEventSearchLoadingIndicator();
         }
     }
 
     function updateEventList(data) {
         const eventList = document.getElementById('event-list');
+
+        data.items = JSON.parse(data.items);
+        console.error(data.items.length)
 
         if (data.items.length === 0) {
             eventList.innerHTML = `<div class="no-events col-span-4 md:col-span-4 text-[#9d9d9d] font-bold">${data.message}</div>`;
