@@ -31,7 +31,7 @@
     <?php if (has_post_thumbnail()): ?>
         <img src="<?php the_post_thumbnail_url(); ?>" class="mb-3 rounded h-32 object-cover w-full" alt="">
     <?php endif; ?>
-    <div class="w-full bg-gray-200 h-64 sm:h-auto">
+    <div class="w-full h-64 sm:h-auto">
         <?php echo $docTypeThumb; ?>
     </div>
     <div class="flex flex-col justify-between flex-grow">

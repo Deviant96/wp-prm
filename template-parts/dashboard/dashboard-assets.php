@@ -63,38 +63,51 @@ $language = isset($_GET['language']) ? explode(',', sanitize_text_field($_GET['l
 
     <!-- Filters -->
     <div class="grid sm:grid-cols-2 md:grid-cols-3 gap-4 mb-6 text-sm">
-        <div>
-            <h4 class="font-semibold mb-2">Doc Type</h4>
-            <?php foreach (get_terms(['taxonomy' => 'doc_type']) as $term): ?>
-                <label class="block">
-                    <input type="checkbox"
-                        class="filter-doc mr-2"
-                        value="<?php echo $term->slug; ?>"
-                        <?php checked(in_array($term->slug, (array)$doc_type)); ?>>
-                    <?php echo $term->name; ?>
-                </label>
-            <?php endforeach; ?>
+        <div class="mb-4">
+            <h4 class="text-sm font-semibold text-gray-700 mb-2">Doc Type</h4>
+            <div class="flex flex-wrap gap-2">
+                <?php foreach (get_terms(['taxonomy' => 'doc_type']) as $term): ?>
+                    <label class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium cursor-pointer transition-all
+                                border <?php echo in_array($term->slug, (array)$doc_type) ? 
+                                    'bg-blue-100 text-blue-800 border-blue-300 shadow-inner' : 
+                                    'bg-white text-gray-700 border-gray-300 hover:bg-gray-50' ?>">
+                        <input type="checkbox"
+                            class="sr-only filter-doc"
+                            value="<?php echo $term->slug; ?>"
+                            <?php checked(in_array($term->slug, (array)$doc_type)); ?>>
+                        <?php echo $term->name; ?>
+                            <svg class="activeIcon hidden ml-1 h-3 w-3 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                            </svg>
+                    </label>
+                <?php endforeach; ?>
+            </div>
         </div>
-        <div>
-            <h4 class="font-semibold mb-2">Language</h4>
-            <?php foreach (get_terms(['taxonomy' => 'language']) as $term): ?>
-                <label class="block">
-                    <input type="checkbox"
-                        class="filter-lang mr-2"
-                        value="<?php echo $term->slug; ?>"
-                        <?php checked(in_array($term->slug, (array)$language)); ?>>
-                    <?php echo $term->name; ?>
-                </label>
-            <?php endforeach; ?>
+        <div class="mb-4" id="language-filter">
+            <h4 class="text-sm font-semibold text-gray-700 mb-3">Language</h4>
+            <div class="flex flex-wrap gap-2">
+                <?php foreach (get_terms(['taxonomy' => 'language']) as $term): ?>
+                    <label class="inline-flex items-center px-3 py-2 rounded-lg text-sm font-medium cursor-pointer transition-colors duration-150 border
+                                <?php echo in_array($term->slug, (array)$language) ? 
+                                    'bg-blue-50 text-blue-700 border-blue-200 shadow-inner' : 
+                                    'bg-white text-gray-700 border-gray-200 hover:bg-gray-50' ?>">
+                        <input type="checkbox"
+                            class="absolute opacity-0 h-0 w-0 filter-lang"
+                            value="<?php echo $term->slug; ?>"
+                            <?php checked(in_array($term->slug, (array)$language)); ?>>
+                        <span class="flex items-center">
+                            <?php echo $term->name; ?>
+                            <?php if(in_array($term->slug, (array)$language)): ?>
+                                <svg class="ml-1.5 h-3.5 w-3.5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                                </svg>
+                            <?php endif; ?>
+                        </span>
+                    </label>
+                <?php endforeach; ?>
+            </div>
         </div>
     </div>
-
-    <!-- Tag Filter Chips -->
-    <!-- <div class="mb-6 flex flex-wrap gap-2">
-        <span class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full cursor-pointer hover:bg-blue-200">#New</span>
-        <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full cursor-pointer hover:bg-green-200">#Brochure</span>
-        <span class="bg-purple-100 text-purple-700 px-3 py-1 rounded-full cursor-pointer hover:bg-purple-200">#2025</span>
-    </div> -->
 
     <!-- Loading State -->
     <div id="assets-loading" class="hidden">
@@ -111,7 +124,7 @@ $language = isset($_GET['language']) ? explode(',', sanitize_text_field($_GET['l
     </div>
 
     <!-- Results -->
-    <div id="resultsContainer" class="asset-results grid gap-4 <?php echo $layout === 'list' ? 'grid-cols-1' : 'grid-cols-2 md:grid-cols-3'; ?>">
+    <div id="assetList" class="asset-results grid gap-4 <?php echo $layout === 'list' ? 'grid-cols-1' : 'grid-cols-2 md:grid-cols-3'; ?>">
     </div>
 
     <!-- Pagination -->
@@ -120,11 +133,77 @@ $language = isset($_GET['language']) ? explode(',', sanitize_text_field($_GET['l
 
 <?php wp_reset_postdata(); ?>
 
+<script>
+    /**
+     * Document Filter Checkbox Event Handler
+     * 
+     * This JavaScript code adds event listeners to document filter checkboxes that:
+     * - Toggles visibility of an icon when checkbox state changes
+     * - Updates label styling based on checkbox state:
+     *   When checked:
+     *   - Shows icon
+     *   - Sets blue background/text colors
+     *   - Updates border color to blue
+     *   When unchecked:
+     *   - Hides icon
+     *   - Sets white background
+     *   - Sets gray text and border colors
+     * 
+     * @selector .filter-doc
+     * @event change
+     * @affects
+     * - Checkbox label background/text/border colors
+     * - Icon visibility within label
+     */
+    document.querySelectorAll('.filter-doc').forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            const label = this.closest('label');
+            const icon = this.closest('label').querySelector('.activeIcon');
+            if (this.checked) {
+                icon.classList.remove('hidden');
+                label.classList.add('bg-blue-100', 'text-blue-800', 'border-blue-300');
+                label.classList.remove('bg-white', 'text-gray-700', 'border-gray-300');
+            } else {
+                icon.classList.add('hidden');
+                label.classList.remove('bg-blue-100', 'text-blue-800', 'border-blue-300');
+                label.classList.add('bg-white', 'text-gray-700', 'border-gray-300');
+            }
+        });
+    });
+</script>
+
+<script>
+    const languageFilter = document.getElementById('language-filter');
+    
+    languageFilter.addEventListener('change', function(e) {
+        if (e.target.classList.contains('filter-lang')) {
+            const label = e.target.closest('label');
+            const checkIcon = label.querySelector('svg');
+            
+            if (e.target.checked) {
+                label.classList.add('bg-blue-50', 'text-blue-700', 'border-blue-200', 'shadow-inner');
+                label.classList.remove('bg-white', 'text-gray-700', 'border-gray-200');
+                if (!checkIcon) {
+                    label.querySelector('span').innerHTML += `
+                        <svg class="ml-1.5 h-3.5 w-3.5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                        </svg>`;
+                } else {
+                    checkIcon.classList.remove('opacity-0');
+                }
+            } else {
+                label.classList.remove('bg-blue-50', 'text-blue-700', 'border-blue-200', 'shadow-inner');
+                label.classList.add('bg-white', 'text-gray-700', 'border-gray-200');
+                if (checkIcon) checkIcon.remove();
+            }
+        }
+    });
+</script>
 
 <script>
     document.addEventListener('DOMContentLoaded', () => {
         const assetPage = document.getElementById('assets-page');
-        // const resultsContainer = assetPage.querySelector('.asset-results');
+        // const assetList = assetPage.querySelector('.asset-results');
         // const loadingElement = document.getElementById('assets-loading');
         const paginationElement = document.getElementById('assets-pagination');
         const searchInput = document.getElementById('search-assets');
@@ -136,7 +215,7 @@ $language = isset($_GET['language']) ? explode(',', sanitize_text_field($_GET['l
 
         // This is for displaying loading skeletons
         const loadingElement = document.getElementById('loadingElement');
-        const resultsContainer = document.getElementById('resultsContainer');
+        const assetList = document.getElementById('assetList');
         const skeletonContainer = document.getElementById('skeletonContainer');
 
         function createSkeletonCard() {
@@ -167,7 +246,7 @@ $language = isset($_GET['language']) ? explode(',', sanitize_text_field($_GET['l
         function showLoading() {
             // Clear any existing skeletons
             skeletonContainer.innerHTML = '';
-            resultsContainer.innerHTML = '';
+            assetList.innerHTML = '';
 
             // Add 6 placeholder cards
             for (let i = 0; i < 6; i++) {
@@ -175,12 +254,12 @@ $language = isset($_GET['language']) ? explode(',', sanitize_text_field($_GET['l
             }
 
             loadingElement.classList.remove('hidden');
-            resultsContainer.classList.add('opacity-50');
+            assetList.classList.add('opacity-50');
         }
 
         function hideLoading() {
             loadingElement.classList.add('hidden');
-            resultsContainer.classList.remove('opacity-50');
+            assetList.classList.remove('opacity-50');
         }
         // End of placeholder loading state
 
@@ -232,38 +311,6 @@ $language = isset($_GET['language']) ? explode(',', sanitize_text_field($_GET['l
             window.history.pushState({}, '', url);
         }
 
-        async function loadAssets() {
-            showLoading();
-            const params = collectFilters();
-            updateURL(params);
-
-            try {
-                const formData = new FormData();
-                formData.append('action', 'prm_load_assets');
-                formData.append('nonce', '<?php echo wp_create_nonce('prm_ajax_nonce'); ?>');
-                Object.entries(params).forEach(([key, value]) => {
-                    formData.append(key, Array.isArray(value) ? value.join(',') : value);
-                });
-
-                const response = await fetch(ajax_object.ajax_url, {
-                    method: 'POST',
-                    body: formData
-                });
-                const data = await response.json();
-
-
-                if (data.success) {
-                    resultsContainer.innerHTML = data.data.html;
-                    renderPagination(data.data.max_pages);
-                }
-            } catch (error) {
-                showError("Error loading assets. Please try again.");
-                resultsContainer.innerHTML = '<p class="text-red-500">Error loading assets. Please try again.</p>';
-            } finally {
-                hideLoading();
-            }
-        }
-
         function renderPagination(maxPages) {
             if (maxPages <= 1) {
                 paginationElement.innerHTML = '';
@@ -287,7 +334,7 @@ $language = isset($_GET['language']) ? explode(',', sanitize_text_field($_GET['l
 
         function updateLayoutClasses(newLayout) {
             // Update layout classes in results container
-            resultsContainer.className = `asset-results grid gap-4 ${
+            assetList.className = `asset-results grid gap-4 ${
                 newLayout === 'list' ? 'grid-cols-1' : 'grid-cols-2 md:grid-cols-3'
             }`;
             
@@ -322,11 +369,136 @@ $language = isset($_GET['language']) ? explode(',', sanitize_text_field($_GET['l
         filters.forEach(filter => {
             filter.addEventListener('change', () => {
                 currentPage = 1;
-                loadAssets();
+                fetchAndRenderAssets()
+                    .then(data  => {
+                        if (data.pagination) {
+                            renderPagination3(data.pagination);
+                        }
+                    })
+                    .catch(error => {
+                        showError('Error loading events: ', error);
+                    });
             });
         });
 
+        async function fetchAndRenderAssets(page = 1, perPage = 5, searchParams = {}) {
+            showLoading();
+            const params = collectFilters();
+            updateURL(params);
+
+            let assets = [];
+            // Validate page number
+            pageNumber = Math.max(1, Math.min(page, totalPages));
+            currentPage = pageNumber;
+
+            const tbody = document.getElementById('assets-table-body2');
+            const assetList = document.getElementById('assetList');
+            // Add fade-out animation
+            tbody.style.opacity = '0.5';
+            tbody.style.transition = 'opacity 300ms ease-in-out';
+
+            // Helper function to create a table cell
+            const createTableCell = (content, className = 'p-2') => {
+                const td = document.createElement('td');
+                td.textContent = content;
+                td.className = className;
+                return td;
+            };
+
+            // Build query method #1
+            const query = new URLSearchParams({
+                page: page,
+                posts_per_page: perPage,
+                ...searchParams // Include any filters/search terms
+            }).toString();
+
+            // Build query method #2
+            const queryParams = Object.entries(params)
+                .filter(([_, value]) => value) // Remove empty values
+                .map(([key, value]) => {
+                    const paramValue = Array.isArray(value) ? value.join(',') : value;
+                    return `${key}=${encodeURIComponent(paramValue)}`;
+                })
+                .join('&');
+
+            showLoading('assets-table-body2', 5, 6); // Show loading state
+
+            try {
+                const url = `${wpApiSettings.root}prm/v1/tbyte_prm_assets?${queryParams}`;
+
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        // 'Content-Type': 'application/json',
+                        'X-WP-Nonce': wpApiSettings.nonce
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+
+                const data = await response.json();
+
+                // Assuming the API returns an object with a 'data' property
+                assets = data.items;
+                // const pagination = data.data.pagination;
+
+                // Render the events
+                // renderEvents(events);
+                // renderPagination3(pagination);
+                // });
+
+
+                // Clear existing rows
+                tbody.innerHTML = '';
+
+                // Render each asset
+                assets.forEach(asset => {
+                    const row = document.createElement('tr');
+                    row.appendChild(createTableCell(asset.id));
+                    row.appendChild(createTableCell(asset.title));
+                    row.appendChild(createTableCell(asset.doc_type));
+                    row.appendChild(createTableCell(asset.language));
+                    row.appendChild(createTableCell(asset.date));
+                    const actionsCell = createTableCell('', 'text-right');
+                    actionsCell.innerHTML = `
+                        <button class="text-blue-600 hover:underline editAssetBtn" data-id="${asset.id}"><ion-icon name="create-outline"></ion-icon></button>
+                        <button class="text-red-600 hover:underline ml-2 deleteAssetBtn" data-id="${asset.id}" onclick="deleteAsset(${asset.id})"><ion-icon name="trash-outline"></ion-icon></button>
+                    `;
+                    row.appendChild(actionsCell);
+                    tbody.appendChild(row);
+                });
+
+                // Fade in the new content
+                setTimeout(() => {
+                    tbody.style.opacity = '1';
+                }, 10);
+
+                updateQueryParam('page', page);
+                // return data;
+                return data;
+            } catch (error) {
+                showError('Error loading assets. Please try again.');
+                assetList.innerHTML = '<p class="text-red-500">Error loading assets. Please try again.</p>';
+                tbody.style.opacity = '1'; // Reset opacity on error
+                return {
+                    error: error.message
+                }
+            } finally {
+                hideLoading();
+            }
+        }
+
         // Initial load
-        loadAssets();
+        fetchAndRenderAssets()
+            .then(data  => {
+                if (data.pagination) {
+                    renderPagination3(data.pagination);
+                }
+            })
+            .catch(error => {
+                showError('Error loading events.');
+            });
     });
 </script>

@@ -468,6 +468,8 @@ function get_assets_data_rest($request) {
     $posts_per_page = $request->get_param('posts_per_page') ? intval($request->get_param('posts_per_page')) : 10;
     $search = $request->get_param('s') ? sanitize_text_field($request->get_param('s')) : '';
 
+    var_dump($request->get_params('language'));
+
     if ($paged < 1) {
         $paged = 1;
     }

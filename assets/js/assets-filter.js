@@ -125,7 +125,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             html += `
                 <div class="flex flex-col bg-white border border-gray-200 overflow-hidden p-4 rounded-xl shadow" data-id="${id}">
-                    <div class="w-full bg-gray-200 h-64 sm:h-auto">
+                    <div class="w-full h-64 sm:h-auto">
                         ${docTypeThumb}
                     </div>
                     <div class="flex flex-col justify-between flex-grow">

@@ -20,7 +20,7 @@
 </head>
 
 <body <?php body_class('bg-gray-100'); ?>>
-    <div class="min-h-screen flex items-center justify-center">
+    <div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#cc1529] via-[#1f6cb5] to-[#21aadc] animate-gradient-x">
         <div
             class="w-full max-w-4xl bg-white text-gray-800 shadow-xl rounded-2xl p-8 sm:p-10 mx-4 sm:mx-auto mt-10">
             <div class="text-center mb-6">

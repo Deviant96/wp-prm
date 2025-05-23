@@ -179,6 +179,8 @@ function tbyte_prm_get_events($request) {
         ];
     }
     
+    // var_dump($events_query);
+    
     wp_reset_postdata();
     return new WP_REST_Response($response, 200);
 }

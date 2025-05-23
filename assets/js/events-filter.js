@@ -19,7 +19,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    document.getElementById('event-search').addEventListener('input', debounce(fetchEvents, 300));
+    // document.getElementById('event-search').addEventListener('input', debounce(fetchEvents, 300));
+    document.getElementById('event-search').addEventListener('input', 
+        debounce((e) => fetchEvents(), 300)
+    );
     document.querySelectorAll('.event-filter').forEach(cb => cb.addEventListener('change', debounce(fetchEvents, 200)));
     document.getElementById('event-search').addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
@@ -35,11 +38,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('calendar-toggle').addEventListener('click', function(e) {
         e.preventDefault();
-        this.classList.toggle('active');
-        this.classList.toggle('bg-blue-600');
-        this.classList.toggle('text-white');
-        this.classList.toggle('text-gray-800');
-        this.classList.toggle('bg-gray-200');
         toggleCalendarView();
         const isCalendarView = document.getElementById('eventList').classList.contains('calendar-view');
         this.querySelector('span').textContent = isCalendarView ? 'List View' : 'Calendar View';
@@ -49,7 +47,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentPage = 1;
     let isLoading = false;
 
-    async function fetchEvents(perPage = 10) {
+    async function fetchEvents(itemsPerPage = 10) {
         if (isLoading) return;
         isLoading = true;
         showSearchLoadingIndicator();
@@ -65,14 +63,17 @@ document.addEventListener('DOMContentLoaded', () => {
         }));
 
         try {
+            console.error(itemsPerPage)
             const queryParams = new URLSearchParams({
                 search: search || '',
                 start_date: range ? range[0] : '',
                 end_date: range ? range[1] : '',
                 page: currentPage,
-                per_page: perPage,
+                per_page: itemsPerPage,
                 filters: JSON.stringify(filters),
             });
+
+            console.error(queryParams.toString())
 
             const response = await fetch(
                 `${wpApiSettings.root}prm/v1/tbyte_prm_events?${queryParams.toString()}`, 

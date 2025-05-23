@@ -1,9 +1,24 @@
 <div class="events-container p-4  text-gray-800 ">
     <!-- Filters -->
     <div class="flex justify-between items-center mb-4">
+        <!-- Search Bar -->
         <div class="flex items-center gap-4 relative">
-            <label for="event-search" class="text-sm">Search Events:</label>
-            <input type="text" id="event-search" placeholder="Search events..." class="input" /> 
+            <div class="max-w-md mx-auto">
+                <label for="event-search" class="block text-sm font-medium text-gray-700 mb-1">Search Events</label>
+                <div class="relative rounded-md shadow-sm">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+                    </svg>
+                    </div>
+                    <input 
+                    type="text" 
+                    id="event-search" 
+                    placeholder="Search events..." 
+                    class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150 ease-in-out sm:text-sm" 
+                    />
+                </div>
+            </div>
             
             <!-- Loading spinner (hidden) -->
             <div id="loadingSpinnerSearch" class="absolute left-full ml-2 hidden">
@@ -13,33 +28,80 @@
                 </svg>
             </div>
         </div>
-        
-        <input type="text" id="date-range" class="input max-w-xs" placeholder="Filter by date range" />
+  
+        <!-- Date Range -->
+        <div>
+            <label for="date-range" class="block text-sm font-medium text-gray-700 mb-1">Date Range</label>
+            <div class="relative rounded-md shadow-sm">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd" />
+                </svg>
+            </div>
+            <input 
+                type="text" 
+                id="date-range" 
+                placeholder="Filter by date range" 
+                class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150 ease-in-out sm:text-sm" 
+            />
+            </div>
+        </div>
 
-        <button id="calendar-toggle" class="btn">
-            <ion-icon name="calendar-outline"></ion-icon>
-            <span class="ml-1">Calendar View</span>
-        </button>
+        <!-- Calendar View Button -->
+        <div>
+            <label for="calendar-toggle" class="block text-sm font-medium text-gray-700 mb-1">List View</label>
+            <button id="calendar-toggle" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150 ease-in-out">
+                <ion-icon name="calendar-outline" class="h-5 w-5 text-gray-500"></ion-icon>
+                <span class="ml-2">Calendar View</span>
+            </button>
+        </div>
     </div>
 
-    <div class="flex flex-wrap gap-4 mb-4" id="event-filters">
+    <div class="flex flex-wrap gap-3 mb-6" id="event-filters">
         <!-- Checkbox Filters -->
         <?php
         $terms = get_terms(['taxonomy' => 'event_type', 'hide_empty' => false]);
         foreach ($terms as $term) {
-            echo "<label class='flex items-center gap-1'><input type='checkbox' value='{$term->slug}' class='event-filter' data-tax='event_type'> {$term->name}</label>";
+            echo "<label class='inline-flex items-center px-3 py-2 rounded-md bg-gray-50 border border-gray-200 hover:bg-gray-100 hover:border-gray-300 cursor-pointer transition-colors duration-150'>
+                    <input type='checkbox' value='{$term->slug}' class='h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 mr-2 event-filter' data-tax='event_type'>
+                    <span class='text-sm font-medium text-gray-700'>{$term->name}</span>
+                    </label>";
         }
         ?>
     </div>
 
     <!-- Upcoming Featured Event -->
-    <div class="relative w-full rounded-2xl overflow-hidden bg-gray-100  mb-4 shadow-lg">
-        <div class="absolute inset-0 bg-gradient-to-br from-blue-500 to-blue-700 opacity-50"></div>
-        <img src="<?php get_template_directory_uri() . '/assets/images/events-bg.'; ?>'" alt="" class="w-full h-64 object-cover opacity-80" />
-        <div class="absolute inset-0 bg-gradient-to-br from-black/60 to-transparent flex flex-col justify-end p-6 text-white">
-            <h2 class="text-2xl font-semibold">Upcoming Event: Partner Growth Summit</h2>
-            <p class="text-sm">April 30, 2025 – Singapore</p>
-            <a href="#" class="mt-2 inline-block text-blue-300 hover:text-white transition">View all events →</a>
+    <div class="relative w-full rounded-2xl overflow-hidden bg-gray-100 mb-8 shadow-lg hover:shadow-xl transition-shadow duration-300 group">
+        <div class="absolute inset-0 bg-gradient-to-br from-blue-600/80 to-indigo-800/80 opacity-90"></div>
+        <img src="<?php echo get_template_directory_uri() . '/assets/images/events-bg.jpg'; ?>" alt="Partner Growth Summit" class="w-full h-72 md:h-80 object-cover opacity-90 group-hover:opacity-100 transition-opacity duration-500" />
+        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent flex flex-col justify-end p-6 md:p-8 text-white">
+            <div class="max-w-2xl">
+                <span class="inline-block px-3 py-1 mb-3 text-xs font-semibold tracking-wider text-blue-100 bg-blue-900/50 rounded-full backdrop-blur-sm">
+                    FEATURED EVENT
+                </span>
+                <h2 class="text-3xl md:text-4xl font-bold leading-tight mb-2">Partner Growth Summit 2025</h2>
+                <div class="flex items-center gap-3 text-sm mb-4">
+                    <span class="flex items-center gap-1.5">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        April 30 - May 2, 2025
+                    </span>
+                    <span class="flex items-center gap-1.5">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        Marina Bay Sands, Singapore
+                    </span>
+                </div>
+                <a href="#" class="inline-flex items-center px-4 py-2 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-lg border border-white/20 transition-all duration-300 group-hover:border-white/40 text-white">
+                    <span class="text-sm font-semibold">Join Us</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                    </svg>
+                </a>
+            </div>
         </div>
     </div>
 
@@ -78,62 +140,6 @@
         const eventList = document.getElementById('eventList');
         const paginationEl = document.getElementById('event-pagination');
         const loadingSpinner = document.getElementById('loadingSpinner');
-        
-        if (!paginationEl) return;
-        
-        // Handle pagination clicks
-        paginationEl.addEventListener('click', function(e) {
-            e.preventDefault();
-            
-            const link = e.target.closest('a');
-            if (!link) return;
-            
-            const page = link.getAttribute('data-page');
-            if (!page) return;
-            
-            loadEvents(page);
-        });
-        
-        // Load events via AJAX
-        function loadEvents(page) {
-            loadingSpinner.classList.remove('hidden');
-            
-            // Get current URL parameters
-            const url = new URL(window.location.href);
-            const params = new URLSearchParams(url.search);
-            
-            // Update page parameter
-            params.set('page', page);
-            params.set('posts_per_page', 3); // Match your posts_per_page value
-            
-            // Make API request
-            fetch(`${wpApiSettings.root}prm/v1/tbyte_prm_events?${params.toString()}`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.items && data.items.length > 0) {
-                        // Generate HTML from the JSON data
-                        const html = generateEventHTML(data.items);
-                        eventList.innerHTML = html;
-                        
-                        // Update pagination
-                        updatePagination(data.pagination);
-                        
-                        // Scroll to top smoothly
-                        window.scrollTo({
-                            top: eventList.offsetTop - 20,
-                            behavior: 'smooth'
-                        });
-                    } else {
-                        eventList.innerHTML = '<p class="col-span-full text-center py-8">No events found</p>';
-                    }
-                })
-                .catch(error => {
-                    eventList.innerHTML = '<p class="col-span-full text-center py-8 text-red-500">Error loading events</p>';
-                })
-                .finally(() => {
-                    loadingSpinner.classList.add('hidden');
-                });
-        }
         
         // Generate HTML for events from JSON data
         function generateEventHTML(events) {
@@ -183,13 +189,39 @@
             return new Date(dateString).toLocaleDateString('en-US', options);
         }
 
+        const pagination = document.getElementById('event-pagination');
+        pagination.addEventListener('click', (e) => {
+            console.error('Pagination clicked:', e.target);
+            console.error(!e.target.classList.contains('cursor-not-allowed'));
+            if (e.target.tagName === 'A' && !e.target.classList.contains('cursor-not-allowed')) {
+                console.error('Pagination link clicked:', e.target);
+                e.preventDefault();
+                const page = parseInt(e.target.dataset.page, 10);
+
+                // Add loading state
+                let originalText = e.target.innerHTML;
+                e.target.innerHTML = '<span class="animate-pulse">Loading...</span>';
+                e.target.classList.add('cursor-not-allowed', 'opacity-50');
+
+                fetchAndRenderEvents(page).then(data => {
+                    console.error('Events fetched successfully - Pagination clicked');
+                    e.target.innerHTML = originalText;
+                    e.target.classList.remove('cursor-not-allowed', 'opacity-50');
+                    currentPage = page;
+                    renderPagination3(data.pagination);
+                })
+                .catch(error => {
+                    console.error('Error in fetchAndRenderEvents:', error);
+                });
+            }
+        });
+
         function renderPagination3(pagination) {
-            console.error('Rendering pagination:');
             const paginationContainer = document.getElementById('event-pagination');
             paginationContainer.innerHTML = '';
 
             // Add smooth transition class to container
-            paginationContainer.className = 'flex space-x-2 transition-all duration-300';
+            paginationContainer.className += ' space-x-2 transition-all duration-300';
 
             // Previous button (always visible but disabled when on first page)
             const prevLink = document.createElement('a');
@@ -233,9 +265,12 @@
             }`;
             nextLink.innerHTML = 'Next &rarr;';
             nextLink.addEventListener('click', (e) => {
+                console.error("Clicked next button")
                 if (pagination.current_page === pagination.total_pages) e.preventDefault();
             });
             paginationContainer.appendChild(nextLink);
+
+            console.error(pagination.current_page, pagination.total_pages)
 
             // Add fade-in animation to the container
             paginationContainer.style.opacity = '0';
@@ -295,39 +330,22 @@
             paginationEl.innerHTML = html;
         }
 
-        const pagination = document.getElementById('event-pagination');
-        pagination.addEventListener('click', (e) => {
-            console.error('Pagination clicked:', e.target);
-            if (e.target.tagName === 'A' && !e.target.classList.contains('cursor-not-allowed')) {
-                console.error('Pagination link clicked:', e.target);
-                e.preventDefault();
-                const page = parseInt(e.target.dataset.page, 10);
-
-                // Add loading state
-                let originalText = e.target.innerHTML;
-                e.target.innerHTML = '<span class="animate-pulse">Loading...</span>';
-                e.target.classList.add('cursor-not-allowed', 'opacity-50');
-
-                fetchAndRenderEvents(page).then(data => {
-                    console.error('Events fetched successfully - Pagination clicked');
-                    e.target.innerHTML = originalText;
-                    e.target.classList.remove('cursor-not-allowed', 'opacity-50');
-                    currentPage = page;
-                    renderPagination3(data.pagination);
-                })
-                .catch(error => {
-                    console.error('Error in fetchAndRenderEvents:', error);
-                });
-            }
-        });
+        
 
         
         let currentPage = 1;
         let totalPages = 1;
-        const itemsPerPage = 5;
 
         async function fetchAndRenderEvents(page = 1, perPage = 5, searchParams = {}) {
             let events;
+
+            // Get current URL parameters
+            // const url = new URL(window.location.href);
+            // const params = new URLSearchParams(url.search);
+            
+            // Update page parameter
+            // params.set('page', page);
+            // params.set('posts_per_page', 3); // Match your posts_per_page value
             
             // Validate page number
             pageNumber = Math.max(1, Math.min(page, totalPages));
@@ -347,18 +365,22 @@
                 td.className = className;
                 return td;
             };
+            
+            // console.error(perPage, page, searchParams);
 
             // Build query string
             const query = new URLSearchParams({
                 page: page,
                 posts_per_page: perPage,
-                ...searchParams // Include any filters/search terms
+                // ...searchParams // Include any filters/search terms
             }).toString();
 
             showLoading('eventList'); // Show loading skeleton
 
+            console.error(query);
+
             try {
-                const url = `wp-json/prm/v1/tbyte_prm_events?${query}`;
+                const url = `${wpApiSettings.root}prm/v1/tbyte_prm_events?${query}`;
 
                 const response = await fetch(url);
 
@@ -418,6 +440,12 @@
                     tbody.style.opacity = '1';
                 }, 300);
 
+                // Scroll to top smoothly
+                window.scrollTo({
+                    top: eventList.offsetTop - 20,
+                    behavior: 'smooth'
+                });
+
                 // updateQueryParam('page', page);
                 // return data;
                 return data;
@@ -429,22 +457,46 @@
         
         function showLoading(elementId) {
             const element = document.getElementById(elementId);
-            element.innerHTML = '<div class="loader">Loading...</div>';
+            const skeletonCard = `
+                <div class="border border-gray-200 rounded-xl overflow-hidden animate-pulse">
+                    <div class="bg-gray-300 h-40"></div>
+                    <div class="p-4 space-y-3">
+                        <div class="h-4 bg-gray-300 rounded w-3/4"></div>
+                        <div class="h-5 bg-gray-300 rounded"></div>
+                        <div class="flex gap-2">
+                            <span class="bg-gray-300 rounded-full w-12 h-6"></span>
+                            <span class="bg-gray-300 rounded-full w-12 h-6"></span>
+                        </div>
+                        <div class="flex justify-between">
+                            <div class="h-4 bg-gray-300 rounded w-20"></div>
+                            <div class="w-5 h-5 bg-gray-300 rounded"></div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Create 3 skeleton cards in a grid
+            element.innerHTML = `
+                ${skeletonCard}
+                ${skeletonCard}
+                ${skeletonCard}
+            `;
         }
+
         function hideLoading(elementId) {
             const element = document.getElementById(elementId);
             element.innerHTML = '';
         }
         
         // Add history pushState for AJAX navigation
-        window.addEventListener('popstate', function() {
-            const params = new URLSearchParams(window.location.search);
-            const page = params.get('page') || 1;
-            loadEvents(page);
-        });
+        // window.addEventListener('popstate', function() {
+        //     const params = new URLSearchParams(window.location.search);
+        //     const page = params.get('page') || 1;
+        //     loadEvents(page);
+        // });
 
         // Initial load
-        fetchAndRenderEvents(1, 3)
+        fetchAndRenderEvents()
             .then(data  => {
                 if (data.pagination) {
                     renderPagination3(data.pagination);
