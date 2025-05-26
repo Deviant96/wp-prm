@@ -184,7 +184,15 @@ set_query_var('current_user', $current_user);
                 case 'assets-create':
                     get_template_part('template-parts/dashboard/assets/create');
                     break;
-                    
+
+                case 'assets-doc-types':
+                    get_template_part('template-parts/dashboard/assets/document', 'type');
+                    break;
+
+                case 'assets-language':
+                    get_template_part('template-parts/dashboard/assets/language');
+                    break;
+
                 case 'support':
                     echo '<h2>Support</h2>';
                     echo '<p>Support info or form here.</p>';

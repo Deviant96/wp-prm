@@ -40,57 +40,12 @@ if (!in_array('partner_manager', $current_user->roles) && !in_array('administrat
     </div>
 
     <!-- Create Form (hidden by default) -->
-    <div id="create-document-type-form" class="hidden bg-gray-50  p-6 rounded-lg shadow">
+    <div id="create-language-form" class="hidden bg-gray-50  p-6 rounded-lg shadow">
         <h3 class="text-xl font-semibold mb-4 text-gray-800 ">Add New Language</h3>
-        <form id="new-document-type-form" class="space-y-4">
+        <form id="new-language-form" class="space-y-4">
             <div>
-                <label for="document-type-name" class="block text-sm font-medium text-gray-700 ">Name*</label>
-                <input type="text" id="document-type-name" name="name" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500   ">
-            </div>
-            
-            <div>
-                <label for="document-type-slug" class="block text-sm font-medium text-gray-700 ">Slug</label>
-                <input type="text" id="document-type-slug" name="slug"
-                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500   ">
-                <p class="mt-1 text-sm text-gray-500 ">The "slug" is the URL-friendly version of the name.</p>
-            </div>
-            
-            <div>
-                <label for="document-type-parent" class="block text-sm font-medium text-gray-700 ">Parent</label>
-                <select id="document-type-parent" name="parent"
-                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500   ">
-                    <option value="0">None</option>
-                    <?php
-                    $terms = get_terms(array(
-                        'taxonomy' => 'doc_type',
-                        'hide_empty' => false,
-                        'parent' => 0
-                    ));
-                    
-                    foreach ($terms as $term) {
-                        echo '<option value="' . $term->term_id . '">' . $term->name . '</option>';
-                    }
-                    ?>
-                </select>
-            </div>
-            
-            <div>
-                <label for="document-type-description" class="block text-sm font-medium text-gray-700 ">Description</label>
-                <textarea id="document-type-description" name="description" rows="3"
-                          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500   "></textarea>
-            </div>
-
-            <!-- Add the field type selector -->
-            <div>
-                <label for="document-type-field-type" class="block text-sm font-medium text-gray-700 ">Field Type*</label>
-                <select id="document-type-field-type" name="field_type" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500   ">
-                    <option value="text">Text</option>
-                    <option value="url">URL</option>
-                    <option value="image">Image (.jpg, .png, .gif)</option>
-                    <option value="pdf">PDF (.pdf)</option>
-                    <option value="document">Document (.doc, .docx, .pdf)</option>
-                </select>
-                <p class="mt-1 text-sm text-gray-500 ">Determines what type of content can be uploaded for this document type.</p>
+                <label for="language-name" class="block text-sm font-medium text-gray-700 ">Language*</label>
+                <input type="text" id="language-name" name="name" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500   ">
             </div>
             
             <input type="hidden" name="action" value="create_document_type">
@@ -127,8 +82,8 @@ if (!in_array('partner_manager', $current_user->roles) && !in_array('administrat
                     echo '<tr data-term-id="' . $term->term_id . '" class="hover:bg-gray-50 ">';
                     echo '<td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 ">' . $term->name . '</td>';
                     echo '<td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">';
-                    echo '<button class="edit-document-type text-blue-600 hover:text-blue-900   mr-3" data-term-id="' . $term->term_id . '"><ion-icon name="create-outline"></ion-icon></button>';
-                    echo '<button class="delete-document-type text-red-600 hover:text-red-900  " data-term-id="' . $term->term_id . '"><ion-icon name="trash-outline"></ion-icon></button>';
+                    echo '<button class="edit-language text-blue-600 hover:text-blue-900   mr-3" data-term-id="' . $term->term_id . '"><ion-icon name="create-outline"></ion-icon></button>';
+                    echo '<button class="delete-language text-red-600 hover:text-red-900  " data-term-id="' . $term->term_id . '"><ion-icon name="trash-outline"></ion-icon></button>';
                     echo '</td>';
                     echo '</tr>';
                 }
@@ -138,56 +93,24 @@ if (!in_array('partner_manager', $current_user->roles) && !in_array('administrat
     </div>
 
     <!-- Edit Form (hidden by default) -->
-    <div id="edit-document-type-form" class="hidden bg-gray-50  p-6 rounded-lg shadow">
-        <h3 class="text-xl font-semibold mb-4 text-gray-800 ">Edit Document Type</h3>
-        <form id="update-document-type-form" class="space-y-4">
+    <div id="edit-language-form" class="hidden bg-gray-50  p-6 rounded-lg shadow">
+        <h3 class="text-xl font-semibold mb-4 text-gray-800 ">Edit Language</h3>
+        <form id="update-language-form" class="space-y-4">
             <div>
-                <label for="edit-document-type-name" class="block text-sm font-medium text-gray-700 ">Name*</label>
-                <input type="text" id="edit-document-type-name" name="name" required 
+                <label for="edit-language-name" class="block text-sm font-medium text-gray-700 ">Name*</label>
+                <input type="text" id="edit-language-name" name="name" required 
                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500   ">
-            </div>
+            </div>            
             
-            <div>
-                <label for="edit-document-type-slug" class="block text-sm font-medium text-gray-700 ">Slug</label>
-                <input type="text" id="edit-document-type-slug" name="slug"
-                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500   ">
-                <p class="mt-1 text-sm text-gray-500 ">The "slug" is the URL-friendly version of the name.</p>
-            </div>
-            
-            <div>
-                <label for="edit-document-type-parent" class="block text-sm font-medium text-gray-700 ">Parent</label>
-                <select id="edit-document-type-parent" name="parent"
-                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500   ">
-                    <option value="0">None</option>
-                    <?php
-                    $terms = get_terms(array(
-                        'taxonomy' => 'doc_type',
-                        'hide_empty' => false,
-                        'parent' => 0
-                    ));
-                    
-                    foreach ($terms as $term) {
-                        echo '<option value="' . $term->term_id . '">' . $term->name . '</option>';
-                    }
-                    ?>
-                </select>
-            </div>
-            
-            <div>
-                <label for="edit-document-type-description" class="block text-sm font-medium text-gray-700 ">Description</label>
-                <textarea id="edit-document-type-description" name="description" rows="3"
-                          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500   "></textarea>
-            </div>
-            
-            <input type="hidden" id="edit-document-type-id" name="term_id">
-            <input type="hidden" name="action" value="update_document_type">
+            <input type="hidden" id="edit-language-id" name="term_id">
+            <input type="hidden" name="action" value="update_language">
             
             <div class="flex justify-end gap-2">
                 <button type="button" id="cancel-edit" class="px-4 py-2 text-gray-600 hover:text-gray-800  ">
                     Cancel
                 </button>
                 <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition">
-                    Update Document Type
+                    Update Language
                 </button>
             </div>
         </form>

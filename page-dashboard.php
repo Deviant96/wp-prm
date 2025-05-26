@@ -10,12 +10,16 @@ $current_user = wp_get_current_user();
 $user_roles = $current_user->roles;
 set_query_var('current_user', $current_user);
 
-get_header();
+// wp_header();
 ?>
 
-<script>
-    var ajaxurl = '<?php echo admin_url('admin-ajax.php'); ?>';
-</script>
+<!DOCTYPE html>
+<html <?php language_attributes(); ?> class="">
+
+<head>
+    <meta charset="<?php bloginfo('charset'); ?>">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <?php wp_head(); ?>
 
     <style>
         .vertical-menu {
@@ -127,21 +131,15 @@ get_header();
         .dashboard-header h1 {
             margin: 0;
         }
-    </style>
 
-    <style>
-        .events-section .events-banner {
-            flex: 1;
-            max-width: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background-image: url("./../images/events.jpg");
-            background-position: center;
-            background-size: cover;
-            position: relative;
+        .dashboard-footer {
+            text-align: center;
+            padding: 20px;
+            background: #f9f9f9;
+            border-top: 1px solid #ddd;
         }
     </style>
+
 </head>
 
 <body class="m-0">

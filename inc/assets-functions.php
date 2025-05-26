@@ -468,7 +468,7 @@ function get_assets_data_rest($request) {
     $posts_per_page = $request->get_param('posts_per_page') ? intval($request->get_param('posts_per_page')) : 10;
     $search = $request->get_param('s') ? sanitize_text_field($request->get_param('s')) : '';
 
-    var_dump($request->get_params('language'));
+    // var_dump($request->get_params('language'));
 
     if ($paged < 1) {
         $paged = 1;
@@ -869,5 +869,119 @@ function check_document_type_name($request) {
             'id' => $term->term_id,
             'slug' => $term->slug
         ] : null
+    ];
+}
+
+
+
+
+
+add_action('rest_api_init', function() {
+    // GET endpoint for fetching term data
+    register_rest_route('prm/v1', '/tbyte_prm_asset_language/(?P<id>\d+)', [
+        'methods' => 'GET',
+        'callback' => 'get_language_data_rest',
+        'permission_callback' => function() {
+            return current_user_can('edit_posts');
+        }
+    ]);
+
+    // POST/PUT endpoint for updating term data
+    register_rest_route('prm/v1', '/tbyte_prm_asset_language/(?P<id>\d+)', [
+        'methods' => 'PUT',
+        'callback' => 'update_language_rest',
+        'permission_callback' => function() {
+            return current_user_can('edit_posts');
+        }
+    ]);
+
+    register_rest_route('prm/v1', '/tbyte_prm_asset_language', [
+        'methods' => 'POST',
+        'callback' => 'create_language_rest',
+        'permission_callback' => function() {
+            return current_user_can('edit_posts');
+        }
+    ]);
+
+    // register_rest_route('prm/v1', '/document_type/check-name', [
+    //     'methods' => 'GET',
+    //     'callback' => 'check_document_type_name',
+    //     'permission_callback' => '__return_true',
+    //     'args' => [
+    //         'name' => [
+    //             'required' => true,
+    //             'sanitize_callback' => 'sanitize_text_field'
+    //         ]
+    //     ]
+    // ]);
+});
+
+function get_language_data_rest($request) {
+    $term_id = $request['id'];
+    $term = get_term($term_id, 'language'); // Change to your taxonomy
+    
+    if (is_wp_error($term)) {
+        return new WP_Error('term_not_found', 'Invalid term ID', ['status' => 404]);
+    }
+    
+    return [
+        'term_id' => $term->term_id,
+        'name' => $term->name
+    ];
+}
+
+function update_language_rest($request) {
+    $term_id = $request['id'];
+    $params = $request->get_params();
+    
+    $name = isset($params['name']) ? sanitize_text_field($params['name']) : '';
+    
+    if (!empty($name)) {
+        return new WP_Error('update_failed', 'Name is required.', ['status' => 400]);
+    }
+    
+    $args = [
+        'name' => $name
+    ];
+    
+    $updated = wp_update_term($term_id, 'language', $args);
+    
+    if (is_wp_error($updated)) {
+        return new WP_Error('update_failed', $updated->get_error_message(), ['status' => 400]);
+    }
+    
+    return [
+        'success' => true,
+        'message' => 'Language updated successfully',
+        'term_id' => $term_id,
+    ];
+}
+
+function create_language_rest($request) {
+    $params = $request->get_params();
+
+    $name = isset($params['name']) ? sanitize_text_field($params['name']) : '';
+
+    if (empty($name)) {
+        // wp_send_json_error('Name is required.');
+        return new WP_Error('creation_failed', 'Name is required.', ['status' => 400]);
+    }
+    
+    $args = [
+        'name' => $name
+    ];
+    
+    $created = wp_insert_term($name, 'language', $args);
+    
+    if (is_wp_error($created)) {
+        return new WP_Error('creation_failed', $created->get_error_message(), ['status' => 400]);
+    }
+
+    $term_id = isset($created['term_id']) ? $created['term_id'] : 0;
+    
+    return [
+        'success' => true,
+        'message' => 'Document type created',
+        'term_id' => $term_id,
     ];
 }

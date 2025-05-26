@@ -211,6 +211,7 @@ $language = isset($_GET['language']) ? explode(',', sanitize_text_field($_GET['l
         const filters = document.querySelectorAll('.filter-doc, .filter-lang');
 
         let currentPage = 1;
+        let totalPages = 1;
         let debounceTimer;
 
         // This is for displaying loading skeletons
@@ -345,6 +346,22 @@ $language = isset($_GET['language']) ? explode(',', sanitize_text_field($_GET['l
             });
         }
 
+        // utility function that makes it easy to add, update, or remove query parameters from the current URL without reloading the page
+        function updateQueryParam(key, value) {
+            const params = new URLSearchParams(window.location.search);
+
+            if (value === null || value === undefined) {
+                params.delete(key); // Remove the param if value is null/undefined
+            } else {
+                params.set(key, value); // Add or update the param
+            }
+
+            const newQuery = params.toString();
+            const newUrl = `${window.location.pathname}${newQuery ? '?' + newQuery : ''}`;
+
+            window.history.pushState({}, '', newUrl);
+        }
+
         // Event Listeners
         layoutToggles.forEach(btn => {
             btn.addEventListener('click', () => {
@@ -391,8 +408,8 @@ $language = isset($_GET['language']) ? explode(',', sanitize_text_field($_GET['l
             pageNumber = Math.max(1, Math.min(page, totalPages));
             currentPage = pageNumber;
 
-            const tbody = document.getElementById('assets-table-body2');
             const assetList = document.getElementById('assetList');
+            const tbody = assetList;
             // Add fade-out animation
             tbody.style.opacity = '0.5';
             tbody.style.transition = 'opacity 300ms ease-in-out';
@@ -455,18 +472,45 @@ $language = isset($_GET['language']) ? explode(',', sanitize_text_field($_GET['l
 
                 // Render each asset
                 assets.forEach(asset => {
-                    const row = document.createElement('tr');
-                    row.appendChild(createTableCell(asset.id));
-                    row.appendChild(createTableCell(asset.title));
-                    row.appendChild(createTableCell(asset.doc_type));
-                    row.appendChild(createTableCell(asset.language));
-                    row.appendChild(createTableCell(asset.date));
-                    const actionsCell = createTableCell('', 'text-right');
-                    actionsCell.innerHTML = `
-                        <button class="text-blue-600 hover:underline editAssetBtn" data-id="${asset.id}"><ion-icon name="create-outline"></ion-icon></button>
-                        <button class="text-red-600 hover:underline ml-2 deleteAssetBtn" data-id="${asset.id}" onclick="deleteAsset(${asset.id})"><ion-icon name="trash-outline"></ion-icon></button>
+                    console.error(asset)
+                    const row = document.createElement('div');
+                    row.className = 'asset-card flex flex-col bg-white border border-gray-200 overflow-hidden p-4 rounded-xl shadow';
+                    row.setAttribute('data-id', asset.id);
+                    const { id, title, date, link, doc_type, docTypeThumb } = asset;
+                    row.innerHTML = `
+                        <?php if (has_post_thumbnail()): ?>
+                            <img src="<?php the_post_thumbnail_url(); ?>" class="mb-3 rounded h-32 object-cover w-full" alt="">
+                        <?php endif; ?>
+                        <div class="w-full h-64 sm:h-auto">
+                            ${docTypeThumb}
+                        </div>
+                        <div class="flex flex-col justify-between flex-grow">
+                            <div>
+                                <h3 class="text-lg font-semibold text-gray-800 ">
+                                    ${title}
+                                </h3>
+                                <small class="text-gray-500">${date}</small> – ${doc_type}
+                            </div>
+                            <div class="mt-4 flex justify-end gap-2">
+                                ${doc_type === "URL" ? `
+                                    <a href="${link}" target="_blank" class="text-blue-600 hover:underline" onclick="copyAsset(event, this)">
+                                        <ion-icon name="copy-outline"></ion-icon>
+                                    </a>
+                                ` : doc_type === "Text" ? `
+                                    <a href="${link}" target="_blank" class="text-blue-600 hover:underline" onclick="copyAsset(event, this)">
+                                        <ion-icon name="copy-outline"></ion-icon>
+                                    </a>
+                                ` : `
+                                    <a href="${link}" download class="text-blue-600 hover:underline">
+                                        <ion-icon name="download-outline"></ion-icon>
+                                    </a>
+                                `}
+                                <a href="${link}" class="text-green-600 hover:underline">
+                                    <ion-icon name="eye-outline"></ion-icon>
+                                </a>
+                            </div>
+                        </div>
                     `;
-                    row.appendChild(actionsCell);
                     tbody.appendChild(row);
                 });
 
@@ -480,7 +524,7 @@ $language = isset($_GET['language']) ? explode(',', sanitize_text_field($_GET['l
                 return data;
             } catch (error) {
                 showError('Error loading assets. Please try again.');
-                assetList.innerHTML = '<p class="text-red-500">Error loading assets. Please try again.</p>';
+                assetList.innerHTML = '<p class="text-red-500">' + error + '</p>';
                 tbody.style.opacity = '1'; // Reset opacity on error
                 return {
                     error: error.message
@@ -498,7 +542,7 @@ $language = isset($_GET['language']) ? explode(',', sanitize_text_field($_GET['l
                 }
             })
             .catch(error => {
-                showError('Error loading events.');
+                showError(error);
             });
     });
 </script>

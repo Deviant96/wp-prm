@@ -34,7 +34,14 @@
                 <p class="text-gray-500 ">No assets found.</p>
             <?php endif; ?>
             <div class="absolute bottom-0 right-0 me-4 mb-[-20px] border border-[#d2d2d2] rounded-[3px] px-2 py-1 bg-[#f3f4f6]">
-                <a href="<?php echo home_url('/?tab=assets'); ?>" class="text-[#086ad7] hover:text-[#2376bb] text-sm">See all assets</a>
+                <?php
+                    if ($assets->found_posts == 0) {
+                        echo '<a href="#" class="text-[#086ad7] hover:text-[#2376bb] text-sm">See all assets</a>';
+                    } else {
+                        echo '<a href="' . home_url('/?tab=assets') . '" class="text-[#086ad7] hover:text-[#2376bb] text-sm">See all assets</a>';
+                    }
+                ?>
+                
             </div>
         </div>
     </div>

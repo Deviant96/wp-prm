@@ -11,6 +11,14 @@ function enqueue_document_types_admin_assets() {
         ));
     }
 
+    if (isset($_GET['tab']) && $_GET['tab'] === 'assets-language') {
+        wp_enqueue_script('tbyte-prm-language-js', get_stylesheet_directory_uri() . '/assets/js/language-asset.js', array('jquery'), null, true);
+        
+        wp_localize_script('tbyte-prm-language-js', 'tbytePrmLanguage', array(
+            'ajaxurl' => admin_url('admin-ajax.php'),
+        ));
+    }
+
     wp_enqueue_style('tbyte_prm_toast', get_stylesheet_directory_uri() . '/assets/css/toast.css', array(), null, 'all');
 }
 add_action('wp_enqueue_scripts', 'enqueue_document_types_admin_assets');
