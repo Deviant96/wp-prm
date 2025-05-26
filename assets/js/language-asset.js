@@ -111,7 +111,6 @@ jQuery(document).ready(function($) {
     // UPDATE
     document.getElementById('update-language-form').addEventListener('submit', async function(e) {
         e.preventDefault();
-        
 
         const form = this;
         const formData = new FormData(form);
@@ -128,9 +127,11 @@ jQuery(document).ready(function($) {
                 method: 'PUT',
                 headers: {
                     'X-WP-Nonce': wpApiSettings.nonce,
+                    'Content-Type': 'application/json'
                 },
-                body: formData,
-                credentials: 'include'
+                body: JSON.stringify({
+                    name: name
+                }),
             });
 
             const data = await response.json();
@@ -156,7 +157,7 @@ jQuery(document).ready(function($) {
             const termId = this.dataset.termId;
             
             try {
-                const response = await fetch('wp-json/prm/v1/tbyte_prm_asset_language/' + termId, {
+                const response = await fetch(`${wpApiSettings.root}prm/v1/tbyte_prm_asset_language/delete/${termId}`, {
                     method: 'DELETE',
                     headers: {
                         'X-WP-Nonce': wpApiSettings.nonce,

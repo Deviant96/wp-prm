@@ -464,11 +464,19 @@ add_action('rest_api_init', function() {
  * @return WP_REST_Response
  */
 function get_assets_data_rest($request) {
+    $params = $request->get_params();
+
+    $posts_per_page = $request->get_param('posts_per_page') ? intval($request->get_param('posts_per_page')) : 10;
+
+    $search = $request->get_param('search') ? sanitize_text_field($request->get_param('search')) : '';
+    $doc_type = $params['doc_type'] ?? [];
+    $language = $params['language'] ?? [];
     $paged = $request->get_param('page') ? intval($request->get_param('page')) : 1;
     $posts_per_page = $request->get_param('posts_per_page') ? intval($request->get_param('posts_per_page')) : 10;
-    $search = $request->get_param('s') ? sanitize_text_field($request->get_param('s')) : '';
 
+    // var_dump($request->get_params());
     // var_dump($request->get_params('language'));
+
 
     if ($paged < 1) {
         $paged = 1;
@@ -478,6 +486,7 @@ function get_assets_data_rest($request) {
         $posts_per_page = 10;
     }
 
+    $tax_query = [];
     $args = [
         'post_type' => 'tbyte_prm_assets',
         'posts_per_page' => $posts_per_page,
@@ -485,6 +494,36 @@ function get_assets_data_rest($request) {
         'post_status' => 'publish',
         's' => $search,
     ];
+
+    // var_dump($doc_type);
+
+    if (!empty($doc_type)) {
+        $tax_query[] = [
+            'taxonomy' => 'doc_type',
+            'field'    => 'slug',
+            'terms'    => is_array($doc_type) ? $doc_type : explode(',', $doc_type),
+            'operator' => 'IN',
+        ];
+    }
+
+    // var_dump($language);
+
+    if (!empty($language)) {
+        $args['meta_query'] = [
+            [
+                'key' => 'language', 
+                'value' => is_array($language) ? $language : explode(',', $language),
+                'compare' => 'IN'
+            ]
+        ];
+    }
+
+    if (!empty($tax_query)) {
+        $args['tax_query'] = array_merge(
+            ['relation' => 'OR'],
+            $tax_query
+        );
+    }
 
     $query = new WP_Query($args);
 
@@ -494,7 +533,7 @@ function get_assets_data_rest($request) {
 
     if (!$query->have_posts()) {
         return new WP_REST_Response([
-            'message' => 'No assets found',
+            'message' => 'We could not find any assets matching your criteria.',
             'items' => [],
             'pagination' => [
                 'total' => 0,
@@ -538,6 +577,7 @@ function get_assets_data_rest($request) {
     return new WP_REST_Response([
         'items' => $assets,
         'pagination' => $pagination,
+        'args' => $args,
     ], 200);
 }
 
@@ -914,6 +954,37 @@ add_action('rest_api_init', function() {
     //         ]
     //     ]
     // ]);
+
+    register_rest_route('prm/v1', '/tbyte_prm_asset_language/check-name', [
+        'methods' => 'GET',
+        'callback' => function($request) {
+            $name = $request->get_param('name');
+            $term = get_term_by('name', $name, 'language');
+            
+            return [
+                'exists' => !empty($term),
+                'suggestions' => !empty($term) ? [
+                    'id' => $term->term_id,
+                    'slug' => $term->slug
+                ] : null
+            ];
+        },
+        'permission_callback' => '__return_true',
+        'args' => [
+            'name' => [
+                'required' => true,
+                'sanitize_callback' => 'sanitize_text_field'
+            ]
+        ]
+    ]);
+
+    register_rest_route('prm/v1', '/tbyte_prm_asset_language/delete/(?P<id>\d+)', [
+        'methods' => 'DELETE',
+        'callback' => 'delete_language_rest',
+        'permission_callback' => function() {
+            return current_user_can('manage_options'); // Only allow admins
+        }
+    ]);
 });
 
 function get_language_data_rest($request) {
@@ -936,7 +1007,7 @@ function update_language_rest($request) {
     
     $name = isset($params['name']) ? sanitize_text_field($params['name']) : '';
     
-    if (!empty($name)) {
+    if (empty($name)) {
         return new WP_Error('update_failed', 'Name is required.', ['status' => 400]);
     }
     
@@ -967,15 +1038,16 @@ function create_language_rest($request) {
         return new WP_Error('creation_failed', 'Name is required.', ['status' => 400]);
     }
     
-    $args = [
-        'name' => $name
-    ];
-    
-    $created = wp_insert_term($name, 'language', $args);
+    $created = wp_insert_term($name, 'language', [
+        'slug' => sanitize_title($name),
+        'description' => $params['description'] ?? ''
+    ]);
     
     if (is_wp_error($created)) {
         return new WP_Error('creation_failed', $created->get_error_message(), ['status' => 400]);
     }
+
+    clean_term_cache($created['term_id'], 'language');
 
     $term_id = isset($created['term_id']) ? $created['term_id'] : 0;
     
@@ -983,5 +1055,24 @@ function create_language_rest($request) {
         'success' => true,
         'message' => 'Document type created',
         'term_id' => $term_id,
+    ];
+}
+
+function delete_language_rest($request) {
+    $term_id = $request['id'];
+
+    if (empty($term_id)) {
+        return new WP_Error('deletion_failed', 'Invalid term ID.', ['status' => 400]);
+    }
+
+    $deleted = wp_delete_term($term_id, 'language');
+
+    if (is_wp_error($deleted)) {
+        return new WP_Error('deletion_failed', $deleted->get_error_message(), ['status' => 400]);
+    }
+
+    return [
+        'success' => true,
+        'message' => 'Language deleted successfully!'
     ];
 }
