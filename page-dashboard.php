@@ -7,7 +7,6 @@ if (!is_user_logged_in()) {
 }
 
 $current_user = wp_get_current_user();
-$user_roles = $current_user->roles;
 set_query_var('current_user', $current_user);
 
 get_header();
@@ -63,6 +62,12 @@ get_header();
 
                 case 'assets-language':
                     get_template_part('template-parts/dashboard/assets/language');
+                    break;
+
+                case 'partners':
+                    echo '<h2>My Partners</h2>';
+                    echo '<p>Manage your partner relationships here.</p>';
+                    get_template_part('template-parts/dashboard/dashboard', 'partners-manage');
                     break;
 
                 case 'support':
