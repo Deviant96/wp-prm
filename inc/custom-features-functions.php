@@ -93,6 +93,7 @@ function render_cache_control_page() {
     }
 
     $cache_key = 'terrabyte_newsletters_cache';
+    $cached_data = get_transient($cache_key);
     $cache_duration = get_option('terrabyte_cache_duration', HOUR_IN_SECONDS);  
     $last_updated = get_transient('terrabyte_last_updated');
     $current_duration = get_option('terrabyte_cache_duration', 24 * HOUR_IN_SECONDS);
@@ -102,6 +103,26 @@ function render_cache_control_page() {
     ?>
     <div class="wrap">
         <h1>API Cache Control</h1>
+
+        <?php
+            echo '<div class="card" style="padding: 20px; margin-bottom: 20px; background: #f5f5f5;">';
+            echo '<h2>Cached Data</h2>';
+            
+            if (false === $cached_data) {
+                echo '<p>No cached data found.</p>';
+            } else {
+                echo '<pre style="background: white; padding: 10px; border: 1px solid #ddd; overflow: auto;">';
+                echo htmlspecialchars(print_r($cached_data, true));
+                echo '</pre>';
+            }
+
+            var_dump($cached_data); // Debugging line, can be removed later
+            
+            echo '</div>';
+
+            $data = fetch_latest_newsletters(); // Your API function
+        var_dump($data);
+        ?>
         
         <!-- Stats Card -->
         <div class="card" style="max-width: 600px;">
@@ -180,6 +201,13 @@ function handle_cache_actions() {
     // Manual Refresh
     if ($_POST['action'] === 'refresh') {
         $data = fetch_latest_newsletters(); // Your API function
+        var_dump($data); // Debugging line, can be removed later
+        if (is_wp_error($data)) {
+            add_action('admin_notices', function() {
+                echo '<div class="notice notice-error"><p>Error fetching data.</p></div>';
+            });
+            return;
+        }
         set_transient($cache_key, $data, get_option('terrabyte_cache_duration', HOUR_IN_SECONDS));
         set_transient('terrabyte_last_updated', time(), DAY_IN_SECONDS);
         add_action('admin_notices', function() {
@@ -238,3 +266,16 @@ function fetch_latest_newsletters() {
         set_transient('terrabyte_last_updated', time(), DAY_IN_SECONDS);
     }
 }
+
+
+
+
+
+
+
+
+
+// Verify the update_option call is executing by adding:
+add_action('admin_notices', function() {
+    echo '<div class="notice notice-info"><pre>'.print_r(get_option('terrabyte_cache_duration'), true).'</pre></div>';
+});
