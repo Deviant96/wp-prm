@@ -137,7 +137,7 @@ function prm_redirect_logged_in_from_portal()
         // wp_redirect(admin_url()); exit;
     }
 }
-// add_action('template_redirect', 'prm_redirect_logged_in_from_portal');
+add_action('template_redirect', 'prm_redirect_logged_in_from_portal');
 
 // FIXME Double redirect, it's erasing warning/error messages on the page
 // Redirect Users Trying to Manually Access /wp-login.php
@@ -156,7 +156,17 @@ function prm_redirect_wp_login()
         exit;
     }
 }
-add_action('init', 'prm_redirect_wp_login');
+// add_action('init', 'prm_redirect_wp_login');
+
+// add_action('init', 'custom_disable_wp_login');
+
+function custom_disable_wp_login() {
+    $request_uri = $_SERVER['REQUEST_URI'];
+    if (strpos($request_uri, 'wp-login.php') !== false || strpos($request_uri, 'wp-login') !== false) {
+        wp_redirect(home_url('/partner-portal')); // slug of your custom login page
+        exit;
+    }
+}
 
 
 // Add a Simple REST API Endpoint to Serve Tabs

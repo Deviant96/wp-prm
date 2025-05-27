@@ -53,5 +53,14 @@ $has_submenu = in_array('administrator', $current_user->roles) ? 'has-submenu' :
                 </ul>
             <?php endif; ?>
         </li>
+        <?php if(in_array('administrator', $current_user->roles) || in_array('partner_manager', $current_user->roles)): ?>
+            <li class="menu-item">
+                <a href="<?php echo home_url('/?tab=partners'); ?>"
+                    class="flex items-center gap-3 px-4 py-2 rounded transition-all duration-200 hover:bg-blue-100  hover:pl-5 text-white hover:text-[#2376bb] ">
+                    <ion-icon name="people-outline" class="text-xl"></ion-icon>
+                    <span class="menu-text">Partners</span>
+                </a>
+            </li>
+        <?php endif; ?>
     </ul>
 </div>

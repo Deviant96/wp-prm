@@ -459,6 +459,8 @@ $language = isset($_GET['language']) ? explode(',', sanitize_text_field($_GET['l
 
                 const data = await response.json();
 
+                console.log('Assets Data:', data.items.length);
+
                 // Clear existing rows
                 tbody.innerHTML = '';
 
