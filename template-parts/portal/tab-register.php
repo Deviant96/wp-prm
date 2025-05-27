@@ -15,6 +15,7 @@
         action="<?php echo esc_url(admin_url('admin-post.php')); ?>" 
         method="post" 
         enctype="multipart/form-data"
+        id="prm-registration-form"
         class="p-4 max-w-lg mx-auto mt-8 space-y-6"
         role="tabpanel"
         >
@@ -177,7 +178,7 @@
         <button 
             type="submit" 
             name="prm_register_partner"
-            class="w-full border-none bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg shadow-md transition focus:outline-none focus:ring-2 focus:ring-blue-400"
+            class="w-full border-none bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg shadow-md transition focus:outline-none focus:ring-2 focus:ring-blue-400 cursor-pointer"
         >
             Request Access
         </button>

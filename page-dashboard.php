@@ -65,9 +65,17 @@ get_header();
                     break;
 
                 case 'partners':
-                    echo '<h2>My Partners</h2>';
+                    echo '<h2>Partners Overview</h2>';
                     echo '<p>Manage your partner relationships here.</p>';
                     get_template_part('template-parts/dashboard/dashboard', 'partners-manage');
+                    break;
+
+                case 'partners-all':
+                    get_template_part('template-parts/dashboard/partners/manage');
+                    break;
+
+                case 'partners-deleted':
+                    get_template_part('template-parts/dashboard/partners/deleted');
                     break;
 
                 case 'support':

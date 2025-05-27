@@ -39,6 +39,7 @@ require get_template_directory() . '/inc/admin/assets-functions.php';
 require get_template_directory() . '/inc/dashboard-functions.php';
 require get_template_directory() . '/inc/assets-functions.php';
 require get_template_directory() . '/inc/event-functions.php';
+require get_template_directory() . '/inc/partner-functions.php';
 require get_template_directory() . '/inc/user-approval-functions.php';
 
 function mytheme_enqueue_styles() {
@@ -139,7 +140,7 @@ function prm_redirect_logged_in_from_portal()
         // wp_redirect(admin_url()); exit;
     }
 }
-add_action('template_redirect', 'prm_redirect_logged_in_from_portal');
+// add_action('template_redirect', 'prm_redirect_logged_in_from_portal');
 
 // FIXME Double redirect, it's erasing warning/error messages on the page
 // Redirect Users Trying to Manually Access /wp-login.php
@@ -167,7 +168,7 @@ function custom_disable_wp_login() {
         exit;
     }
 }
-add_action('init', 'custom_disable_wp_login');
+// add_action('init', 'custom_disable_wp_login');
 
 // Add a Simple REST API Endpoint to Serve Tabs
 add_action('rest_api_init', function () {
