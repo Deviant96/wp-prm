@@ -65,8 +65,8 @@ get_header(); ?>
                                     <div class="text-sm text-gray-500"><?php echo date('M j, Y @ g:i a', strtotime(esc_html($user->user_registered))); ?></div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                    <a href="?approve_user=<?php echo $user->ID; ?>" class="text-green-600 hover:text-green-900 mr-4">Approve</a>
-                                    <a href="?reject_user=<?php echo $user->ID; ?>" class="text-red-600 hover:text-red-900">Reject</a>
+                                    <a href="?tab=partners&approve_user=<?php echo $user->ID; ?>" class="text-green-600 hover:text-green-900 mr-4">Approve</a>
+                                    <a href="?tab=partners&reject_user=<?php echo $user->ID; ?>" class="text-red-600 hover:text-red-900">Reject</a>
                                 </td>
                             </tr>
                         <?php endforeach;
