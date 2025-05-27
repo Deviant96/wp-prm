@@ -158,16 +158,14 @@ function prm_redirect_wp_login()
 }
 // add_action('init', 'prm_redirect_wp_login');
 
-// add_action('init', 'custom_disable_wp_login');
-
 function custom_disable_wp_login() {
     $request_uri = $_SERVER['REQUEST_URI'];
     if (strpos($request_uri, 'wp-login.php') !== false || strpos($request_uri, 'wp-login') !== false) {
-        wp_redirect(home_url('/partner-portal')); // slug of your custom login page
+        wp_redirect(home_url('/partner-portal'));
         exit;
     }
 }
-
+add_action('init', 'custom_disable_wp_login');
 
 // Add a Simple REST API Endpoint to Serve Tabs
 add_action('rest_api_init', function () {
