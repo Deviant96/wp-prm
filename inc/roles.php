@@ -56,7 +56,7 @@ function notify_user_on_approval($user_id, $new_role) {
 
         $reset_key = get_password_reset_key($user);
 
-        if (!is_wp_error($reset_key)) {
+        if (is_wp_error($reset_key)) {
             error_log('Password generation failed for user ID: ' . $user_id . ', Error: ' . $reset_key->get_error_message());
             return;
         }
