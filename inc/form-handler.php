@@ -12,6 +12,11 @@ function handle_partner_registration() {
     $job_title = sanitize_text_field($_POST['job_title'] ?? '');
     $company = sanitize_text_field($_POST['company'] ?? '');
     $country = sanitize_text_field($_POST['country'] ?? '');
+    $company_address = sanitize_text_field($_POST['company_address'] ?? '');
+    $company_city = sanitize_text_field($_POST['company_city'] ?? '');
+    $company_zip = sanitize_text_field($_POST['company_zip'] ?? '');
+    $company_phone = sanitize_text_field($_POST['company_phone'] ?? '');
+    $company_mobile = sanitize_text_field($_POST['company_mobile'] ?? '');
 
     if (isset($_POST['prm_register_partner'])) {
         if (email_exists($email)) {
@@ -43,8 +48,44 @@ function handle_partner_registration() {
         update_user_meta($user_id, 'job_title', $job_title);
         update_user_meta($user_id, 'company', $company);
         update_user_meta($user_id, 'country', $country);
+        update_user_meta($user_id, 'company_address', $company_address);
+        update_user_meta($user_id, 'company_city', $company_city);
+        update_user_meta($user_id, 'company_zip', $company_zip);
+        update_user_meta($user_id, 'company_phone', $company_phone);
+        update_user_meta($user_id, 'company_mobile', $company_mobile);
+
+        // Notify user about registration
+        $to = $email;
+        $subject = 'Registration Received';
+        $message = "Thanks, $full_name! Your application is under review.\n\n";
+        $message .= "You will receive an email once your account is approved.\n\n";
+        $message .= "If you have any questions, please contact us at marketing@terrabytegroup.com .\n\n";
+        
+        // Get latest 3 posts from external website's REST API
+        $external_api_url = 'https://terrabytegroup.com/wp-json/wp/v2/posts';
+        $api_args = array(
+            'per_page' => 3,
+            'orderby' => 'date',
+            'order' => 'desc',
+            'categories' => 123  // Replace with actual newsletter category ID
+        );
+        
+        $response = wp_remote_get(add_query_arg($api_args, $external_api_url));
+        
+        if (!is_wp_error($response) && wp_remote_retrieve_response_code($response) === 200) {
+            $newsletters = json_decode(wp_remote_retrieve_body($response));
+            
+            $message .= "\n\nLatest Newsletters:\n";
+            foreach ($newsletters as $news) {
+            $message .= "- " . $news->title->rendered . "\n";
+            $message .= "  " . $news->link . "\n\n";
+            }
+        }
+        $headers = ['Content-Type: text/plain; charset=UTF-8'];
+        wp_mail($to, $subject, $message, $headers);
 
         // --- Profile Picture Upload ---
+        // TODO Remove this, because it is not used in the registration form
         if (isset($_FILES['profile_picture']) && !empty($_FILES['profile_picture']['name'])) {
             require_once(ABSPATH . 'wp-admin/includes/file.php');
             require_once(ABSPATH . 'wp-admin/includes/image.php');

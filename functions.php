@@ -3,6 +3,8 @@
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
+define('TERRABYTE_NEWSLETTER_CACHE_DURATION', 3 * DAY_IN_SECONDS);
+
 // Theme setup
 function wp_prm_theme_setup()
 {

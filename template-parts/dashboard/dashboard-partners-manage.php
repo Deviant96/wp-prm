@@ -26,6 +26,7 @@ get_header(); ?>
     }
 
     if (isset($_GET['reject_user'])) {
+        require_once(ABSPATH . 'wp-admin/includes/user.php');
         $user_id = intval($_GET['reject_user']);
         wp_delete_user($user_id);
         echo '<div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-6">User rejected and deleted successfully.</div>';
