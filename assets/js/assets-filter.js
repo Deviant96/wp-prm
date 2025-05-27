@@ -32,7 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const s = encodeURIComponent(search);
         try {
-            const response = await fetch(`${wpApiSettings.root}prm/v1/tbyte_prm_assets?s=${s}&post_per_page=4`, {
+            const response = await fetch(`${wpApiSettings.root}prm/v1/tbyte_prm_assets?search=${s}&posts_per_page=4`, {
                 method: "GET",
                 credentials: 'same-origin',
                 mode: 'cors',
