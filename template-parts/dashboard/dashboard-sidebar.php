@@ -68,6 +68,13 @@ $has_submenu = in_array('administrator', $current_user->roles) ? 'has-submenu' :
                             class="block px-3 py-1 rounded transition-all duration-200 hover:bg-blue-100  text-white hover:text-[#2376bb] ">Deleted</a></li>
                 </ul>
             </li>
+            <li class="menu-item">
+                <a href="<?php echo home_url('/?tab=portal-settings'); ?>"
+                    class="flex items-center gap-3 px-4 py-2 rounded transition-all duration-200 hover:bg-blue-100  hover:pl-5 text-white hover:text-[#2376bb] ">
+                    <ion-icon name="people-outline" class="text-xl"></ion-icon>
+                    <span class="menu-text">Settings</span>
+                </a>
+            </li>
         <?php endif; ?>
     </ul>
 </div>

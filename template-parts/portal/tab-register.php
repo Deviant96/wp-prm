@@ -185,18 +185,8 @@
     </form>
 
     <?php
-        $message = "";
-        // Get latest 3 posts with featured images
-        $external_api_url = 'https://www.terrabytegroup.com/wp-json/wp/v2/posts';
-        $api_args = array(
-            'per_page' => 3,
-            'orderby' => 'date',
-            'order' => 'desc',
-            'categories' => '51,150',
-            '_fields' => 'title,link,featured_media' // Use Jetpack field for image URL
-        );
-
-        $response = wp_remote_get(add_query_arg($api_args, $external_api_url));
+        $cache_key = 'terrabyte_newsletters_cache';
+        $cached_data = get_transient($cache_key);
 
         // Debug mode - uncomment to preview in browser
         if (isset($_GET['debug_newsletter'])) {
@@ -204,8 +194,8 @@
             echo '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Newsletter Preview</title></head><body style="font-family: Arial, sans-serif; background: #f5f5f5; padding: 20px;">';
         }
 
-        if (!is_wp_error($response) && wp_remote_retrieve_response_code($response) === 200) {
-            $newsletters = json_decode(wp_remote_retrieve_body($response));
+        // if (!is_wp_error($response) && wp_remote_retrieve_response_code($response) === 200) {
+            $newsletters = $cached_data;
             
             $html_content = '
             <!-- Newsletter Section -->
@@ -221,10 +211,7 @@
                 // Alternative for non-Jetpack sites (requires extra API call)
                 $media_url = 'https://www.terrabytegroup.com/wp-json/wp/v2/media/' . $news->featured_media;
                 $media_response = wp_remote_get($media_url);
-                if (!is_wp_error($media_response)) {
-                    $media_data = json_decode(wp_remote_retrieve_body($media_response));
-                    $image_url = $media_data->source_url;
-                }
+                $image_url = $news->image_url;
                 if (!empty($image_url) && $count < 3) {
                     $html_content .= '
                     <tr>
@@ -258,7 +245,7 @@
             </table>';
 
             $message .= $html_content;
-        }
+        // }
 
         // Debug mode - uncomment to preview
         if (isset($_GET['debug_newsletter'])) {

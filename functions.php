@@ -41,6 +41,7 @@ require get_template_directory() . '/inc/assets-functions.php';
 require get_template_directory() . '/inc/event-functions.php';
 require get_template_directory() . '/inc/partner-functions.php';
 require get_template_directory() . '/inc/user-approval-functions.php';
+require get_template_directory() . '/inc/newsletter-cache-functions.php';
 
 function mytheme_enqueue_styles() {
     wp_enqueue_style(

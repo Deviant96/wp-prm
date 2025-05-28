@@ -104,26 +104,6 @@ function render_cache_control_page() {
     <div class="wrap">
         <h1>API Cache Control</h1>
 
-        <?php
-            echo '<div class="card" style="padding: 20px; margin-bottom: 20px; background: #f5f5f5;">';
-            echo '<h2>Cached Data</h2>';
-            
-            if (false === $cached_data) {
-                echo '<p>No cached data found.</p>';
-            } else {
-                echo '<pre style="background: white; padding: 10px; border: 1px solid #ddd; overflow: auto;">';
-                echo htmlspecialchars(print_r($cached_data, true));
-                echo '</pre>';
-            }
-
-            var_dump($cached_data); // Debugging line, can be removed later
-            
-            echo '</div>';
-
-            $data = fetch_latest_newsletters(); // Your API function
-        var_dump($data);
-        ?>
-        
         <!-- Stats Card -->
         <div class="card" style="max-width: 600px;">
             <h2>Newsletter Cache Status</h2>
@@ -137,6 +117,15 @@ function render_cache_control_page() {
             </p>
         </div>
 
+        <div class="card">
+            <h2>Latest Article Titles</h2>
+            <?php 
+                foreach ($cached_data as $posts) {
+                    echo '<h3 style="font-size: 14px;">' . $posts->title->rendered . '</h3>';
+                }
+            ?>
+        </div>
+
         <!-- Actions -->
         <form method="post" style="margin-top: 20px;">
             <?php wp_nonce_field('cache_control_action', 'cache_nonce'); ?>
@@ -148,30 +137,6 @@ function render_cache_control_page() {
                     onclick="return confirm('Delete all cached data?')">
                 ✗ Clear Cache
             </button>
-        </form>
-
-        <!-- Settings Form -->
-        <form method="post">
-            <?php wp_nonce_field('cache_settings_nonce', '_wpnonce'); ?>
-            <input type="hidden" name="cache_settings" value="1">
-            
-            <table class="form-table">
-                <tr>
-                    <th scope="row"><label for="cache_duration">Cache Duration</label></th>
-                    <td>
-                        <input type="number" 
-                               name="cache_duration" 
-                               id="cache_duration" 
-                               value="<?php echo esc_attr($hours); ?>" 
-                               min="0.1" 
-                               step="0.1" 
-                               style="width: 80px;"> hours
-                        <p class="description">How often to automatically refresh cached data</p>
-                    </td>
-                </tr>
-            </table>
-            
-            <?php submit_button('Save Settings'); ?>
         </form>
 
         <!-- Settings -->
@@ -201,7 +166,6 @@ function handle_cache_actions() {
     // Manual Refresh
     if ($_POST['action'] === 'refresh') {
         $data = fetch_latest_newsletters(); // Your API function
-        var_dump($data); // Debugging line, can be removed later
         if (is_wp_error($data)) {
             add_action('admin_notices', function() {
                 echo '<div class="notice notice-error"><p>Error fetching data.</p></div>';
@@ -225,7 +189,6 @@ function handle_cache_actions() {
     
     // Update Duration
     elseif (isset($_POST['cache_duration'])) {
-        var_dump($_POST['cache_duration']); // Debugging line, can be removed later
         if (!is_numeric($_POST['cache_duration']) || floatval($_POST['cache_duration']) <= 0) {
             add_action('admin_notices', function() {
                 echo '<div class="notice notice-error"><p>Invalid cache duration. Please enter a positive number.</p></div>';
@@ -262,6 +225,17 @@ function fetch_latest_newsletters() {
     
     if (!is_wp_error($response)) {
         $data = json_decode(wp_remote_retrieve_body($response));
+        
+        // Add featured image URL to each post
+        foreach ($data as $news) {
+            $media_url = 'https://www.terrabytegroup.com/wp-json/wp/v2/media/' . $news->featured_media;
+            $media_response = wp_remote_get($media_url);
+            if (!is_wp_error($media_response)) {
+                $media_data = json_decode(wp_remote_retrieve_body($media_response));
+                $news->image_url = $media_data->source_url;
+            }
+        }
+
         set_transient($cache_key, $data, get_option('terrabyte_cache_duration', HOUR_IN_SECONDS));
         set_transient('terrabyte_last_updated', time(), DAY_IN_SECONDS);
     }
