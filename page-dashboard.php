@@ -2,7 +2,7 @@
 /* Template Name: Partner Dashboard */
 
 if (!is_user_logged_in()) {
-    wp_redirect(wp_login_url());
+    wp_redirect( wp_login_url() );
     exit;
 }
 
@@ -87,6 +87,9 @@ get_header();
                     echo '<p>Support info or form here.</p>';
                     get_template_part('template-parts/dashboard/dashboard', 'support');
                     break;
+
+                case 'asset-preview':
+                    get_template_part('template-parts/asset','preview');
 
                 default:
                     echo '<h2>Dashboard Overview</h2>';

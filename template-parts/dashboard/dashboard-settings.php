@@ -285,7 +285,7 @@ get_header();
                                 <h3 style="margin: 0 0 10px; font-size: 18px;">
                                     <a href="' . esc_url($news->link) . '" style="color: #2a5db0; text-decoration: none;"><?php esc_html(strip_tags($news->title->rendered)); ?></a>
                                 </h3>
-                                <a href=<?php echo esc_url($news->link); ?>" style="color: #666666; text-decoration: none; font-size: 14px; display: inline-block; padding: 6px 12px; background: #f5f5f5; border-radius: 4px;">Read Now →</a>
+                                <a href="<?php echo esc_url($news->link); ?>" style="color: #666666; text-decoration: none; font-size: 14px; display: inline-block; padding: 6px 12px; background: #f5f5f5; border-radius: 4px;">Read Now →</a>
                             </td>
                         </tr>
                         <?php }

@@ -581,6 +581,59 @@ function get_assets_data_rest($request) {
     ], 200);
 }
 
+/**
+ * Get a single asset's data for the REST API.
+ *
+ * @param WP_REST_Request $request The request object.
+ * @return WP_REST_Response|WP_Error
+ */
+function get_single_asset_rest($request) {
+    $asset_id = $request['id'];
+    $asset = get_post($asset_id);
+
+    if (!$asset || $asset->post_type !== 'tbyte_prm_assets') {
+        return new WP_Error('not_found', 'Asset not found', ['status' => 404]);
+    }
+
+    // Get taxonomies and meta data
+    $doc_type = wp_get_post_terms($asset_id, 'doc_type');
+    $doc_type_name = !empty($doc_type) ? $doc_type[0]->name : '';
+    $doc_type_id = !empty($doc_type) ? $doc_type[0]->term_id : 0;
+    $field_type = $doc_type_id ? get_term_meta($doc_type_id, 'doc_type_field_type', true) : '';
+    
+    $language = get_post_meta($asset_id, 'language', true);
+    $description = get_post_meta($asset_id, 'description', true);
+    $tags = wp_get_post_tags($asset_id, ['fields' => 'names']);
+
+    $response = [
+        'id' => $asset_id,
+        'title' => $asset->post_title,
+        'content' => $asset->post_content,
+        'doc_type' => [
+            'id' => $doc_type_id,
+            'name' => $doc_type_name,
+            'field_type' => $field_type
+        ],
+        'language' => $language,
+        'description' => $description,
+        'tags' => $tags,
+        'date' => $asset->post_date,
+        'modified' => $asset->post_modified,
+        'status' => $asset->post_status,
+        'author' => get_the_author_meta('display_name', $asset->post_author)
+    ];
+
+    return new WP_REST_Response($response, 200);
+}
+
+// Register the route
+add_action('rest_api_init', function() {
+    register_rest_route('prm/v1', '/tbyte_prm_assets/(?P<id>\d+)', [
+        'methods' => 'GET',
+        'callback' => 'get_single_asset_rest'
+    ]);
+});
+
 function create_asset_rest($request) {
     $params = $request->get_params();
 
@@ -1075,4 +1128,28 @@ function delete_language_rest($request) {
         'success' => true,
         'message' => 'Language deleted successfully!'
     ];
+}
+
+// Asset preview
+add_action('rest_api_init', function() {
+    register_rest_route('prm/v1', '/asset-preview/(?P<id>\d+)', array(
+        'methods' => 'GET',
+        'callback' => 'get_asset_preview_content',
+        'permission_callback' => '__return_true'
+    ));
+});
+
+function get_asset_preview_content($request) {
+    $asset_id = $request['id'];
+    $post = get_post($asset_id);
+    
+    if (!$post) {
+        return new WP_Error('not_found', 'Asset not found', array('status' => 404));
+    }
+    
+    ob_start();
+    include get_template_directory() . '/template-parts/components/asset-preview/asset-preview.php';
+    $content = ob_get_clean();
+    
+    return array('html' => $content);
 }
