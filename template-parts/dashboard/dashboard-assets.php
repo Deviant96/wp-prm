@@ -514,12 +514,16 @@ $language = isset($_GET['language']) ? explode(',', sanitize_text_field($_GET['l
                                         <a href="${link}" target="_blank" class="text-blue-600 hover:underline" onclick="copyAsset(event, this)">
                                             <ion-icon name="copy-outline"></ion-icon>
                                         </a>
+                                    ` : doc_type === "PDF" ? `
+                                        <a href="#" data-asset-id="${id}" download class="text-blue-600 hover:underline">
+                                            <ion-icon name="download-outline"></ion-icon>
+                                        </a>
                                     ` : `
                                         <a href="#" data-asset-preview data-asset-id="${id}" download class="text-blue-600 hover:underline">
                                             <ion-icon name="download-outline"></ion-icon>   
                                         </a>
                                     `}
-                                    <a href="${link}" class="text-green-600 hover:underline">
+                                    <a href="${link}" data-asset-preview data-asset-id="${id}" class="text-green-600 hover:underline">
                                         <ion-icon name="eye-outline"></ion-icon>
                                     </a>
                                 </div>
