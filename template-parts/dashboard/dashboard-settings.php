@@ -266,7 +266,7 @@ get_header();
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                             </svg>
                         </div>
-                        <h2 class="text-xl font-semibold text-gray-800">Content Preview</h2>
+                        <h2 class="text-xl font-semibold text-gray-800">Email Footer Preview</h2>
                     </div>
                 </div>
                 <div class="divide-y divide-gray-100">
@@ -275,19 +275,20 @@ get_header();
                             <td style="padding: 20px; background: #2a5db0; color: #ffffff;">
                                 <h1 style="margin: 0; font-size: 20px; font-weight: normal;">While You Wait for Approval...</h1>
                             </td>
-                        </tr>';
+                        </tr>
                     <?php 
                     if (!empty($cached_data)) {
-                        foreach ($cached_data as $post) { ?>
-                        <tr>
-                            <td style="padding: 20px; border-bottom: 1px solid #f0f0f0;">
-                                <img src="' . esc_url($image_url) . '" alt="' . esc_attr(strip_tags($news->title->rendered)) . '" style="width: 100%; max-height: 180px; object-fit: cover; border-radius: 4px; margin-bottom: 15px;">
-                                <h3 style="margin: 0 0 10px; font-size: 18px;">
-                                    <a href="' . esc_url($news->link) . '" style="color: #2a5db0; text-decoration: none;"><?php esc_html(strip_tags($news->title->rendered)); ?></a>
-                                </h3>
-                                <a href="<?php echo esc_url($news->link); ?>" style="color: #666666; text-decoration: none; font-size: 14px; display: inline-block; padding: 6px 12px; background: #f5f5f5; border-radius: 4px;">Read Now →</a>
-                            </td>
-                        </tr>
+                        foreach ($cached_data as $post) { 
+                            $image_url = $post->image_url; ?>
+                            <tr>
+                                <td style="padding: 20px; border-bottom: 1px solid #f0f0f0;">
+                                    <img src="<?php echo esc_url($image_url); ?>" alt="<?php echo esc_attr(strip_tags($post->title->rendered)); ?>" style="width: 100%; max-height: 180px; object-fit: cover; border-radius: 4px; margin-bottom: 15px;">
+                                    <h3 style="margin: 0 0 10px; font-size: 18px;">
+                                        <a href="<?php echo esc_url($post->link); ?>" style="color: #2a5db0; text-decoration: none;"><?php echo esc_html(strip_tags($post->title->rendered)); ?></a>
+                                    </h3>
+                                    <a href="<?php echo esc_url($post->link); ?>" style="color: #666666; text-decoration: none; font-size: 14px; display: inline-block; padding: 6px 12px; background: #f5f5f5; border-radius: 4px;">Read Now →</a>
+                                </td>
+                            </tr>
                         <?php }
                     } else {
                         echo '<div class="py-4 px-8">';
@@ -295,7 +296,7 @@ get_header();
                         echo '</div>';
                     }
                     ?>
-                            <tr>
+                        <tr>
                             <td style="padding: 15px 20px; text-align: center; background: #f9f9f9;">
                                 <a href="https://www.terrabytegroup.com/newsletter" style="color: #2a5db0; text-decoration: none; font-weight: bold; font-size: 14px;">Browse All Articles →</a>
                             </td>

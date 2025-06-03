@@ -78,6 +78,10 @@ get_header();
                     get_template_part('template-parts/dashboard/partners/deleted');
                     break;
 
+                case 'portal-settings':
+                    get_template_part('template-parts/dashboard/dashboard', 'settings');
+                    break;
+
                 case 'support':
                     echo '<h2>Support</h2>';
                     echo '<p>Support info or form here.</p>';
