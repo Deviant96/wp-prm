@@ -3,9 +3,9 @@ $current_user = get_query_var('current_user');
 $has_submenu = in_array('administrator', $current_user->roles) ? 'has-submenu' : '';
 ?>
 <div id="sidebar-menu" class="vertical-menu transition-all duration-300 w-64 min-w-[64px] overflow-hidden fixed md:sticky top-0 left-0 z-40 h-full md:h-auto transform transition-transform duration-300 ease-in-out">
-    <div class="menu-toggle" onclick="toggleMenu()">☰</div>
+    <div class="menu-toggle mt-12 md:mt-0" onclick="toggleMenu()">☰</div>
 
-    <ul class="menu space-y-2">
+    <ul class="menu space-y-2 mt-6 md:mt-0">
         <li class="menu-item">
             <a href="<?php echo home_url('/?tab=dashboard'); ?>"
                 class="flex items-center gap-3 px-4 py-2 rounded transition-all duration-200 hover:bg-blue-100  hover:pl-5 text-white hover:text-[#2376bb] ">

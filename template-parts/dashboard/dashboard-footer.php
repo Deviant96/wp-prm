@@ -55,3 +55,20 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 </script>
+
+<script>
+  // Listener to de-expand sidebar menu when screen is mobile 
+  function removeExpandedOnMobile() {
+    const sidebarMenu = document.getElementById('sidebar-menu');
+    if (window.innerWidth <= 768 && !sidebarMenu.classList.contains('collapsed')) {
+      sidebarMenu.classList.add('collapsed');
+    } else {
+      sidebarMenu.classList.remove('collapsed');
+    }
+  }
+
+  window.addEventListener('load', removeExpandedOnMobile);
+
+  window.addEventListener('resize', removeExpandedOnMobile);
+
+</script>
