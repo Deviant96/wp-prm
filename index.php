@@ -41,6 +41,10 @@ get_header();
                     get_template_part('template-parts/dashboard/events/create');
                     break;
 
+                case 'events-create-sync':
+                    get_template_part('template-parts/dashboard/events/create', 'sync');
+                    break;
+
                 case 'assets':
                     echo '<h2>My Assets</h2>';
                     echo '<p>Download your assets here.</p>';

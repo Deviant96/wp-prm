@@ -2,6 +2,14 @@
 
 WP-PRM is a custom WordPress theme designed for flexibility, performance, and easy customization.
 
+tb_admin
+terraprm
+Mu4Q N7O7 Cjy5 syuV IxX9 QDCv
+
+adminwpprm
+terraprmlocal
+0A3W eo6N 8lPk UDWs 3GyO CsX9
+
 ## Features
 
 - Responsive design

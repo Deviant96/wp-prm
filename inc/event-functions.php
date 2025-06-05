@@ -310,3 +310,118 @@ function tbyte_prm_delete_event($request) {
 
     return new WP_REST_Response($response, 200);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* Backend Sync Handler */
+add_action('admin_post_sync_event', 'handle_event_sync');
+function handle_event_sync() {
+    $sync_errors = [];
+    $base_domains = [
+        'sg' => 'https://www.terrabytegroup.com',
+        'id' => 'https://id.terrabytegroup.com',
+        // Add other regions...
+    ];
+
+    if (!empty($_POST['regions']) && !empty($_POST['event_title'])) {
+        foreach ($_POST['regions'] as $region) {
+            $api_url = $base_domains[$region] . '/wp-json/tribe/events/v1/events';
+            
+            $response = wp_remote_post($api_url, [
+                'headers' => [
+                    'Authorization' => 'Basic ' . base64_encode('username:application_password'),
+                    'Content-Type' => 'application/json'
+                ],
+                'body' => json_encode([
+                    'title' => sanitize_text_field($_POST['event_title']),
+                    'start_date' => sanitize_text_field($_POST['start_date']),
+                    'end_date' => sanitize_text_field($_POST['end_date']),
+                    'status' => 'publish'
+                ]),
+                'timeout' => 15
+            ]);
+
+            if (is_wp_error($response)) {
+                $sync_errors[] = "{$region}: " . $response->get_error_message();
+            } elseif (wp_remote_retrieve_response_code($response) !== 201) {
+                $body = json_decode(wp_remote_retrieve_body($response), true);
+                $sync_errors[] = "{$region}: " . ($body['message'] ?? 'Unknown error');
+            }
+        }
+    }
+
+    if (!empty($sync_errors)) {
+        set_transient('event_sync_errors', $sync_errors, 30);
+    }
+    
+    wp_redirect(wp_get_referer());
+    exit;
+}
+
+/* Webhook Listener for Incoming Events */
+add_action('rest_api_init', function() {
+    register_rest_route('dashboard/v1', '/sync-event', [
+        'methods' => 'POST',
+        'callback' => 'handle_incoming_event',
+        'permission_callback' => '__return_true'
+    ]);
+});
+
+function handle_incoming_event(WP_REST_Request $request) {
+    $params = $request->get_params();
+    $checksum = md5(serialize($params));
+    
+    // Conflict check
+    $existing = get_posts([
+        'post_type' => 'tribe_events',
+        'meta_query' => [[
+            'key' => 'event_checksum',
+            'value' => $checksum
+        ]]
+    ]);
+
+    if (!empty($existing)) {
+        return new WP_Error('conflict', 'Event already exists', ['status' => 409]);
+    }
+
+    // $event_id = wp_insert_post([
+    //     'post_title' => sanitize_text_field($params['title']),
+    //     'post_type' => 'tribe_events',
+    //     'post_status' => 'publish',
+    //     'meta_input' => [
+    //         '_EventStartDate' => $params['start_date'],
+    //         '_EventEndDate' => $params['end_date'],
+    //         'event_checksum' => $checksum,
+    //         'source_region' => sanitize_text_field($params['region'])
+    //     ]
+    // ]);
+
+    $event = tribe_events()
+    ->set_args( [
+        'title'      => sanitize_text_field($params['title']),
+        'event_date' => '+2 days 15:00:00',
+        'duration'   => HOUR_IN_SECONDS,
+        'status'     => 'publish',
+    ] )
+    ->create();
+
+    return $event ?: new WP_Error('creation_failed', 'Event creation failed');
+}
