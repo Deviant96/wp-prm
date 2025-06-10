@@ -73,7 +73,7 @@
     <!-- Upcoming Featured Event -->
     <div class="relative w-full rounded-2xl overflow-hidden bg-gray-100 mb-8 shadow-lg hover:shadow-xl transition-shadow duration-300 group">
         <div class="absolute inset-0 bg-gradient-to-br from-blue-600/80 to-indigo-800/80 opacity-90"></div>
-        <img src="<?php echo get_template_directory_uri() . '/assets/images/events-bg.jpg'; ?>" alt="Partner Growth Summit" class="w-full h-72 md:h-80 object-cover opacity-90 group-hover:opacity-100 transition-opacity duration-500" />
+        <img src="<?php echo get_template_directory_uri() . '/events/images/events-bg.jpg'; ?>" alt="Partner Growth Summit" class="w-full h-72 md:h-80 object-cover opacity-90 group-hover:opacity-100 transition-opacity duration-500" />
         <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent flex flex-col justify-end p-6 md:p-8 text-white">
             <div class="max-w-2xl">
                 <span class="inline-block px-3 py-1 mb-3 text-xs font-semibold tracking-wider text-blue-100 bg-blue-900/50 rounded-full backdrop-blur-sm">
@@ -133,7 +133,7 @@
 </div>
 
 <!-- Load events filter -->
-<script src="<?php echo get_template_directory_uri(); ?>/assets/js/events-filter.js"></script>
+<script src="<?php echo get_template_directory_uri(); ?>/events/js/events-filter.js"></script>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -427,7 +427,7 @@
                                     ` : ''}
                                 </div>
                                 <div class="mt-3 flex justify-between items-center">
-                                    <a href="${event.link}" class="text-blue-600 hover:underline text-sm">View Details</a>
+                                    <a href="#" data-event-preview data-event-id="${event.id}" class="text-blue-600 hover:underline text-sm">View Details</a>
                                     <ion-icon name="calendar-outline" class="text-gray-400 text-xl"></ion-icon>
                                 </div>
                             </div>
@@ -505,5 +505,234 @@
             .catch(error => {
                 showError('Error loading events.');
             });
+    });
+</script>
+
+
+<script>
+    class EventPreview {
+        constructor() {
+            this.modal = null;
+            this.initEventListeners();
+        }
+
+        initEventListeners() {
+            // Delegate click events for event preview links
+            document.addEventListener('click', (e) => {
+            const previewLink = e.target.closest('[data-event-preview]');
+            if (previewLink) {
+                e.preventDefault();
+                this.open(previewLink.dataset.eventId);
+            }
+
+            // Close modal when clicking close button or backdrop
+            if (e.target.classList.contains('event-preview-backdrop')) {
+                this.close();
+            }
+            if (e.target.classList.contains('event-preview-close')) {
+                this.close();
+            }
+            });
+        }
+
+        async open(eventId) {
+            // Create modal if it doesn't exist
+            if (!this.modal) {
+            this.createModal();
+            }
+
+            // Show loading state
+            this.modal.querySelector('.event-preview-content').innerHTML = `
+            <div class="flex justify-center items-center h-64">
+                <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+            </div>
+            `;
+
+            // Show modal
+            this.modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+
+            try {
+                // Fetch event data
+                const response = await fetch(`${wpApiSettings.root}prm/v1/tbyte_prm_events/${eventId}`);
+                if (!response.ok) throw new Error('Event not found');
+                
+                const event = await response.json();
+                console.error("event: ", event)
+                this.renderEvent(event);
+                } catch (error) {
+                console.error('Error loading event:', error);
+                this.showError(error);
+            }
+        }
+
+        createModal() {
+            this.modal = document.createElement('div');
+            this.modal.className = 'fixed inset-0 z-50 hidden';
+            this.modal.innerHTML = `
+                <div class="event-preview-backdrop absolute inset-0 bg-black/50 cursor-pointer"></div>
+                <div class="absolute inset-0 flex items-center justify-center p-4 pointer-events-none">
+                <div class="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col pointer-events-auto">
+                    <button class="event-preview-close absolute top-4 right-4 z-10 text-gray-500 hover:text-gray-700">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                    </button>
+                    <div class="event-preview-content overflow-y-auto flex-1"></div>
+                </div>
+                </div>
+            `;
+            document.body.appendChild(this.modal);
+            
+            // Add click handler for backdrop
+            this.modal.querySelector('.event-preview-backdrop').addEventListener('click', () => this.close());
+        }
+
+        renderEvent(event) {
+            console.error(event)
+            const content = this.modal.querySelector('.event-preview-content');
+
+            const formattedStartDate = new Date(event.start_date).toLocaleDateString();
+            const formattedEndDate = new Date(event.end_date).toLocaleDateString();
+            const formattedTime = event.start_time && event.end_time
+                ? `${event.start_time} - ${event.end_time}`
+                : event.start_time || event.end_time || '';
+
+            const tagsHTML = event.tags.map(tag =>
+                `<span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">${tag}</span>`
+            ).join('');
+
+            const costHTML = event.cost
+                ? `${event.currency_position === 'before' ? event.currency_symbol : ''}${event.cost}${event.currency_position === 'after' ? ' ' + event.currency_symbol : ''}`
+                : 'Free';
+
+            content.innerHTML = `
+            <div class="p-6">
+                <!-- Header -->
+                <div class="flex flex-col md:flex-row justify-between md:items-center mb-6 border-b pb-4 border-gray-200">
+                    <div>
+                        <h1 class="text-3xl font-bold text-gray-900">${event.title}</h1>
+                        <p class="text-sm text-gray-500 mt-1">${event.location || ''}</p>
+                    </div>
+                    ${event.is_featured ? `<span class="mt-4 md:mt-0 inline-block bg-yellow-100 text-yellow-800 text-xs font-semibold px-3 py-1 rounded-full">★ Featured</span>` : ''}
+                </div>
+
+                <!-- Image -->
+                ${event.image ? `
+                <div class="mb-6">
+                    <img src="${event.image}" alt="${event.title}" class="w-full h-64 object-cover rounded-lg shadow-sm">
+                </div>
+                ` : ''}
+
+                <!-- Meta info -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm text-gray-700 mb-6">
+                    <div>
+                        <p class="text-gray-500 mb-1">Start Date</p>
+                        <p>${formattedStartDate}</p>
+                    </div>
+                    <div>
+                        <p class="text-gray-500 mb-1">End Date</p>
+                        <p>${formattedEndDate}</p>
+                    </div>
+                    <div>
+                        <p class="text-gray-500 mb-1">Time</p>
+                        <p>${formattedTime}</p>
+                    </div>
+                    <div>
+                        <p class="text-gray-500 mb-1">Cost</p>
+                        <p class="font-medium">${costHTML}</p>
+                    </div>
+                    <div>
+                        <p class="text-gray-500 mb-1">Venue</p>
+                        <p>${event.venue || '—'}</p>
+                    </div>
+                    <div>
+                        <p class="text-gray-500 mb-1">Status</p>
+                        <p class="${event.event_status === 'cancelled' ? 'text-red-600 font-semibold' : 'text-green-600'}">
+                            ${event.event_status.charAt(0).toUpperCase() + event.event_status.slice(1)}
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Tags -->
+                ${tagsHTML ? `
+                <div class="mb-6">
+                    <p class="text-gray-500 text-sm mb-2">Tags</p>
+                    <div class="flex flex-wrap gap-2">${tagsHTML}</div>
+                </div>
+                ` : ''}
+
+                <!-- Map -->
+                ${event.show_map_link && event.location ? `
+                <div class="mb-6">
+                    <a href="https://www.google.com/maps/search/?q=${encodeURIComponent(event.location)}"
+                    target="_blank" rel="noopener"
+                    class="text-sm text-blue-600 hover:underline flex items-center gap-1">
+                        📍 View on Google Maps
+                    </a>
+                </div>
+                ` : ''}
+
+                <!-- Footer -->
+                <footer class="pt-4 mt-6 border-t border-gray-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div class="flex gap-3">
+                        <button class="event-share-btn inline-flex items-center px-4 py-2 border border-gray-300 text-sm rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50">
+                            Share
+                        </button>
+                        ${event.event_url ? `
+                        <a href="${event.event_url}" target="_blank" rel="noopener"
+                        class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50">
+                            Event Website
+                        </a>` : ''}
+                    </div>
+                    <a href="${window.location.origin}/events/${event.id}"
+                    class="inline-flex items-center px-4 py-2 text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">
+                        View Full Page
+                    </a>
+                </footer>
+            </div>
+            `;
+
+            // Initialize share button
+            const shareBtn = content.querySelector('.event-share-btn');
+            if (shareBtn) {
+                shareBtn.addEventListener('click', () => this.handleShare(event));
+            }
+        }
+
+
+        handleShare(event) {
+            if (navigator.share) {
+            navigator.share({
+                title: event.title,
+                text: event.description || '',
+                url: `${window.location.origin}/events/${event.id}`
+            }).catch(err => {
+                console.log('Error sharing:', err);
+            });
+            } else {
+            // Fallback for browsers without Web Share API
+            const tempInput = document.createElement('input');
+            tempInput.value = `${window.location.origin}/events/${event.id}`;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempInput);
+            
+            alert('Link copied to clipboard!');
+            }
+        }
+
+        close() {
+            if (this.modal) {
+            this.modal.classList.add('hidden');
+            document.body.style.overflow = '';
+            }
+        }
+    }
+
+    // Initialize when DOM is ready
+    document.addEventListener('DOMContentLoaded', () => {
+    window.eventPreview = new EventPreview();
     });
 </script>

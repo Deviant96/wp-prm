@@ -111,8 +111,8 @@ if (!in_array('partner_manager', $current_user->roles) && !in_array('administrat
 
         <!-- Description -->
         <div>
-            <label for="event_description" class="block text-sm font-medium text-gray-700  mb-2">Description*</label>
-            <textarea name="event_description" id="event_description" rows="5" required
+            <label for="event_content" class="block text-sm font-medium text-gray-700  mb-2">Description*</label>
+            <textarea name="event_content" id="event_content" rows="5" required
                 class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500       transition duration-200"
                 placeholder="Enter detailed event description"></textarea>
         </div>

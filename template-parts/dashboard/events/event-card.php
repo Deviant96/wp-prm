@@ -1,7 +1,7 @@
 <?php
 $date = get_query_var('date');
 $event_image = get_query_var('event_image');
-$event_description = get_query_var('event_description');
+$event_content = get_query_var('event_content');
 $event_link = get_query_var('event_link');
 $event_id = get_query_var('event_id');
 $event_type = get_query_var('event_type');

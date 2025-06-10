@@ -143,16 +143,31 @@ function tbyte_prm_get_events($request) {
                 'id'    => get_the_ID(),
                 'title' => get_the_title(),
                 'link'  => get_permalink(),
-                'excerpt' => get_the_excerpt(),
-                'thumbnail' => get_the_post_thumbnail_url(get_the_ID(), 'medium'),
-                'type' => wp_get_post_terms(get_the_ID(), 'event_type', ['fields' => 'names']),
+
+                'start_date' => get_post_meta(get_the_ID(), '_event_start_date', true),
+                'end_date' => get_post_meta(get_the_ID(), '_event_end_date', true),
+                'start_time' => get_post_meta(get_the_ID(), '_event_start_time', true),
+                'end_time' => get_post_meta(get_the_ID(), '_event_end_time', true),
+                
+                'venue' => get_post_meta(get_the_ID(), '_event_venue', true),
+                'event_url' => get_post_meta(get_the_ID(), '_event_url', true),
+                'event_status' => get_post_meta(get_the_ID(), '_event_status', true),
+                'image' => get_post_meta(get_the_ID(), '_event_image', true),
+
+                'cost' => get_post_meta(get_the_ID(), '_event_cost', true),
+                'currency_symbol' => get_post_meta(get_the_ID(), '_event_currency_symbol', true),
+                'currency_code' => get_post_meta(get_the_ID(), '_event_currency_code', true),
+                'currency_position' => get_post_meta(get_the_ID(), '_event_currency_position', true),
+                
+                'is_featured' => get_post_meta(get_the_ID(), '_event_is_featured', true),
+                'hide_from_listings' => get_post_meta(get_the_ID(), '_event_hide_from_listings', true),
+                'show_map' => get_post_meta(get_the_ID(), '_event_show_map', true),
+                'show_map_link' => get_post_meta(get_the_ID(), '_event_show_map_link', true),
+
                 'tags' => wp_get_post_terms(get_the_ID(), 'post_tag', ['fields' => 'names']),
                 'date'  => get_post_meta(get_the_ID(), '_event_date', true),
                 'formatted_date' => date_i18n(get_option('date_format'), get_post_meta(get_the_ID(), '_event_date', true)),
-                'venue' => get_post_meta(get_the_ID(), '_event_venue', true),
                 'location' => get_post_meta(get_the_ID(), '_event_location', true),
-                'start_time' => get_post_meta(get_the_ID(), '_event_start_time', true),
-                'end_time' => get_post_meta(get_the_ID(), '_event_end_time', true),
             ];
         }
 
@@ -195,10 +210,34 @@ function tbyte_prm_get_event($request) {
     }
 
     return [
-        'id'    => $post->ID,
+        'id' => $post->ID,
         'title' => $post->post_title,
-        'date'  => get_post_meta($post->ID, 'event_date', true),
-        'venue' => get_post_meta($post->ID, 'event_venue', true),
+        'link' => get_permalink($post->ID),
+
+        'start_date' => get_post_meta($post->ID, '_event_start_date', true),
+        'end_date' => get_post_meta($post->ID, '_event_end_date', true),
+        'start_time' => get_post_meta($post->ID, '_event_start_time', true),
+        'end_time' => get_post_meta($post->ID, '_event_end_time', true),
+
+        'venue' => get_post_meta($post->ID, '_event_venue', true),
+        'event_url' => get_post_meta($post->ID, '_event_url', true),
+        'event_status' => get_post_meta($post->ID, '_event_status', true),
+        'image' => get_post_meta($post->ID, '_event_image', true),
+
+        'cost' => get_post_meta($post->ID, '_event_cost', true),
+        'currency_symbol' => get_post_meta($post->ID, '_event_currency_symbol', true),
+        'currency_code' => get_post_meta($post->ID, '_event_currency_code', true),
+        'currency_position' => get_post_meta($post->ID, '_event_currency_position', true),
+
+        'is_featured' => get_post_meta($post->ID, '_event_is_featured', true),
+        'hide_from_listings' => get_post_meta($post->ID, '_event_hide_from_listings', true),
+        'show_map' => get_post_meta($post->ID, '_event_show_map', true),
+        'show_map_link' => get_post_meta($post->ID, '_event_show_map_link', true),
+
+        'tags' => wp_get_post_terms($post->ID, 'post_tag', ['fields' => 'names']),
+        'date' => get_post_meta($post->ID, '_event_date', true),
+        'formatted_date' => date_i18n(get_option('date_format'), get_post_meta($post->ID, '_event_date', true)),
+        'location' => get_post_meta($post->ID, '_event_location', true),
     ];
 }
 
@@ -206,17 +245,45 @@ function tbyte_prm_get_event($request) {
 function tbyte_prm_create_event($request) {
     $params = $request->get_params();
 
+    $is_data_from_website = isset($params['is_data_from_website']) ? $params['is_data_from_website'] : false;
+
     // Validate and sanitize input
     $event_title = isset($params['event_title']) ? sanitize_text_field($params['event_title']) : ''; // Changed from event_title to event_name
     $event_type = isset($params['event_type']) ? intval($params['event_type']) : 0;
     $venue = isset($params['event_venue']) ? sanitize_text_field($params['event_venue']) : ''; // Changed from venue to event_venue
     $tags = isset($params['event_tags']) ? sanitize_text_field($params['event_tags']) : '';
-    $event_date = isset($params['event_date']) ? sanitize_text_field($params['event_date']) : '';
-    $start_time = isset($params['start_time']) ? sanitize_text_field($params['start_time']) : '';
-    $end_time = isset($params['end_time']) ? sanitize_text_field($params['end_time']) : '';
+    
+    if ( $is_data_from_website === true ) {
+        $event_start_date = isset($params['event_start_date_utc']) ? sanitize_text_field($params['event_start_date_utc']) : '';
+        $event_end_date = isset($params['event_end_date_utc']) ? sanitize_text_field($params['event_end_date_utc']) : '';
+        $start_time = isset($params['event_start_time_utc']) ? sanitize_text_field($params['event_start_time_utc']) : '';
+        $end_time = isset($params['event_end_time_utc']) ? sanitize_text_field($params['event_end_time_utc']) : '';
+        $event_image = isset($params['featured_image']) ? sanitize_text_field($params['featured_image']) : '';
+
+    } else {
+        $event_start_date = isset($params['event_start_date_utc']) ? sanitize_text_field($params['event_start_date_utc']) : '';
+        $event_end_date = isset($params['event_end_date_utc']) ? sanitize_text_field($params['event_end_date_utc']) : '';
+        $start_time = isset($params['start_time']) ? sanitize_text_field($params['start_time']) : '';
+        $end_time = isset($params['end_time']) ? sanitize_text_field($params['end_time']) : '';
+    }
+
+    $event_cost = isset($params['event_cost']) ? sanitize_text_field($params['event_cost']) : '';
+    $event_currency_symbol = isset($params['event_currency_symbol']) ? sanitize_text_field($params['event_currency_symbol']) : '';
+    $event_currency_code = isset($params['event_currency_code']) ? sanitize_text_field($params['event_currency_code']) : '';
+    $event_currency_position = isset($params['event_currency_position']) ? sanitize_text_field($params['event_currency_position']) : '';
+
+    $event_is_featured = isset($params['is_featured']) ? (bool)$params['is_featured'] : false;
+    $event_hide_from_listings = isset($params['hide_from_listings']) ? sanitize_text_field($params['hide_from_listings']) : 'no';
+    $event_show_map = isset($params['show_map']) ? sanitize_text_field($params['show_map']) : '0';
+    $event_show_map_link = isset($params['show_map_link']) ? sanitize_text_field($params['show_map_link']) : '0';
+    
     $event_status = isset($params['event_status']) ? sanitize_text_field($params['event_status']) : 'publish';
     $event_url = isset($params['event_url']) ? esc_url_raw($params['event_url']) : '';
-    $event_description = isset($params['event_description']) ? sanitize_textarea_field($params['event_description']) : '';
+
+
+
+    $event_date = isset($params['event_date']) ? sanitize_text_field($params['event_date']) : '';
+    $event_content = isset($params['event_content']) ? sanitize_textarea_field($params['event_content']) : '';
 
     // Validation
     if (empty($event_title)) {
@@ -230,7 +297,7 @@ function tbyte_prm_create_event($request) {
     // Prepare post data
     $post_data = [
         'post_title'   => $event_title,
-        'post_content' => $event_description,
+        'post_content' => $event_content,
         'post_status'  => $event_status,
         'post_type'    => 'tbyte_prm_events',
         'post_date'    => current_time('mysql'), // Set current date as publish date
@@ -244,12 +311,25 @@ function tbyte_prm_create_event($request) {
     }
 
     // Save meta fields
-    update_post_meta($post_id, '_event_date', $event_date); // Added underscore prefix for consistency
-    update_post_meta($post_id, '_event_venue', $venue);
+    update_post_meta($post_id, '_event_start_date', $event_start_date);
+    update_post_meta($post_id, '_event_end_date', $event_end_date);
     update_post_meta($post_id, '_event_start_time', $start_time);
     update_post_meta($post_id, '_event_end_time', $end_time);
+
+    update_post_meta($post_id, '_event_venue', $venue);
     update_post_meta($post_id, '_event_url', $event_url);
-    update_post_meta($post_id, '_event_status', $event_status); // Consider using post_status instead
+    update_post_meta($post_id, '_event_status', $event_status);
+    update_post_meta($post_id, '_event_image', isset($event_image) ? $event_image : '');
+
+    update_post_meta($post_id, '_event_cost', isset($event_cost) ? $event_cost : '');
+    update_post_meta($post_id, '_event_currency_symbol', isset($event_currency_symbol) ? $event_currency_symbol : '');
+    update_post_meta($post_id, '_event_currency_code', isset($event_currency_code) ? $event_currency_code : '');
+    update_post_meta($post_id, '_event_currency_position', isset($event_currency_position) ? $event_currency_position : '');
+
+    update_post_meta($post_id, '_event_is_featured', isset($event_is_featured) ? $event_is_featured : '');
+    update_post_meta($post_id, '_event_hide_from_listings', isset($event_hide_from_listings) ? $event_hide_from_listings : '');
+    update_post_meta($post_id, '_event_show_map', isset($event_show_map) ? $event_show_map : '');
+    update_post_meta($post_id, '_event_show_map_link', isset($event_show_map_link) ? $event_show_map_link : '');
     
     // Set event type term if provided
     if ($event_type > 0) {
