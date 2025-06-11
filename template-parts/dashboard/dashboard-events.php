@@ -592,13 +592,30 @@
             console.error(event)
             const content = this.modal.querySelector('.event-preview-content');
 
-            const formattedStartDate = new Date(event.start_date).toLocaleDateString();
-            const formattedEndDate = new Date(event.end_date).toLocaleDateString();
-            const formattedTime = event.start_time && event.end_time
-                ? `${event.start_time} - ${event.end_time}`
-                : event.start_time || event.end_time || '';
+            const formattedStartDate = new Date(event.start_date).toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+            const formattedEndDate = new Date(event.end_date).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long', 
+                day: 'numeric'
+            });
+            // Format to
+            const formatTo12Hour = time => {
+                if (!time) return '';
+                const [hours, minutes] = time.split(':');
+                const period = hours >= 12 ? 'PM' : 'AM';
+                const hour12 = hours % 12 || 12;
+                return `${hour12} ${period}`;
+            };
 
-            const tagsHTML = event.tags.map(tag =>
+            const formattedTime = event.start_time && event.end_time
+                ? `${formatTo12Hour(event.start_time)} - ${formatTo12Hour(event.end_time)}`
+                : formatTo12Hour(event.start_time || event.end_time) || '';
+
+            const categoriesHTML = event.categories.map(tag =>
                 `<span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">${tag}</span>`
             ).join('');
 
@@ -607,89 +624,190 @@
                 : 'Free';
 
             content.innerHTML = `
-            <div class="p-6">
-                <!-- Header -->
-                <div class="flex flex-col md:flex-row justify-between md:items-center mb-6 border-b pb-4 border-gray-200">
-                    <div>
-                        <h1 class="text-3xl font-bold text-gray-900">${event.title}</h1>
-                        <p class="text-sm text-gray-500 mt-1">${event.location || ''}</p>
-                    </div>
-                    ${event.is_featured ? `<span class="mt-4 md:mt-0 inline-block bg-yellow-100 text-yellow-800 text-xs font-semibold px-3 py-1 rounded-full">★ Featured</span>` : ''}
-                </div>
-
+            <div class="bg-white rounded-xl shadow-md overflow-hidden">
                 <!-- Image -->
                 ${event.image ? `
-                <div class="mb-6">
-                    <img src="${event.image}" alt="${event.title}" class="w-full h-64 object-cover rounded-lg shadow-sm">
+                <div class="h-48 w-full overflow-hidden">
+                    <img src="${event.image}" alt="${event.title}"
+                        class="w-full h-full object-cover transition-transform duration-300 hover:scale-105">
                 </div>
                 ` : ''}
 
-                <!-- Meta info -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm text-gray-700 mb-6">
-                    <div>
-                        <p class="text-gray-500 mb-1">Start Date</p>
-                        <p>${formattedStartDate}</p>
+                <div class="p-6">
+                    <!-- Header with featured badge -->
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <h1 class="text-2xl font-bold text-gray-800 mb-1">${event.title}</h1>
+                            ${event.location ? `
+                            <div class="flex items-center text-gray-600">
+                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z">
+                                    </path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                </svg>
+                                <span class="text-sm">${event.location}</span>
+                            </div>
+                            ` : ''}
+                        </div>
+                        ${event.is_featured ? `
+                        <span
+                            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gradient-to-r from-amber-100 to-amber-50 text-amber-800 border border-amber-200">
+                            ★ Featured
+                        </span>
+                        ` : ''}
+                        ${event.hide_from_listings ? `
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 border border-gray-200">
+                            Hidden
+                        </span>
+                        ` : ''}
                     </div>
-                    <div>
-                        <p class="text-gray-500 mb-1">End Date</p>
-                        <p>${formattedEndDate}</p>
-                    </div>
-                    <div>
-                        <p class="text-gray-500 mb-1">Time</p>
-                        <p>${formattedTime}</p>
-                    </div>
-                    <div>
-                        <p class="text-gray-500 mb-1">Cost</p>
-                        <p class="font-medium">${costHTML}</p>
-                    </div>
-                    <div>
-                        <p class="text-gray-500 mb-1">Venue</p>
-                        <p>${event.venue || '—'}</p>
-                    </div>
-                    <div>
-                        <p class="text-gray-500 mb-1">Status</p>
-                        <p class="${event.event_status === 'cancelled' ? 'text-red-600 font-semibold' : 'text-green-600'}">
+
+                    <!-- Date and Time Badges -->
+                    <div class="flex flex-wrap gap-2 mb-5">
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z">
+                                </path>
+                            </svg>
+                            ${formattedStartDate} ${formattedEndDate ? `- ${formattedEndDate}` : ''}
+                        </span>
+                        <span
+                            class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            ${formattedTime}
+                        </span>
+                        <span
+                            class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${event.event_status === 'cancelled' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}">
                             ${event.event_status.charAt(0).toUpperCase() + event.event_status.slice(1)}
-                        </p>
+                        </span>
+                        ${event.timezone ? `
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                            ${event.timezone}
+                        </span>
+                        ` : ''}
                     </div>
-                </div>
 
-                <!-- Tags -->
-                ${tagsHTML ? `
-                <div class="mb-6">
-                    <p class="text-gray-500 text-sm mb-2">Tags</p>
-                    <div class="flex flex-wrap gap-2">${tagsHTML}</div>
-                </div>
-                ` : ''}
+                    <!-- Meta info grid -->
+                    <div class="grid grid-cols-2 gap-4 text-sm mb-6">
+                        <!-- Cost with currency -->
+                        <div class="flex items-start">
+                            <svg class="w-4 h-4 text-gray-500 mt-0.5 mr-2 flex-shrink-0" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z">
+                                </path>
+                            </svg>
+                            <div>
+                                <p class="text-gray-500">Cost</p>
+                                <p class="font-medium">${costHTML}</p>
+                                ${event.currency_code ? `<p class="text-xs text-gray-500">${event.currency_code}</p>` : ''}
+                            </div>
+                        </div>
+                        
+                        <!-- Venue -->
+                        <div class="flex items-start">
+                            <svg class="w-4 h-4 text-gray-500 mt-0.5 mr-2 flex-shrink-0" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4">
+                                </path>
+                            </svg>
+                            <div>
+                                <p class="text-gray-500">Venue</p>
+                                <p>${event.venue || '—'}</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Event Type -->
+                        ${event.event_type ? `
+                        <div class="flex items-start">
+                            <svg class="w-4 h-4 text-gray-500 mt-0.5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                            </svg>
+                            <div>
+                                <p class="text-gray-500">Event Type</p>
+                                <p>${event.event_type}</p>
+                            </div>
+                        </div>
+                        ` : ''}
+                        
+                        <!-- Show Map -->
+                        ${event.show_map ? `
+                        <div class="flex items-start">
+                            <svg class="w-4 h-4 text-gray-500 mt-0.5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path>
+                            </svg>
+                            <div>
+                                <p class="text-gray-500">Map Display</p>
+                                <p class="flex items-center gap-1">
+                                    ${event.show_map ? 
+                                        `<ion-icon name="checkmark-circle" class="text-green-500"></ion-icon>Enabled` : 
+                                        `<ion-icon name="close-circle" class="text-red-500"></ion-icon>Disabled`
+                                    }
+                                </p>
+                            </div>
+                        </div>
+                        ` : ''}
 
-                <!-- Map -->
-                ${event.show_map_link && event.location ? `
-                <div class="mb-6">
-                    <a href="https://www.google.com/maps/search/?q=${encodeURIComponent(event.location)}"
-                    target="_blank" rel="noopener"
-                    class="text-sm text-blue-600 hover:underline flex items-center gap-1">
-                        📍 View on Google Maps
-                    </a>
-                </div>
-                ` : ''}
-
-                <!-- Footer -->
-                <footer class="pt-4 mt-6 border-t border-gray-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                    <div class="flex gap-3">
-                        <button class="event-share-btn inline-flex items-center px-4 py-2 border border-gray-300 text-sm rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50">
-                            Share
-                        </button>
+                        <!-- Event URL -->
                         ${event.event_url ? `
-                        <a href="${event.event_url}" target="_blank" rel="noopener"
-                        class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50">
-                            Event Website
-                        </a>` : ''}
+                        <div class="flex items-start">
+                            <svg class="w-4 h-4 text-gray-500 mt-0.5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
+                            </svg>
+                            <div>
+                                <p class="text-gray-500">Event URL</p>
+                                <p>${event.event_url}</p>
+                            </div>
+                        </div>
+                        ` : ''}
                     </div>
-                    <a href="${window.location.origin}/events/${event.id}"
-                    class="inline-flex items-center px-4 py-2 text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">
-                        View Full Page
-                    </a>
-                </footer>
+
+                    <!-- Description/Content -->
+                    ${event.content ? `
+                    <div class="mb-6">
+                        <p class="text-gray-500 text-xs uppercase tracking-wider font-medium mb-2">Description</p>
+                        <div class="prose prose-sm max-w-none text-gray-700">
+                            ${event.content}
+                        </div>
+                    </div>
+                    ` : ''}
+
+                    <!-- Categories -->
+                    ${categoriesHTML ? `
+                    <div class="mb-6">
+                        <p class="text-gray-500 text-xs uppercase tracking-wider font-medium mb-2">Event Categories</p>
+                        <div class="flex flex-wrap gap-2">${categoriesHTML}</div>
+                    </div>
+                    ` : ''}
+
+                    <!-- Map link -->
+                    ${event.show_map_link && event.location ? `
+                    <div class="mb-6">
+                        <a href="https://www.google.com/maps/search/?q=${encodeURIComponent(event.location)}" target="_blank"
+                            rel="noopener"
+                            class="inline-flex items-center text-sm text-blue-600 hover:text-blue-800 transition-colors">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            </svg>
+                            View on Google Maps
+                        </a>
+                    </div>
+                    ` : ''}
+                </div>
             </div>
             `;
 

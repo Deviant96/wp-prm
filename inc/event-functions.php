@@ -213,6 +213,9 @@ function tbyte_prm_get_event($request) {
         'id' => $post->ID,
         'title' => $post->post_title,
         'link' => get_permalink($post->ID),
+        'content' => apply_filters('the_content', $post->post_content),
+        'status' => $post->post_status,
+        'post_date' => $post->post_date,
 
         'start_date' => get_post_meta($post->ID, '_event_start_date', true),
         'end_date' => get_post_meta($post->ID, '_event_end_date', true),
@@ -222,7 +225,8 @@ function tbyte_prm_get_event($request) {
         'venue' => get_post_meta($post->ID, '_event_venue', true),
         'event_url' => get_post_meta($post->ID, '_event_url', true),
         'event_status' => get_post_meta($post->ID, '_event_status', true),
-        'image' => get_post_meta($post->ID, '_event_image', true),
+        'image' => get_post_meta($post->ID, '_event_image_url', true),
+        'categories' => wp_list_pluck(get_post_meta($post->ID, '_event_categories')[0], 'name'),
 
         'cost' => get_post_meta($post->ID, '_event_cost', true),
         'currency_symbol' => get_post_meta($post->ID, '_event_currency_symbol', true),
@@ -238,12 +242,20 @@ function tbyte_prm_get_event($request) {
         'date' => get_post_meta($post->ID, '_event_date', true),
         'formatted_date' => date_i18n(get_option('date_format'), get_post_meta($post->ID, '_event_date', true)),
         'location' => get_post_meta($post->ID, '_event_location', true),
+        'metas' => get_post_meta($post->ID),
     ];
 }
 
 // CREATE an event
 function tbyte_prm_create_event($request) {
     $params = $request->get_params();
+
+    // Log request data
+    $log_file = ABSPATH . 'wp-content/uploads/event-requests.log';
+    $log_data = date('Y-m-d H:i:s') . " - " . json_encode($params) . "\n";
+    file_put_contents($log_file, $log_data, FILE_APPEND);
+
+    // return;
 
     $is_data_from_website = isset($params['is_data_from_website']) ? $params['is_data_from_website'] : false;
 
@@ -253,19 +265,17 @@ function tbyte_prm_create_event($request) {
     $venue = isset($params['event_venue']) ? sanitize_text_field($params['event_venue']) : ''; // Changed from venue to event_venue
     $tags = isset($params['event_tags']) ? sanitize_text_field($params['event_tags']) : '';
     
-    if ( $is_data_from_website === true ) {
-        $event_start_date = isset($params['event_start_date_utc']) ? sanitize_text_field($params['event_start_date_utc']) : '';
-        $event_end_date = isset($params['event_end_date_utc']) ? sanitize_text_field($params['event_end_date_utc']) : '';
-        $start_time = isset($params['event_start_time_utc']) ? sanitize_text_field($params['event_start_time_utc']) : '';
-        $end_time = isset($params['event_end_time_utc']) ? sanitize_text_field($params['event_end_time_utc']) : '';
-        $event_image = isset($params['featured_image']) ? sanitize_text_field($params['featured_image']) : '';
-
+    if ( $is_data_from_website == 1 ) {
+        $event_image = isset($params['featured_image']) ? esc_url_raw($params['featured_image']) : '';
     } else {
-        $event_start_date = isset($params['event_start_date_utc']) ? sanitize_text_field($params['event_start_date_utc']) : '';
-        $event_end_date = isset($params['event_end_date_utc']) ? sanitize_text_field($params['event_end_date_utc']) : '';
-        $start_time = isset($params['start_time']) ? sanitize_text_field($params['start_time']) : '';
-        $end_time = isset($params['end_time']) ? sanitize_text_field($params['end_time']) : '';
+        $event_image = isset($params['event_image']) ? esc_url_raw($params['event_image']) : '';
     }
+
+    $event_start_date_utc = isset($params['event_start_date_utc']) ? sanitize_text_field($params['event_start_date_utc']) : '';
+    $event_end_date_utc = isset($params['event_end_date_utc']) ? sanitize_text_field($params['event_end_date_utc']) : '';
+    $start_time_utc = isset($params['event_start_time_utc']) ? sanitize_text_field($params['event_start_time_utc']) : '';
+    $end_time_utc = isset($params['event_end_time_utc']) ? sanitize_text_field($params['event_end_time_utc']) : '';
+    $event_timezone = isset($params['event_timezone']) ? sanitize_text_field($params['event_timezone']) : '';
 
     $event_cost = isset($params['event_cost']) ? sanitize_text_field($params['event_cost']) : '';
     $event_currency_symbol = isset($params['event_currency_symbol']) ? sanitize_text_field($params['event_currency_symbol']) : '';
@@ -311,15 +321,17 @@ function tbyte_prm_create_event($request) {
     }
 
     // Save meta fields
-    update_post_meta($post_id, '_event_start_date', $event_start_date);
-    update_post_meta($post_id, '_event_end_date', $event_end_date);
-    update_post_meta($post_id, '_event_start_time', $start_time);
-    update_post_meta($post_id, '_event_end_time', $end_time);
+    update_post_meta($post_id, '_event_start_date', $event_start_date_utc);
+    update_post_meta($post_id, '_event_end_date', $event_end_date_utc);
+    update_post_meta($post_id, '_event_start_time', $start_time_utc);
+    update_post_meta($post_id, '_event_end_time', $end_time_utc);
+    update_post_meta($post_id, '_event_timezone', $event_timezone);
 
     update_post_meta($post_id, '_event_venue', $venue);
     update_post_meta($post_id, '_event_url', $event_url);
     update_post_meta($post_id, '_event_status', $event_status);
-    update_post_meta($post_id, '_event_image', isset($event_image) ? $event_image : '');
+    update_post_meta($post_id, '_event_image_url', $event_image);
+    update_post_meta($post_id, '_event_categories', isset($params['categories'] ) ? $params['categories'] : '');
 
     update_post_meta($post_id, '_event_cost', isset($event_cost) ? $event_cost : '');
     update_post_meta($post_id, '_event_currency_symbol', isset($event_currency_symbol) ? $event_currency_symbol : '');
