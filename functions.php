@@ -42,6 +42,7 @@ require get_template_directory() . '/inc/event-functions.php';
 require get_template_directory() . '/inc/partner-functions.php';
 require get_template_directory() . '/inc/user-approval-functions.php';
 require get_template_directory() . '/inc/newsletter-cache-functions.php';
+require_once get_template_directory() . '/inc/regional-sync-ui.php';
 
 function mytheme_enqueue_styles() {
     wp_enqueue_style(
@@ -336,3 +337,18 @@ function custom_pagination($numpages = '', $pagerange = '', $paged = '') {
         echo '</nav>';
     }
 }
+
+// Initialize if we're in admin
+if (is_admin()) {
+    new Regional_Sync_UI();
+}
+
+$regions = [
+    'au' => [
+        'url' => 'https://au.terrabytegroup.com',
+        'username' => 'tb_admin',
+        'password' => 'BWPo mJZu wKM4 hjP5 OTkA sRz0'
+    ],
+    // Add other regions
+];
+update_option('tec_sync_regions', $regions);
